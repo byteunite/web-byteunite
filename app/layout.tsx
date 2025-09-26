@@ -8,6 +8,7 @@ import {
 import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
+import { AppShell } from "@/components/AppShell";
 import "./globals.css";
 
 const archivoBlack = Archivo_Black({

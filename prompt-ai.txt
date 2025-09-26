@@ -1,0 +1,261 @@
+You are a product designer + front-end engineer.
+Build a Next.js (App Router) prototype styled with Tailwind and a Retro UI vibe. Use shadcn/ui where helpful, but favor a Retro-UI look. Do **not** wire real backends; use local state and localStorage for persistence. All AI calls are mocked. Language: Indonesian.
+
+## Global requirements
+
+-   Tech: Next.js App Router, TypeScript, TailwindCSS.
+-   Components: Prefer shadcn/ui primitives (Button, Card, Input, Textarea, Dialog, Tabs, Badge, DropdownMenu, Avatar) with Tailwind classes.
+-   Retro UI look
+-   Image handling: file input only; show preview blob URL (no upload).
+-   Routes:
+
+    -   `/` (Dashboard)
+    -   `/auth` (Mock login/register)
+    -   `/templates` (List)
+    -   `/templates/new` (Create Template wizard)
+    -   `/templates/[id]` (Template detail & edit)
+    -   `/designs` (Design gallery list)
+    -   `/designs/new?templateId=` (Generate design from template wizard)
+    -   `/designs/[id]` (Design detail)
+    -   `/account` (Profile, logout)
+
+-   Dummy user session: if not “logged in”, redirect to `/auth` except `/auth`.
+
+## Data models (TypeScript types)
+
+```ts
+type User = {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl?: string;
+};
+
+type TemplateElement = {
+    id: string;
+    label: string; // e.g., "Judul Besar", "Subjudul", "Hero Image", "Accent Shape"
+    type: "text" | "image" | "color" | "shape" | "icon";
+    description?: string; // guidance for what can be replaced
+    replaceable: boolean;
+};
+
+type Template = {
+    id: string;
+    name: string;
+    referenceImageUrl?: string; // blob or placeholder URL
+    elements: TemplateElement[];
+    promptTemplate: string; // AI-prompt pattern with {{placeholders}}
+    createdAt: string;
+    updatedAt: string;
+    ownerId: string;
+};
+
+type Design = {
+    id: string;
+    templateId: string;
+    title: string;
+    topic: string;
+    generatedImageUrl?: string; // placeholder image
+    promptFinal: string; // resolved prompt from promptTemplate + topic
+    caption: string;
+    createdAt: string;
+    ownerId: string;
+};
+```
+
+## Dummy data (seed in localStorage on first load)
+
+-   1 user (logged-in).
+-   2 templates contoh dengan gambar placeholder (use `https://picsum.photos/seed/template1/800/1000` etc.), `elements` berisi 5–7 item (judul, subjudul, hero image, accent shape, background pattern, palette color, icon).
+-   `promptTemplate` contoh (Gemini or generic) berformat teks:
+
+    ```
+    Create a new design in the style of the reference image.
+    Keep layout and visual rhythm consistent.
+    Replace:
+    - Title with: {{title}}
+    - Subtitle with: {{subtitle}}
+    - Topic/Subject: {{topic}}
+    Maintain color mood similar to reference; keep shapes & spacing.
+    Output must be a single image ready for social post (4:5).
+    ```
+
+-   3 designs contoh (dengan image placeholder `https://picsum.photos/seed/designX/900/1125`).
+
+## Layout
+
+-   **AppShell**: Top navbar (brand “DesignForge Retro”), user avatar dropdown (Account, Logout). Left sidebar (Icons + labels): Dashboard, Templates, Designs, Account. Sidebar collapsible on mobile.
+-   Background: subtle noise, retro grid (very faint).
+-   Use Cards with chunky borders & pixel shadow for content sections.
+
+## Page behaviors
+
+### `/auth`
+
+-   Two tabs: “Login” & “Register” (mock).
+-   Fields: email, password; register adds name.
+-   Buttons: Login/Register → set a dummy user in localStorage and push to `/`.
+-   Add subtle Retro success toast.
+
+### `/`
+
+-   Dashboard “Selamat datang” with quick stats:
+
+    -   Total Templates, Total Designs, Terakhir Dibuat.
+
+-   “Aksi cepat” cards:
+
+    -   “Buat Template Baru” → `/templates/new`
+    -   “Generate Design dari Template” → `/designs` (pilih template)
+
+-   Recent activity list (last 5 designs).
+
+### `/templates`
+
+-   Header with “Template Library” + Button “+ New Template”.
+-   Grid of TemplateCard (preview reference image + name + updatedAt + badges: count elements).
+-   Card actions: View/Edit, Duplicate, Delete (confirm dialog).
+-   Search & Filter bar (by owner, by date).
+
+### `/templates/new` (Wizard 3 langkah)
+
+**Step 1: Upload & Info**
+
+-   Upload reference image (show preview).
+-   Input: Template Name.
+-   Retro tip box: “Unggah desain referensi. Kita akan ‘menganalisa’ (mock) elemen yang bisa disesuaikan.”
+
+**Step 2: Analisis Gambar (Mock)**
+
+-   Button “Analisa Gambar” → simulate 1.2s delay → output daftar `TemplateElement` yang terdeteksi (mock):
+
+    -   “Judul Besar” (text, replaceable)
+    -   “Subjudul” (text, replaceable)
+    -   “Hero Image/Illustration” (image, replaceable)
+    -   “Accent Shape” (shape, replaceable)
+    -   “Background Pattern” (shape/color, replaceable)
+    -   “Palette Primary” (color, replaceable)
+    -   “Small Icon” (icon, replaceable)
+
+-   Tampilkan dalam list dengan switch “replaceable” on/off dan field “description”.
+
+**Step 3: Prompt Template**
+
+-   Textarea besar berisi default `promptTemplate` (lihat dummy).
+-   Helper on the side: daftar placeholder yang tersedia (`{{title}}`, `{{subtitle}}`, `{{topic}}`, dan bisa tambah).
+-   Button “Simpan Template” → create Template, persist, redirect ke `/templates/[id]` dengan toast “Template tersimpan”.
+
+### `/templates/[id]`
+
+-   Header: image preview + template name + timestamps.
+-   Tabs:
+
+    -   “Elemen” → list editable TemplateElement.
+    -   “Prompt” → edit promptTemplate dengan highlight placeholders.
+    -   “Pratinjau Prompt” → form mini: isi sample topic/title/subtitle → render **Prompt Preview** (readonly) untuk verifikasi placeholder.
+
+-   Right rail: CTA “Gunakan Template → Generate Design” (link ke `/designs/new?templateId=...`).
+
+### `/designs`
+
+-   Header: “Design Gallery” + button “Generate dari Template” (opens template picker dialog: grid of templates).
+-   Grid of DesignCard (image, title, topic, createdAt).
+-   Card actions: View, Duplicate, Delete.
+-   Filters: by template, by date.
+
+### `/designs/new?templateId=...` (Wizard 3 langkah)
+
+**Step 1: Pilih Template**
+
+-   Jika query ada templateId, preselect & show summary (preview + elements).
+-   Jika tidak, tampilkan picker grid.
+
+**Step 2: Masukkan Topik & Detail**
+
+-   Fields:
+
+    -   Topic (required)
+    -   Title (optional)
+    -   Subtitle (optional)
+    -   Style Nudges (checkbox group): “Tetap layout 1:1”, “Foto lebih kontras”, “Aksen lebih bold”
+
+-   Button “Buat Prompt” → mock-build final prompt:
+
+    -   Ambil `promptTemplate` dari template, substitute placeholders.
+    -   Tambahkan blok “caption instruction”:
+
+        ```
+        Write a short, catchy Indonesian caption (max 180 chars) about {{topic}} with a friendly, youthful tone. End with 1 emoji.
+        ```
+
+-   Show **Prompt Preview** (readonly) + **Caption Preview** (mock).
+
+**Step 3: Generate (Mock) & Simpan**
+
+-   Section kiri: **Reference Image** (from template) + **Final Prompt** (readonly with copy button).
+-   Section kanan: **Hasil Gambar (Mock)** → gunakan placeholder image generator (picsum) dengan seed random; tombol “Regenerate (Mock)” untuk ganti seed.
+-   Caption & Title editor (editable fields seeded from previews).
+-   Button “Simpan Design” → create Design, persist, redirect ke `/designs/[id]` + toast.
+
+### `/designs/[id]`
+
+-   Large image preview (retro frame).
+-   Metadata: Title, Topic, Template name (link), createdAt.
+-   Panels (accordion):
+
+    -   Final Prompt (readonly + copy)
+    -   Caption (editable + save)
+
+-   Actions: Download (just open image in new tab), Duplicate, Delete.
+
+### `/account`
+
+-   Show mock user profile (avatar, name, email).
+-   Buttons: “Keluar” (clear session localStorage → `/auth`).
+
+## Shared components (implement)
+
+-   **AppShell** (Navbar + Sidebar), `RetroCard`, `RetroPanel`, `StatBadge`, `PromptPreview`, `TemplateCard`, `DesignCard`, `ElementRowEditor`, `TemplatePickerDialog`, `ConfirmDialog`, `Toast` (use shadcn toaster), `EmptyState`.
+-   **Retro styles**: utility classes (`retro-border`, `retro-shadow`, `retro-noise-bg`) added via Tailwind and CSS layer.
+
+## Mock stores (zustand)
+
+-   `useAuthStore`: `user`, `login(email,pw)`, `register(name,email,pw)`, `logout()`.
+-   `useTemplatesStore`: CRUD, seed on first load.
+-   `useDesignsStore`: CRUD, seed on first load.
+-   On init, if no user, `/auth`.
+
+## Accessibility & UX
+
+-   All forms with labels, descriptions.
+-   Loading states (skeleton) on “Analisa Gambar” and “Buat Prompt/Regenerate”.
+-   Keyboard-friendly dialogs.
+-   Empty states with CTA.
+
+## Nice-to-haves (optional if time allows)
+
+-   Export/Import JSON (templates & designs) via file download/upload.
+-   Share link (copy deeplink).
+-   Dark/Light toggle (but keep Retro vibe).
+
+## Visual copy (Indonesian)
+
+-   Use concise, friendly language:
+
+    -   “Analisa Gambar (Mock)”
+    -   “Tambahkan Placeholder”
+    -   “Buat Prompt”
+    -   “Regenerate (Mock)”
+    -   “Simpan Template”
+    -   “Simpan Design”
+    -   Toasts: “Berhasil disimpan!”, “Dihapus.”, “Disalin.”
+
+## QA checklist
+
+-   Navigate full flow tanpa backend.
+-   Template placeholders benar-benar ter-render di Prompt Preview.
+-   Design tersimpan dengan image placeholder + caption.
+-   Refresh halaman tetap persisten (localStorage).
+
+
+Buatlah prototype aplikasi sesuai dengan informasi di atas
