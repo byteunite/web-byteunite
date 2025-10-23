@@ -90,7 +90,7 @@ CONTOH FORMAT OBJEK LENGKAP:
       "judul_slide": "Misteri Pengatur Waktu Telur",
       "sub_judul_slide": "Berapa Lama Telur Itu Direbus?",
       "konten_slide": "Siap pecahkan misteri waktu memasak telur yang <em>sangat aneh</em> ini? Ada <strong>sesuatu yang tidak biasa</strong> dengan telur ini!",
-      "prompt_untuk_image": "A single egg, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF)."
+      "prompt_untuk_image": "A single egg, complete object with no cropping, full view, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF), no borders, no frames, clean isolation."
     }
     // ... 5 slide lainnya
   ],
@@ -110,7 +110,9 @@ GAYA VISUAL WAJIB (untuk prompt_untuk_image):
 2. Komposisi: Objek utama harus berukuran kecil dan merupakan benda nyata yang relevant (maksimal 1/3 dari total ruang), diposisikan di tengah (centered), dengan white space yang dominan.
 3. DILARANG menggunakan elemen grafis abstrak atau geometris di latar belakang - fokus HANYA pada objek utama dengan background putih polos.
 4. Efek Visual: Objek utama HARUS memiliki efek rasterize/halftone yang jelas dan terlihat, dengan dot pattern atau screen printing effect yang prominent.
-5. Format Prompt: Gunakan template berikut: "[Deskripsi Objek Tunggal yang Jelas], centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF)."
+5. Objek HARUS utuh, tidak terpotong, dan berdiri sempurna (complete object, no cropping, full view).
+6. Format Prompt: Gunakan template berikut: "[Deskripsi Objek Tunggal yang Jelas], complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation."
+7. PENTING: Prompt HARUS URL-safe tanpa karakter khusus seperti parentheses, hashtag, atau tanda baca kompleks
 
 ATURAN PEMILIHAN OBJEK (SANGAT PENTING):
 1. WAJIB gunakan objek KONKRET dan REALISTIS yang relevan dengan konteks cerita/misteri
@@ -123,14 +125,16 @@ ATURAN PEMILIHAN OBJEK (SANGAT PENTING):
 8. Untuk slide FINAL: pilih objek yang mengajak aksi (misal: untuk follow → gunakan "smartphone" atau "magnifying glass", bukan "symbol")
 
 CONTOH PROMPT YANG BENAR:
-- "A single egg, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF)."
-- "A kitchen timer, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF)."
-- "A magnifying glass, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF)."
+- "A single egg, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+- "A kitchen timer, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+- "A magnifying glass, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
 
 CONTOH PROMPT YANG SALAH (JANGAN GUNAKAN):
 - "A question mark symbol..." ❌ (gunakan objek konkret seperti "notepad" atau "thinking person")
 - "An exclamation mark..." ❌ (gunakan objek yang merepresentasikan solusi secara visual)
 - "Abstract symbol..." ❌ (harus objek fisik yang nyata)
+- Prompt tanpa "complete object with no cropping, full view" ❌ (objek akan terpotong)
+- Prompt tanpa "no borders, no frames, clean isolation" ❌ (objek akan memiliki kotak/frame)
 - Jangan tambahkan: "geometric shapes", "abstract elements", "bold graphics", "design elements"
 - Fokus HANYA pada objek konkret dan realistis dengan efek rasterize
 

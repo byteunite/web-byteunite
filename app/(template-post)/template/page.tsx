@@ -1,4 +1,5 @@
 import RandomShape from "@/components/RandomShape";
+import ClickableImage from "@/components/ClickableImage";
 import { Feather } from "lucide-react";
 import { UserPlus } from "lucide-react";
 
@@ -288,7 +289,7 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData = [
+    const dummyData6 = [
         {
             tipe_slide: "COVER",
             judul_slide: "Bukan Kembar?",
@@ -342,6 +343,234 @@ export default function TemplatePage() {
                 "<em>Gampang kan?</em> Jangan lupa <strong>follow</strong> untuk teka-teki <em>misteri menarik</em> lainnya setiap hari!",
             prompt_untuk_image:
                 "A magnifying glass, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+    ];
+
+    const dummyData7 = [
+        {
+            tipe_slide: "COVER",
+            judul_slide: "Misteri Pria di Mercusuar",
+            sub_judul_slide: "Tindakan Sederhana, Konsekuensi Tragis",
+            konten_slide:
+                "Sebuah <em>keputusan kecil</em> di malam hari berujung pada <strong>akhir yang tak terduga</strong> di pagi hari. Bisakah kamu pecahkan misteri ini?",
+            prompt_untuk_image:
+                "A lighthouse lamp, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Teka-Teki Pria & Lampu",
+            sub_judul_slide: "Malam yang Gelap Gulita",
+            konten_slide:
+                "Seorang pria <strong>pulang ke rumah</strong>. Dia kemudian <em>mematikan lampu</em>, lalu pergi tidur. Sebuah tindakan yang <strong>biasa saja</strong>, bukan?",
+            prompt_untuk_image:
+                "A light switch (off position), centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Pagi yang Kelam",
+            sub_judul_slide: "Mengapa Hidupnya Berakhir?",
+            konten_slide:
+                "Keesokan paginya, ia bangun, <strong>membaca koran</strong>, lalu... <em>mengakhiri hidupnya</em>. Apa yang terjadi <strong>semalam</strong> yang begitu mengubah segalanya?",
+            prompt_untuk_image:
+                "A folded newspaper, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "CLOSING",
+            judul_slide: "Saatnya Berpikir Keras!",
+            sub_judul_slide: "Hubungkan Titik-Titik Petunjuk",
+            konten_slide:
+                "<em>Tidak ada</em> tanda-tanda kejahatan, <em>tidak ada</em> ancaman. Hanya <strong>satu tindakan sederhana</strong>. Bisakah kamu menemukan <em>korelasi</em> antara mematikan lampu dan akhir hidupnya?",
+            prompt_untuk_image:
+                "A notepad and pen, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "SOLUSI",
+            judul_slide: "Terungkap: Pria dan Mercusuar",
+            sub_judul_slide: "Konsekuensi Tragis dari Sebuah Tugas",
+            konten_slide:
+                "Pria itu adalah <strong>penjaga mercusuar</strong>. Ketika ia mematikan lampu, ia secara tidak langsung telah menyebabkan <strong>ratusan orang tewas</strong> di kapal yang karam. <em>Penyesalan</em> atas perbuatannya saat membaca berita itulah yang mendorongnya.",
+            prompt_untuk_image:
+                "A ship with a broken mast sinking into waves, depicted in a non-graphic, symbolic way, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "FINAL",
+            judul_slide: "Misteri Terpecahkan!",
+            sub_judul_slide: "Bagaimana Menurutmu?",
+            konten_slide:
+                "Teka-teki ini menunjukkan bahwa <em>satu tindakan</em> bisa memiliki <strong>konsekuensi yang besar</strong>. Apakah kamu berhasil menebaknya? <em>Bagikan</em> pendapatmu di kolom komentar!",
+            prompt_untuk_image:
+                "A magnifying glass, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+    ];
+
+    const dummyData8 = [
+        {
+            tipe_slide: "COVER",
+            judul_slide: "Misteri Pria dan Mobil",
+            sub_judul_slide: "Kisah Bangkrut yang Aneh",
+            konten_slide:
+                "Siapkah kamu pecahkan misteri <em>aneh</em> tentang seorang pria yang <strong>tiba-tiba bangkrut</strong> setelah sampai di hotel?",
+            prompt_untuk_image:
+                "A toy car, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Petunjuk 1: Perjalanan Tak Biasa",
+            sub_judul_slide: "Mobil Didorong, Bukan Dikemudikan",
+            konten_slide:
+                "Pria ini <em>mendorong</em> mobilnya hingga ke sebuah <strong>hotel</strong>. Sebuah perjalanan yang sangat <em>tidak biasa</em>, bukan?",
+            prompt_untuk_image:
+                "A human hand pushing a toy car, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Petunjuk 2: Bangkrut Seketika",
+            sub_judul_slide: "Apa yang Membuatnya Jatuh Miskin?",
+            konten_slide:
+                "Setibanya di hotel, pria itu <em>menyadar</em>i bahwa ia <strong>bangkrut</strong>. Hotel ini pasti sangat <em>mahal</em> atau ada yang lain?",
+            prompt_untuk_image:
+                "A miniature hotel building, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "CLOSING",
+            judul_slide: "Mari Berpikir!",
+            sub_judul_slide: "Pecahkan Misteri Ini Sekarang!",
+            konten_slide:
+                "Bisakah kamu menebak <em>apa</em> yang menyebabkan pria ini <strong>bangkrut</strong> setelah tiba di hotel, padahal ia <em>mendorong</em> mobilnya?",
+            prompt_untuk_image:
+                "A notepad and a pencil, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "SOLUSI",
+            judul_slide: "TERPECAHKAN!",
+            sub_judul_slide: "Ini Dia Jawabannya!",
+            konten_slide:
+                "Jawabannya adalah: Ini adalah permainan <strong><em>Monopoli</em></strong>! Pria itu mendorong <strong>pion mobilnya</strong> di atas papan permainan dan mendarat di properti hotel orang lain, sehingga ia harus membayar sewa dan <strong>bangkrut</strong>.",
+            prompt_untuk_image:
+                "A Monopoly car token, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "FINAL",
+            judul_slide: "Misteri Berakhir!",
+            sub_judul_slide: "Tantang Temanmu!",
+            konten_slide:
+                "Bagaimana? Terkejut dengan jawabannya? Jangan lupa <em>share</em> teka-teki ini dan <strong>tantang temanmu</strong> untuk memecahkannya! 💡",
+            prompt_untuk_image:
+                "A magnifying glass, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+    ];
+
+    const dummyData9 = [
+        {
+            tipe_slide: "COVER",
+            judul_slide: "Misteri Pernikahan Tak Terduga",
+            sub_judul_slide: "Pria Ini Menikahi 20 Wanita, Tapi...",
+            konten_slide:
+                "Siap pecahkan teka-teki <em>aneh</em> tentang seorang pria yang <strong>menikahi banyak wanita</strong> tanpa didakwa poligami? Ada <strong>sesuatu yang tidak terduga</strong> di balik ini!",
+            prompt_untuk_image:
+                "A wedding ring, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Fakta Mengejutkan",
+            sub_judul_slide: "Dua Puluh Pernikahan",
+            konten_slide:
+                "Seorang <strong>pria</strong> di desanya telah <em>resmi menikahkan</em> <strong>dua puluh wanita</strong>. Ini bukan gosip, ini fakta yang <strong>terdokumentasi</strong>!",
+            prompt_untuk_image:
+                "A small village church, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Tidak Ada Tuduhan Poligami",
+            sub_judul_slide: "Hukum Tidak Berlaku?",
+            konten_slide:
+                "Meskipun 'menikahi' begitu banyak wanita, pria ini <em>tidak pernah</em> didakwa dengan <strong>poligami</strong>. <em>Bagaimana ini bisa terjadi</em> di desa kecil yang <strong>taat hukum</strong>?",
+            prompt_untuk_image:
+                "A closed law book, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "CLOSING",
+            judul_slide: "Saatnya Berpikir Keras!",
+            sub_judul_slide: "Mampukah Kamu Memecahkannya?",
+            konten_slide:
+                "Semua petunjuk ada di sana. <em>Pikirkan</em> baik-baik tentang <strong>peran</strong> pria ini dan <strong>konteks</strong> 'menikahkan'. <em>Apa yang kamu lewatkan</em>?",
+            prompt_untuk_image:
+                "A magnifying glass, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "SOLUSI",
+            judul_slide: "TERUNGKAP!",
+            sub_judul_slide: "Inilah Jawabannya",
+            konten_slide:
+                "Rahasia di balik teka-teki ini adalah: pria itu adalah seorang <strong><em>imam</em></strong>! Ia menikahkan <strong>dua puluh wanita itu</strong> dengan <em>pasangan mereka</em>, <strong>bukan dirinya sendiri</strong>. Tugasnya adalah menyatukan dua insan dalam pernikahan.",
+            prompt_untuk_image:
+                "A priest's collar, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "FINAL",
+            judul_slide: "Teka-Teki Selesai!",
+            sub_judul_slide: "Misteri Terpecahkan!",
+            konten_slide:
+                "Bagaimana, <em>apakah kamu berhasil menebaknya</em>? Jangan lupa <strong>like</strong>, <strong>share</strong>, dan <strong>follow</strong> untuk teka-teki <em>seru</em> lainnya setiap hari!",
+            prompt_untuk_image:
+                "A hand giving a 'thumbs up' gesture, representing a like, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+    ];
+
+    const dummyData = [
+        {
+            tipe_slide: "COVER",
+            judul_slide: "Misteri Pria di Lantai 12",
+            sub_judul_slide: "Teka-teki Lift Aneh",
+            konten_slide:
+                "Ada yang <em>aneh</em> dengan cara pria ini naik lift. Bisakah kamu pecahkan <strong>logikanya</strong>?",
+            prompt_untuk_image:
+                "A single male person standing in front of an elevator door, looking up. The person appears small in scale, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Rutinitas Pagi",
+            sub_judul_slide: "Turun Tanpa Kendala",
+            konten_slide:
+                "Setiap pagi, ia <strong>turun</strong> dari lantai 12 dengan lift, pergi bekerja <em>tanpa masalah</em> sedikit pun.",
+            prompt_untuk_image:
+                "An elevator button panel with the number '1' clearly pressed, indicating descent. Complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Naik yang Berbeda",
+            sub_judul_slide: "Kondisi Aneh Saat Pulang",
+            konten_slide:
+                "Saat pulang, jika <em>sendirian</em> dan <em>tidak hujan</em>, ia hanya bisa sampai <strong>lantai 10</strong>, lalu naik tangga ke-12. Tapi jika ada orang lain atau hujan, ia bisa langsung ke <strong>lantai 12</strong>.",
+            prompt_untuk_image:
+                "An elevator button panel with the number '10' clearly pressed, and a small rain umbrella leaning against the panel. Complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "CLOSING",
+            judul_slide: "Apa Rahasianya?",
+            sub_judul_slide: "Temukan Jawabannya!",
+            konten_slide:
+                "Mengapa pria itu <em>kadang-kadang</em> tidak bisa mencapai lantai <strong>apartemennya</strong> dengan lift? Pikirkan baik-baik!",
+            prompt_untuk_image:
+                "A magnifying glass focusing on an elevator button panel. Complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "SOLUSI",
+            judul_slide: "Terpecahkan!",
+            sub_judul_slide: "Kunci Jawabannya Adalah...",
+            konten_slide:
+                "Pria itu adalah seorang <strong><em>kerdil</em></strong>! Ia tidak bisa mencapai tombol lantai 12 sendiri, kecuali jika orang lain menekannya atau ia menggunakan <strong>payungnya</strong> saat hujan.",
+            prompt_untuk_image:
+                "A hand holding an umbrella handle, using its tip to press the '12' button on an elevator panel. Complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+        {
+            tipe_slide: "FINAL",
+            judul_slide: "Misteri Terpecahkan!",
+            sub_judul_slide: "Suka Teka-teki Ini?",
+            konten_slide:
+                "Bagaimana, apakah kamu berhasil menebaknya? <em>Follow</em> kami untuk <strong>misteri seru lainnya</strong> setiap hari! 🕵️‍♂️",
+            prompt_untuk_image:
+                "A smartphone with a 'Follow' button displayed on its screen, and a small magnifying glass beside it. Complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
         },
     ];
 
@@ -436,15 +665,12 @@ export default function TemplatePage() {
                                         }}
                                         className="flex items-center justify-center overflow-hidden relative flex-col"
                                     >
-                                        <img
+                                        <ClickableImage
+                                            prompt={`${post.prompt_untuk_image}&enhance=true`}
+                                            width={width * 2}
+                                            height={height * 2}
                                             className="absolute top-0 left-0 w-full h-full object-cover"
-                                            src={`https://image.pollinations.ai/prompt/${
-                                                post.prompt_untuk_image
-                                            }?width=${width * 2}&height=${
-                                                height * 2
-                                            }&nologo=true&model=kontext&seed=${Math.ceil(
-                                                Math.random() * 1000000
-                                            )}&enhance=true`}
+                                            alt={post.judul_slide}
                                         />
                                         <div className="z-10 px-10">
                                             <h5
@@ -488,15 +714,13 @@ export default function TemplatePage() {
                                     >
                                         {flag ? (
                                             <>
-                                                <img
-                                                    className="absolute -top-15 -right-30 object-cover z-999 opacity-70 colorized"
-                                                    src={`https://image.pollinations.ai/prompt/${
+                                                <ClickableImage
+                                                    prompt={
                                                         post.prompt_untuk_image
-                                                    }?width=${
-                                                        width * 2
-                                                    }&height=${
-                                                        height * 2
-                                                    }&nologo=true&model=kontext`}
+                                                    }
+                                                    width={width * 2}
+                                                    height={height * 2}
+                                                    className="absolute -top-15 -right-30 object-cover z-999 opacity-70 colorized"
                                                     style={{
                                                         filter: `brightness(1.05) contrast(1.3)`,
                                                         mixBlendMode:
@@ -510,20 +734,19 @@ export default function TemplatePage() {
                                                                 10
                                                         }%`,
                                                     }}
+                                                    alt={post.judul_slide}
                                                 />
                                             </>
                                         ) : (
                                             <>
                                                 {" "}
-                                                <img
-                                                    className="absolute -bottom-15 -right-30 object-cover z-999 opacity-70"
-                                                    src={`https://image.pollinations.ai/prompt/${
+                                                <ClickableImage
+                                                    prompt={
                                                         post.prompt_untuk_image
-                                                    }?width=${
-                                                        width * 2
-                                                    }&height=${
-                                                        height * 2
-                                                    }&nologo=true&model=kontext`}
+                                                    }
+                                                    width={width * 2}
+                                                    height={height * 2}
+                                                    className="absolute -bottom-15 -right-30 object-cover z-999 opacity-70"
                                                     style={{
                                                         filter: `brightness(1.05) contrast(1.3)`,
                                                         mixBlendMode:
@@ -537,6 +760,7 @@ export default function TemplatePage() {
                                                                 10
                                                         }%`,
                                                     }}
+                                                    alt={post.judul_slide}
                                                 />
                                             </>
                                         )}
@@ -657,14 +881,12 @@ export default function TemplatePage() {
                                         }}
                                         className="flex items-center justify-center overflow-visible relative flex-col bg-white"
                                     >
-                                        <div className="absolute top-0 left-0 right-0 flex justify-center">
-                                            <img
+                                        <div className="absolute top-0 left-0 right-0 flex justify-center z-40">
+                                            <ClickableImage
+                                                prompt={post.prompt_untuk_image}
+                                                width={width}
+                                                height={height}
                                                 className="object-cover z-999 opacity-70"
-                                                src={`https://image.pollinations.ai/prompt/${
-                                                    post.prompt_untuk_image
-                                                }?width=${width * 2}&height=${
-                                                    height * 2
-                                                }&nologo=true&model=kontext`}
                                                 style={{
                                                     mixBlendMode: "multiply",
                                                     width: `${
@@ -675,10 +897,14 @@ export default function TemplatePage() {
                                                             10
                                                     }%`,
                                                 }}
+                                                alt={post.judul_slide}
                                             />
                                         </div>
-                                        <div className="z-10 w-full h-full flex flex-col items-center justify-center">
-                                            <div className="m-auto w-64 absolute bottom-20">
+                                        <div className="z-50 w-full flex flex-col items-center justify-center">
+                                            <div
+                                                className="m-auto w-64 absolute bottom-20"
+                                                style={{ zIndex: 99 }}
+                                            >
                                                 <div className="mb-1">
                                                     <span
                                                         className={` text-white px-2 text-xs py-1 mb-1`}
