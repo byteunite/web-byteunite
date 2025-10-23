@@ -102,7 +102,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
             </div>
             <div className="flex flex-col md:ml-[220px] lg:ml-[280px] min-h-screen">
-                <header className="flex h-16 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6 md:sticky md:top-0 md:z-20">
+                <header className="flex h-16 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6 md:top-0 md:z-20">
                     <Button
                         variant="outline"
                         size="icon"
