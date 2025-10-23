@@ -517,7 +517,7 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData = [
+    const dummyData10 = [
         {
             tipe_slide: "COVER",
             judul_slide: "Misteri Pria di Lantai 12",
@@ -571,6 +571,63 @@ export default function TemplatePage() {
                 "Bagaimana, apakah kamu berhasil menebaknya? <em>Follow</em> kami untuk <strong>misteri seru lainnya</strong> setiap hari! 🕵️‍♂️",
             prompt_untuk_image:
                 "A smartphone with a 'Follow' button displayed on its screen, and a small magnifying glass beside it. Complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF).",
+        },
+    ];
+
+    const dummyData = [
+        {
+            tipe_slide: "COVER",
+            judul_slide: "Misteri Rumah Unik",
+            sub_judul_slide: "Semua Jendela Menghadap Utara?",
+            konten_slide:
+                "Siap memecahkan teka-teki <em>rumah paling aneh</em> yang pernah ada? <strong>Semua jendela</strong> menghadap ke <strong>satu arah</strong>!",
+            prompt_untuk_image:
+                "A small, simple house model, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF), no borders, no frames, clean isolation.",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Rumah Persegi",
+            sub_judul_slide: "Membangun Impian yang Aneh",
+            konten_slide:
+                "Sepasang suami istri ingin membangun rumah <strong>persegi</strong>. Ini dia <em>petunjuk pertama</em>!",
+            prompt_untuk_image:
+                "A carpenter's square, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF), no borders, no frames, clean isolation.",
+        },
+        {
+            tipe_slide: "MISTERI",
+            judul_slide: "Jendela Menghadap Utara",
+            sub_judul_slide: "Setiap Dinding, Setiap Jendela",
+            konten_slide:
+                "Di <strong>setiap dinding</strong> rumah, akan ada <strong>jendela</strong>. Dan <em>setiap jendela itu</em> akan <strong>menghadap ke utara</strong>. <em>Bagaimana ini mungkin</em>?",
+            prompt_untuk_image:
+                "A compass pointing North, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF), no borders, no frames, clean isolation.",
+        },
+        {
+            tipe_slide: "CLOSING",
+            judul_slide: "Waktunya Berpikir!",
+            sub_judul_slide: "Pecahkan Misteri Arah Jendela Ini",
+            konten_slide:
+                "Bisakah kamu menebak <em>bagaimana</em> sebuah rumah persegi bisa memiliki <strong>semua jendela</strong> menghadap ke <strong>utara</strong>? 💡 <em>Pikirkan baik-baik</em>!",
+            prompt_untuk_image:
+                "A notepad with a pen, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF), no borders, no frames, clean isolation.",
+        },
+        {
+            tipe_slide: "SOLUSI",
+            judul_slide: "Terungkap!",
+            sub_judul_slide: "Lokasi Kunci Segalanya",
+            konten_slide:
+                "Jawabannya adalah: Rumah itu terletak di <strong><em>Kutub Selatan</em></strong>! Dari sana, <strong>semua arah adalah Utara</strong>.",
+            prompt_untuk_image:
+                "A globe showing the South Pole, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF), no borders, no frames, clean isolation.",
+        },
+        {
+            tipe_slide: "FINAL",
+            judul_slide: "Misteri Terpecahkan!",
+            sub_judul_slide: "Suka Teka-Teki Ini?",
+            konten_slide:
+                "Suka dengan teka-teki logika seperti ini? Jangan lewatkan misteri <strong>lebih seru</strong> setiap hari! <em>Follow</em> untuk tantangan otak lainnya!",
+            prompt_untuk_image:
+                "A magnifying glass, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF), no borders, no frames, clean isolation.",
         },
     ];
 
@@ -683,7 +740,7 @@ export default function TemplatePage() {
                                                 {post.judul_slide}
                                             </h5>
                                             <div className="z-10 w-3/5 leading-0">
-                                                <span className="text-xs bg-white opacity-75 tracking-wide inline font-bold">
+                                                <span className="text-xs bg-white opacity-90 tracking-wide inline font-bold">
                                                     {post.sub_judul_slide}
                                                 </span>
                                             </div>
@@ -881,12 +938,12 @@ export default function TemplatePage() {
                                         }}
                                         className="flex items-center justify-center overflow-visible relative flex-col bg-white"
                                     >
-                                        <div className="absolute top-0 left-0 right-0 flex justify-center z-40">
+                                        <div className="absolute h-1/2 top-0 left-0 right-0 flex justify-center z-40">
                                             <ClickableImage
                                                 prompt={post.prompt_untuk_image}
                                                 width={width}
                                                 height={height}
-                                                className="object-cover z-999 opacity-70"
+                                                className="object-contain z-999 opacity-70 h-full"
                                                 style={{
                                                     mixBlendMode: "multiply",
                                                     width: `${
