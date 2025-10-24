@@ -82,24 +82,48 @@ PEDOMAN PENGGUNAAN TAG HTML:
 - <em>: Gunakan untuk pertanyaan retoris, kondisi khusus, kata penghubung penting, ajakan
 - <strong><em>: Gunakan untuk twist/reveal penting, klimaks cerita, jawaban final
 
+ATURAN KHUSUS UNTUK SLIDE COVER (SANGAT PENTING):
+1. Slide COVER HARUS bersifat SAMAR dan MISTERIUS - JANGAN gamblang menyebutkan objek/jawaban utama
+2. Gunakan deskripsi yang ABSTRAK dan UMUM, bukan spesifik
+3. JANGAN sebutkan kata kunci yang langsung mengarah ke jawaban (misal: untuk riddle "Pria dan Mercusuar", JANGAN sebutkan "mercusuar", "lampu", atau "pantai")
+4. Gunakan frasa generik seperti: "tempat terpencil", "benda aneh", "situasi ganjil", "kejadian misterius", "lokasi tersembunyi"
+5. judul_slide untuk COVER harus lebih umum dan tidak langsung menyebutkan objek utama
+6. Buat pembaca penasaran tanpa memberi petunjuk terlalu jelas
+
+CONTOH COVER YANG BENAR (SAMAR):
+BAIK ✓ - Riddle "Pria dan Mercusuar":
+- judul_slide: "Misteri di Tempat Terpencil"
+- sub_judul_slide: "Apa yang Terjadi Malam Itu?"
+- konten_slide: "Seorang pria ditemukan dalam <em>kondisi aneh</em> di <strong>lokasi yang gelap</strong>. Bisakah kamu mengungkap <em>apa yang sebenarnya terjadi</em>?"
+
+BAIK ✓ - Riddle "Telur Unta":
+- judul_slide: "Misteri Waktu yang Tidak Masuk Akal"
+- sub_judul_slide: "Mengapa Butuh Waktu Sangat Lama?"
+- konten_slide: "Ada <em>sesuatu yang berbeda</em> dengan <strong>objek ini</strong>. Waktu yang dibutuhkan sangat <em>tidak biasa</em>!"
+
+CONTOH COVER YANG SALAH (TERLALU JELAS):
+BURUK ✗ - "Misteri Pengatur Waktu Telur" (langsung sebutkan "telur")
+BURUK ✗ - "Pria dan Mercusuar" (langsung sebutkan objek utama)
+BURUK ✗ - "Siap pecahkan misteri telur yang direbus 2 jam?" (terlalu spesifik)
+
 CONTOH FORMAT OBJEK LENGKAP:
 {
   "slides": [
     {
       "tipe_slide": "COVER",
-      "judul_slide": "Misteri Pengatur Waktu Telur",
-      "sub_judul_slide": "Berapa Lama Telur Itu Direbus?",
-      "konten_slide": "Siap pecahkan misteri waktu memasak telur yang <em>sangat aneh</em> ini? Ada <strong>sesuatu yang tidak biasa</strong> dengan telur ini!",
+      "judul_slide": "Misteri Waktu yang Tidak Masuk Akal",
+      "sub_judul_slide": "Mengapa Butuh Waktu Sangat Lama?",
+      "konten_slide": "Ada <em>sesuatu yang berbeda</em> dengan <strong>proses ini</strong>. Waktu yang dibutuhkan sangat <em>tidak biasa</em>! Bisakah kamu menebak <strong>apa yang sedang terjadi</strong>?",
       "prompt_untuk_image": "A single egg, complete object with no cropping, full view, centered, small size (max 1/3 of space), dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background (#FFFFFF), no borders, no frames, clean isolation."
     }
     // ... 5 slide lainnya
   ],
-  "caption": "🔍 Misteri telur yang direbus 2 jam? Ada yang aneh nih! 🤔 Coba jawab di komentar sebelum swipe! 👉",
+  "caption": "🔍 Waktu yang aneh untuk proses sederhana? Ada yang ganjil! 🤔 Coba jawab di komentar sebelum swipe! 👉",
   "hashtags": ["#MisteriHarian", "#TekaTekilogika", "#AsahOtak", "#BrainTeaser", "#Puzzle", "#TebakTebakan", "#Riddle", "#LogikaBerpikir"]
 }
 
 CONTOH PENGGUNAAN TAG YANG TEPAT:
-- COVER: "Siap mengungkap misteri <em>kasus aneh</em> di <strong>kota kecil</strong> ini?"
+- COVER: "Sebuah <em>kejadian aneh</em> terjadi di <strong>tempat yang terpencil</strong>. Bisakah kamu mengungkap <em>misteri ini</em>?" (JANGAN langsung sebutkan objek/lokasi spesifik)
 - MISTERI: "Petunjuk 1: Korban ditemukan dengan <strong>pintu terkunci dari dalam</strong>, tapi <em>tidak ada kunci</em> di ruangan!"
 - CLOSING: "Bisakah kamu menebak <em>bagaimana</em> pelaku masuk ke ruangan yang <strong>terkunci rapat</strong>?"
 - SOLUSI: "Jawabannya adalah: <strong><em>telur unta</em></strong>! Telur unta membutuhkan waktu <strong>2 jam</strong> untuk direbus sempurna."

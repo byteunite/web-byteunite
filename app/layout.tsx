@@ -9,6 +9,7 @@ import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import { AppShell } from "@/components/AppShell";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 const archivoBlack = Archivo_Black({
@@ -53,6 +54,7 @@ export default function RootLayout({
                 className={`font-sans ${archivoBlack.variable} ${spaceGrotesk.variable} ${dmSerifDisplay.variable} ${GeistMono.variable} antialiased`}
             >
                 <Suspense fallback={null}>{children}</Suspense>
+                <Toaster />
                 <Analytics />
             </body>
         </html>
