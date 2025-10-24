@@ -95,7 +95,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             href="/"
                             className="flex items-center gap-2 font-semibold text-xl"
                         >
-                            <span>DesignForge Retro</span>
+                            <span>Byte Unite</span>
                         </Link>
                     </div>
                     <SidebarContent />
@@ -170,7 +170,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                                 href="/"
                                 className="flex items-center gap-2 font-semibold text-xl"
                             >
-                                <span>DesignForge Retro</span>
+                                <span>Byte Unite</span>
                             </Link>
                             <Button
                                 variant="ghost"
