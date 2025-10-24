@@ -6,7 +6,7 @@ export interface ISlide {
     judul_slide: string;
     sub_judul_slide: string;
     konten_slide: string;
-    prompt_untuk_image: string;
+    prompt_untuk_image?: string; // Optional karena WARNING_ANSWER tidak memerlukan image
 }
 
 // Interface untuk Carousel Data (response dari AI)
@@ -47,7 +47,7 @@ const SlideSchema = new Schema<ISlide>(
         },
         prompt_untuk_image: {
             type: String,
-            required: true,
+            required: false, // Optional karena WARNING_ANSWER tidak memerlukan image
         },
     },
     { _id: false }

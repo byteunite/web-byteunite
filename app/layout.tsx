@@ -46,6 +46,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
+            <head>
+                <script src="https://js.puter.com/v2/" />
+            </head>
             <body
                 className={`font-sans ${archivoBlack.variable} ${spaceGrotesk.variable} ${dmSerifDisplay.variable} ${GeistMono.variable} antialiased`}
             >

@@ -1,12 +1,71 @@
 import RandomShape from "@/components/RandomShape";
 import ClickableImage from "@/components/ClickableImage";
-import { Feather } from "lucide-react";
-import { UserPlus } from "lucide-react";
+import { Feather, UserPlus, Search } from "lucide-react";
+import { ImageGenerator } from "@/components/ImageGenerator";
+
+/**
+ * Type definition untuk tipe slide yang tersedia
+ */
+type SlideType =
+    | "COVER"
+    | "MISTERI"
+    | "CLOSING"
+    | "SOLUSI"
+    | "FINAL"
+    | "WARNING_ANSWER";
+
+/**
+ * Interface untuk struktur data slide
+ */
+interface Slide {
+    tipe_slide: SlideType;
+    judul_slide: string;
+    sub_judul_slide: string;
+    konten_slide: string;
+    prompt_untuk_image?: string; // Optional karena WARNING_ANSWER tidak memerlukan image
+}
+
+/**
+ * Fungsi untuk menambahkan slide peringatan sebelum CLOSING dan SOLUSI
+ *
+ * Konsep:
+ * - Slide "WARNING_ANSWER" akan disisipkan sebelum slide tipe "CLOSING" dan "SOLUSI"
+ * - Slide ini berfungsi sebagai pembatas antara pertanyaan dan jawaban
+ * - Memberikan kesempatan kepada viewer untuk berpikir sebelum melihat jawaban
+ * - Design simple dengan pesan yang jelas
+ *
+ * @param slides - Array slide asli yang akan dimodifikasi
+ * @returns Array slide baru dengan slide peringatan yang sudah disisipkan
+ */
+function insertWarningSlides(slides: Slide[]): Slide[] {
+    const newSlides: Slide[] = [];
+
+    slides.forEach((slide, index) => {
+        // Cek apakah slide berikutnya adalah CLOSING atau SOLUSI
+        const nextSlide = slides[index + 1];
+
+        // Tambahkan slide saat ini
+        newSlides.push(slide);
+
+        // Jika slide berikutnya adalah SOLUSI, sisipkan WARNING sebelum SOLUSI
+        if (nextSlide && nextSlide.tipe_slide === "SOLUSI") {
+            newSlides.push({
+                tipe_slide: "WARNING_ANSWER",
+                judul_slide: "🔍 Siap Lihat Jawaban?",
+                sub_judul_slide: "Slide Berikutnya Mengungkap Jawabannya",
+                konten_slide:
+                    "Ini kesempatan terakhirmu untuk menebak! Swipe jika sudah siap... ➡️",
+            });
+        }
+    });
+
+    return newSlides;
+}
 
 export default function TemplatePage() {
-    const dummyData1 = [
+    const dummyData1: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Misteri Pengatur Waktu Telur",
             sub_judul_slide: "Berapa Lama Telur Itu Direbus?",
             konten_slide:
@@ -61,9 +120,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData3 = [
+    const dummyData3: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Misteri: Dirampok?",
             sub_judul_slide: "Kasus Paling Aneh!",
             konten_slide:
@@ -118,9 +177,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData2 = [
+    const dummyData2: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Demi Kejahatan",
             sub_judul_slide: "Misteri Tengah Malam",
             konten_slide:
@@ -175,9 +234,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData4 = [
+    const dummyData4: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Misteri: Ambil atau Tinggalkan",
             sub_judul_slide: "Perampok yang Gagal Merampok?",
             konten_slide:
@@ -232,9 +291,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData5 = [
+    const dummyData5: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Misteri Brankas Bank",
             sub_judul_slide: "Aman tapi Tidak Sehat",
             konten_slide:
@@ -289,9 +348,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData6 = [
+    const dummyData6: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Bukan Kembar?",
             sub_judul_slide: "Misteri Kelahiran yang Aneh!",
             konten_slide:
@@ -346,9 +405,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData7 = [
+    const dummyData7: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Misteri Pria di Mercusuar",
             sub_judul_slide: "Tindakan Sederhana, Konsekuensi Tragis",
             konten_slide:
@@ -403,9 +462,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData8 = [
+    const dummyData8: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Misteri Pria dan Mobil",
             sub_judul_slide: "Kisah Bangkrut yang Aneh",
             konten_slide:
@@ -460,9 +519,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData9 = [
+    const dummyData9: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Misteri Pernikahan Tak Terduga",
             sub_judul_slide: "Pria Ini Menikahi 20 Wanita, Tapi...",
             konten_slide:
@@ -517,9 +576,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData10 = [
+    const dummyData10: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Misteri Pria di Lantai 12",
             sub_judul_slide: "Teka-teki Lift Aneh",
             konten_slide:
@@ -574,9 +633,9 @@ export default function TemplatePage() {
         },
     ];
 
-    const dummyData = [
+    const dummyData: Slide[] = [
         {
-            tipe_slide: "COVER",
+            tipe_slide: "COVER" as const,
             judul_slide: "Misteri Rumah Unik",
             sub_judul_slide: "Semua Jendela Menghadap Utara?",
             konten_slide:
@@ -632,7 +691,11 @@ export default function TemplatePage() {
     ];
 
     const scale = 2.5;
-    const postCount = dummyData.length;
+
+    // Terapkan fungsi insertWarningSlides untuk menambahkan slide peringatan
+    const processedData = insertWarningSlides(dummyData);
+
+    const postCount = processedData.length; // Gunakan processedData yang sudah ditambahkan warning slides
     const width = 1080 / scale;
     const height = 1350 / scale;
     const widthTotal = width * postCount;
@@ -650,7 +713,7 @@ export default function TemplatePage() {
                 }}
             >
                 {/* looping devider based on postCount */}
-                {dummyData.map((post, index) => {
+                {processedData.map((post, index) => {
                     const flag = Math.round(Math.random() * 1) === 1;
                     return (
                         <div key={index}>
@@ -661,7 +724,8 @@ export default function TemplatePage() {
                                 }}
                             ></div>
                             {post.tipe_slide !== "MISTERI" &&
-                                post.tipe_slide !== "CLOSING" && (
+                                post.tipe_slide !== "CLOSING" &&
+                                post.tipe_slide !== "WARNING_ANSWER" && (
                                     <>
                                         <div
                                             className="absolute top-2 z-99 text-gray-500"
@@ -773,7 +837,8 @@ export default function TemplatePage() {
                                             <>
                                                 <ClickableImage
                                                     prompt={
-                                                        post.prompt_untuk_image
+                                                        post.prompt_untuk_image ||
+                                                        ""
                                                     }
                                                     width={width * 2}
                                                     height={height * 2}
@@ -799,7 +864,8 @@ export default function TemplatePage() {
                                                 {" "}
                                                 <ClickableImage
                                                     prompt={
-                                                        post.prompt_untuk_image
+                                                        post.prompt_untuk_image ||
+                                                        ""
                                                     }
                                                     width={width * 2}
                                                     height={height * 2}
@@ -940,7 +1006,10 @@ export default function TemplatePage() {
                                     >
                                         <div className="absolute h-1/2 top-0 left-0 right-0 flex justify-center z-40">
                                             <ClickableImage
-                                                prompt={post.prompt_untuk_image}
+                                                prompt={
+                                                    post.prompt_untuk_image ||
+                                                    ""
+                                                }
                                                 width={width}
                                                 height={height}
                                                 className="object-contain z-999 opacity-70 h-full"
@@ -983,6 +1052,116 @@ export default function TemplatePage() {
                                                             __html: post.konten_slide,
                                                         }}
                                                     />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {/* 
+                                Layout untuk slide WARNING_ANSWER 
+                                Design simple dengan:
+                                - Background gradient dari primary color
+                                - Icon peringatan besar di tengah
+                                - Text center alignment
+                                - Minimal distraction
+                            */}
+                            {post.tipe_slide === "WARNING_ANSWER" && (
+                                <>
+                                    <div
+                                        style={{
+                                            width: `${width}px`,
+                                            height: `${height}px`,
+                                            left: `${(index * 1080) / scale}px`,
+                                            position: "absolute",
+                                            background: "white",
+                                        }}
+                                        className="flex items-center justify-center overflow-hidden relative flex-col"
+                                    >
+                                        {/* Icon warning besar sebagai focal point */}
+                                        <div
+                                            className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                                            style={{
+                                                opacity: 0.2,
+                                            }}
+                                        >
+                                            <span
+                                                style={{
+                                                    color: randomPrimaryColor,
+                                                }}
+                                            >
+                                                <Search className="w-[100px] h-[100px]" />
+                                            </span>
+                                        </div>
+
+                                        {/* Content area */}
+                                        <div className="z-10 w-full h-full flex flex-col items-center justify-center px-10 mt-5">
+                                            <div className="text-center space-y-4">
+                                                {/* Title dengan border styling */}
+                                                <div
+                                                    className="inline-block px-2 py-1"
+                                                    style={{
+                                                        backgroundColor:
+                                                            randomPrimaryColor,
+                                                    }}
+                                                >
+                                                    <span
+                                                        className="text-sm font-bold tracking-wide"
+                                                        style={{
+                                                            color: "white",
+                                                        }}
+                                                    >
+                                                        {post.judul_slide}
+                                                    </span>
+                                                </div>
+
+                                                {/* Subtitle */}
+                                                <div className="mt-6">
+                                                    <p className="text-lg text-gray-700 font-semibold leading-5">
+                                                        {post.sub_judul_slide}
+                                                    </p>
+                                                </div>
+
+                                                {/* Content dengan box */}
+                                                <div className="mt-4 bg-white/60 backdrop-blur-sm px-6 py-4 rounded-lg max-w-xs mx-auto">
+                                                    <p
+                                                        className="text-sm text-gray-600"
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: post.konten_slide,
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                {/* Decorative line */}
+                                                <div className="mt-8 flex items-center justify-center space-x-2">
+                                                    <div
+                                                        className="h-1 w-12 rounded-full"
+                                                        style={{
+                                                            backgroundColor:
+                                                                randomPrimaryColor,
+                                                        }}
+                                                    ></div>
+                                                    <div
+                                                        className="h-1 w-1 rounded-full"
+                                                        style={{
+                                                            backgroundColor:
+                                                                randomPrimaryColor,
+                                                        }}
+                                                    ></div>
+                                                    <div
+                                                        className="h-1 w-1 rounded-full"
+                                                        style={{
+                                                            backgroundColor:
+                                                                randomPrimaryColor,
+                                                        }}
+                                                    ></div>
+                                                    <div
+                                                        className="h-1 w-1 rounded-full"
+                                                        style={{
+                                                            backgroundColor:
+                                                                randomPrimaryColor,
+                                                        }}
+                                                    ></div>
                                                 </div>
                                             </div>
                                         </div>
