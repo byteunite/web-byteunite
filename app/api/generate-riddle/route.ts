@@ -1,5 +1,7 @@
 import { generateRiddleCarousel } from "@/lib/gemini-riddle-generator";
 import { NextResponse } from "next/server";
+import dbConnect from "@/lib/mongodb";
+import Riddle from "@/models/Riddle";
 
 export async function POST(request: Request) {
     try {
@@ -14,13 +16,37 @@ export async function POST(request: Request) {
             );
         }
 
+        // Generate carousel data dari AI
         const carouselData = await generateRiddleCarousel(
             title,
             riddle,
             solution
         );
 
-        return NextResponse.json(carouselData);
+        // Connect ke MongoDB
+        await dbConnect();
+
+        // Simpan data riddle beserta response AI ke database
+        const newRiddle = await Riddle.create({
+            title,
+            riddle,
+            solution,
+            carouselData,
+        });
+
+        // Return response dengan data yang tersimpan
+        return NextResponse.json({
+            success: true,
+            message: "Riddle berhasil disimpan ke database",
+            data: {
+                id: newRiddle._id,
+                title: newRiddle.title,
+                riddle: newRiddle.riddle,
+                solution: newRiddle.solution,
+                carouselData: newRiddle.carouselData,
+                createdAt: newRiddle.createdAt,
+            },
+        });
     } catch (error) {
         // Menangani error dari fungsi generator atau parsing JSON
         console.error("API Error:", error);
