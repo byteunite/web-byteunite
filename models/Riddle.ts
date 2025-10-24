@@ -7,7 +7,8 @@ export interface ISlide {
     sub_judul_slide: string;
     konten_slide: string;
     prompt_untuk_image?: string; // Optional karena WARNING_ANSWER tidak memerlukan image
-    saved_image_url?: string; // URL gambar yang disimpan user
+    saved_image_url?: string; // URL gambar yang disimpan user (generated dari AI)
+    saved_slide_url?: string; // URL screenshot slide lengkap yang disimpan user
 }
 
 // Interface untuk Carousel Data (response dari AI)
@@ -52,7 +53,11 @@ const SlideSchema = new Schema<ISlide>(
         },
         saved_image_url: {
             type: String,
-            required: false, // Optional, URL gambar yang disimpan user
+            required: false, // Optional, URL gambar yang disimpan user (generated dari AI)
+        },
+        saved_slide_url: {
+            type: String,
+            required: false, // Optional, URL screenshot slide lengkap yang disimpan user
         },
     },
     { _id: false }
