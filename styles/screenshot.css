@@ -1,0 +1,51 @@
+/* 
+  CSS optimizations untuk screenshot mode
+  Menambahkan styles yang memastikan rendering sempurna saat di-screenshot
+*/
+
+/* Saat parameter ?screenshot=true ada, apply these styles */
+[data-screenshot-mode="true"] {
+    /* Force rendering precision */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+
+    /* Ensure all fonts are loaded before screenshot */
+    font-display: block;
+
+    /* Disable animations during screenshot */
+    * {
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+        transition-duration: 0s !important;
+    }
+}
+
+/* Ensure images load with proper quality */
+[data-screenshot-mode="true"] img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Ensure backgrounds render properly */
+[data-screenshot-mode="true"] * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
+/* Hide UI elements that shouldn't appear in screenshot */
+[data-screenshot-mode="true"] .screenshot-hide {
+    display: none !important;
+}
+
+/* Ensure proper stacking context */
+[data-screenshot-mode="true"] [data-slide-index] {
+    position: relative;
+    isolation: isolate;
+}
+
+/* Force GPU acceleration for better rendering */
+[data-screenshot-mode="true"] [data-slide-index] > * {
+    transform: translateZ(0);
+    will-change: auto;
+}

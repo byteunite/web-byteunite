@@ -1,5 +1,7 @@
 import RandomShape from "@/components/RandomShape";
 import ClickableImage from "@/components/ClickableImage";
+import SaveSlidesButton from "@/components/SaveSlidesButton";
+import DownloadSlidesButton from "@/components/DownloadSlidesButton";
 import { notFound } from "next/navigation";
 import { Feather, UserPlus, Search } from "lucide-react";
 
@@ -23,7 +25,8 @@ interface Slide {
     sub_judul_slide: string;
     konten_slide: string;
     prompt_untuk_image?: string; // Optional karena WARNING_ANSWER tidak memerlukan image
-    saved_image_url?: string;
+    saved_image_url?: string; // Legacy field
+    saved_slide_url?: string; // New field for saved slides
 }
 
 /**
@@ -92,10 +95,17 @@ async function getRiddleData(id: string) {
 
 export default async function TemplatePage({
     params,
+    searchParams,
 }: {
     params: Promise<{ id: string }>;
+    searchParams: Promise<{
+        format?: string;
+        screenshot?: string;
+        slideIndex?: string;
+    }>;
 }) {
     const { id } = await params;
+    const { format, screenshot, slideIndex } = await searchParams;
 
     // Fetch riddle data from API
     const riddleData = await getRiddleData(id);
@@ -125,8 +135,15 @@ export default async function TemplatePage({
     const randomPrimaryColor =
         primaryColors[Math.floor(Math.random() * primaryColors.length)];
 
+    // Jika mode screenshot, tambahkan data attribute untuk CSS optimization
+    const isScreenshotMode = screenshot === "true";
+    const targetSlideIndex = slideIndex ? parseInt(slideIndex) : undefined;
+
     return (
-        <div className="bg-black min-h-screen flex items-center justify-center overflow-auto w-full">
+        <div
+            className="bg-black min-h-screen flex items-center justify-center overflow-auto w-full"
+            data-screenshot-mode={isScreenshotMode ? "true" : "false"}
+        >
             <div
                 className={`bg-white relative`}
                 style={{
@@ -138,7 +155,7 @@ export default async function TemplatePage({
                 {processedData.map((post, index) => {
                     const flag = Math.round(Math.random() * 1) === 1;
                     return (
-                        <div key={index}>
+                        <div key={index} data-slide-index={index}>
                             <div
                                 className="border border-gray-100 h-full bg-gray-200 absolute top-0 z-99 mx-auto"
                                 style={{
@@ -613,6 +630,16 @@ export default async function TemplatePage({
                 em, b, h6 { color: ${randomPrimaryColor};
                 h6 { font-weight: bold; }
             } `}</style>
+
+            {/* Show save button only when format=save parameter is present */}
+            {format === "save" && !isScreenshotMode && (
+                <SaveSlidesButton riddleId={id} totalSlides={postCount} />
+            )}
+
+            {/* Show download button if all slides have been saved */}
+            {!isScreenshotMode && (
+                <DownloadSlidesButton slides={processedData} riddleId={id} />
+            )}
         </div>
     );
 }

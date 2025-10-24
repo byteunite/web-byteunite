@@ -13,7 +13,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Loader2, PlusCircle, Trash2 } from "lucide-react";
+import { Eye, Loader2, PlusCircle, Trash2, Save } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -446,7 +446,7 @@ export default function RiddlesPage() {
                                         <TableHead className="w-[120px]">
                                             Status
                                         </TableHead>
-                                        <TableHead className="w-[150px] text-right">
+                                        <TableHead className="w-[200px] text-right">
                                             Action
                                         </TableHead>
                                     </TableRow>
@@ -503,6 +503,20 @@ export default function RiddlesPage() {
                                                         >
                                                             <Eye className="h-4 w-4 mr-2" />
                                                             Detail
+                                                        </Link>
+                                                    </Button>
+
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        asChild
+                                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                    >
+                                                        <Link
+                                                            href={`/template/${riddle._id}?format=save`}
+                                                        >
+                                                            <Save className="h-4 w-4 mr-2" />
+                                                            Save
                                                         </Link>
                                                     </Button>
 
