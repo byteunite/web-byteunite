@@ -2,7 +2,6 @@ import RandomShape from "@/components/RandomShape";
 import ClickableImage from "@/components/ClickableImage";
 import SaveSlidesButton from "@/components/SaveSlidesButton";
 import DownloadSlidesButton from "@/components/DownloadSlidesButton";
-import ShowContentButton from "@/components/ShowContentButton";
 import { notFound } from "next/navigation";
 import { Feather, UserPlus, Search } from "lucide-react";
 
@@ -644,16 +643,6 @@ export default async function TemplatePage({
                     riddleId={id}
                     caption={riddleData.carouselData.caption}
                     hashtags={riddleData.carouselData.hashtags}
-                />
-            )}
-
-            {/* Show content button (Instagram-style modal) if all slides have been saved */}
-            {!isScreenshotMode && (
-                <ShowContentButton
-                    slides={processedData}
-                    caption={riddleData.carouselData.caption}
-                    hashtags={riddleData.carouselData.hashtags}
-                    riddleId={id}
                 />
             )}
         </div>

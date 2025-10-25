@@ -149,7 +149,7 @@ export default function DownloadSlidesButton({
                 onClick={() => setIsOpen(true)}
                 variant="outline"
                 size="lg"
-                className="fixed bottom-20 right-4 z-9999 shadow-lg"
+                className="fixed bottom-10 right-10 z-9999 shadow-lg"
             >
                 <ImageIcon className="mr-2 h-4 w-4" />
                 View Saved Slides
