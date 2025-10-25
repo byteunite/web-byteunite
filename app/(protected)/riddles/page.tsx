@@ -13,7 +13,15 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Loader2, PlusCircle, Trash2, Save } from "lucide-react";
+import {
+    Eye,
+    Loader2,
+    PlusCircle,
+    Trash2,
+    Save,
+    CheckCircle2,
+    XCircle,
+} from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -53,6 +61,7 @@ interface IRiddle {
             konten_slide: string;
             prompt_untuk_image?: string;
             saved_image_url?: string;
+            saved_slide_url?: string;
         }>;
         caption: string;
         hashtags: string[];
@@ -133,6 +142,12 @@ export default function RiddlesPage() {
     const truncateText = (text: string, maxLength: number = 50) => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + "...";
+    };
+
+    const getSavedSlidesCount = (riddle: IRiddle) => {
+        return riddle.carouselData.slides.filter(
+            (slide) => slide.saved_slide_url
+        ).length;
     };
 
     const handleSubmitRiddle = async () => {
@@ -436,98 +451,363 @@ export default function RiddlesPage() {
                 <CardContent>
                     {riddles.length > 0 ? (
                         <>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[60px]">
-                                            No
-                                        </TableHead>
-                                        <TableHead>Riddle</TableHead>
-                                        <TableHead className="w-[120px]">
-                                            Status
-                                        </TableHead>
-                                        <TableHead className="w-[200px] text-right">
-                                            Action
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {riddles.map((riddle, index) => (
-                                        <TableRow key={riddle._id}>
-                                            <TableCell className="font-medium">
-                                                {(currentPage - 1) * 10 +
-                                                    index +
-                                                    1}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="space-y-1">
-                                                    <div className="font-semibold">
-                                                        {riddle.title}
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        <strong>Riddle:</strong>{" "}
-                                                        {truncateText(
-                                                            riddle.riddle,
-                                                            80
-                                                        )}
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        <strong>
-                                                            Solution:
-                                                        </strong>{" "}
-                                                        {truncateText(
-                                                            riddle.solution,
-                                                            60
-                                                        )}
+                            {/* Desktop Table View */}
+                            <div className="hidden lg:block">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[60px]">
+                                                No
+                                            </TableHead>
+                                            <TableHead>Riddle</TableHead>
+                                            <TableHead className="w-[150px]">
+                                                Status
+                                            </TableHead>
+                                            <TableHead className="w-[200px] text-right">
+                                                Action
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {riddles.map((riddle, index) => {
+                                            const totalSlides =
+                                                riddle.carouselData.slides
+                                                    .length;
+                                            const savedSlides =
+                                                getSavedSlidesCount(riddle);
+
+                                            return (
+                                                <TableRow key={riddle._id}>
+                                                    <TableCell className="font-medium">
+                                                        {(currentPage - 1) *
+                                                            10 +
+                                                            index +
+                                                            1}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="space-y-1">
+                                                            <div className="font-semibold">
+                                                                {riddle.title}
+                                                            </div>
+                                                            <div className="text-sm text-muted-foreground">
+                                                                <strong>
+                                                                    Riddle:
+                                                                </strong>{" "}
+                                                                {truncateText(
+                                                                    riddle.riddle,
+                                                                    80
+                                                                )}
+                                                            </div>
+                                                            <div className="text-sm text-muted-foreground">
+                                                                <strong>
+                                                                    Solution:
+                                                                </strong>{" "}
+                                                                {truncateText(
+                                                                    riddle.solution,
+                                                                    60
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="space-y-2">
+                                                            <Badge variant="secondary">
+                                                                {totalSlides}{" "}
+                                                                slides
+                                                            </Badge>
+                                                            <div className="flex items-center gap-1 text-sm">
+                                                                {savedSlides ===
+                                                                totalSlides ? (
+                                                                    <Badge
+                                                                        variant="default"
+                                                                        className="bg-green-500 hover:bg-green-600"
+                                                                    >
+                                                                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                                                                        {
+                                                                            savedSlides
+                                                                        }
+                                                                        /
+                                                                        {
+                                                                            totalSlides
+                                                                        }{" "}
+                                                                        saved
+                                                                    </Badge>
+                                                                ) : savedSlides >
+                                                                  0 ? (
+                                                                    <Badge
+                                                                        variant="default"
+                                                                        className="bg-yellow-500 hover:bg-yellow-600"
+                                                                    >
+                                                                        {
+                                                                            savedSlides
+                                                                        }
+                                                                        /
+                                                                        {
+                                                                            totalSlides
+                                                                        }{" "}
+                                                                        saved
+                                                                    </Badge>
+                                                                ) : (
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className="text-gray-500"
+                                                                    >
+                                                                        <XCircle className="h-3 w-3 mr-1" />
+                                                                        Not
+                                                                        saved
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex justify-end gap-2">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                asChild
+                                                            >
+                                                                <Link
+                                                                    href={`/template/${riddle._id}`}
+                                                                >
+                                                                    <Eye className="h-4 w-4 mr-2" />
+                                                                    Detail
+                                                                </Link>
+                                                            </Button>
+
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                asChild
+                                                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                            >
+                                                                <Link
+                                                                    href={`/template/${riddle._id}?format=save`}
+                                                                >
+                                                                    <Save className="h-4 w-4 mr-2" />
+                                                                    Save
+                                                                </Link>
+                                                            </Button>
+
+                                                            <AlertDialog>
+                                                                <AlertDialogTrigger
+                                                                    asChild
+                                                                >
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                        disabled={
+                                                                            deletingId ===
+                                                                            riddle._id
+                                                                        }
+                                                                    >
+                                                                        {deletingId ===
+                                                                        riddle._id ? (
+                                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                                        ) : (
+                                                                            <>
+                                                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                                                Delete
+                                                                            </>
+                                                                        )}
+                                                                    </Button>
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent>
+                                                                    <AlertDialogHeader>
+                                                                        <AlertDialogTitle>
+                                                                            Are
+                                                                            you
+                                                                            sure?
+                                                                        </AlertDialogTitle>
+                                                                        <AlertDialogDescription>
+                                                                            This
+                                                                            action
+                                                                            cannot
+                                                                            be
+                                                                            undone.
+                                                                            This
+                                                                            will
+                                                                            permanently
+                                                                            delete
+                                                                            the
+                                                                            riddle
+                                                                            <span className="font-semibold">
+                                                                                {" "}
+                                                                                "
+                                                                                {
+                                                                                    riddle.title
+                                                                                }
+
+                                                                                "
+                                                                            </span>
+                                                                            .
+                                                                        </AlertDialogDescription>
+                                                                    </AlertDialogHeader>
+                                                                    <AlertDialogFooter>
+                                                                        <AlertDialogCancel>
+                                                                            Cancel
+                                                                        </AlertDialogCancel>
+                                                                        <AlertDialogAction
+                                                                            className="bg-red-500 hover:bg-red-600"
+                                                                            onClick={() =>
+                                                                                handleDeleteRiddle(
+                                                                                    riddle._id
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            Delete
+                                                                        </AlertDialogAction>
+                                                                    </AlertDialogFooter>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            {/* Mobile Card View */}
+                            <div className="lg:hidden space-y-4">
+                                {riddles.map((riddle, index) => {
+                                    const totalSlides =
+                                        riddle.carouselData.slides.length;
+                                    const savedSlides =
+                                        getSavedSlidesCount(riddle);
+
+                                    return (
+                                        <Card
+                                            key={riddle._id}
+                                            className="overflow-hidden"
+                                        >
+                                            <CardHeader className="pb-3">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="text-xs"
+                                                            >
+                                                                #
+                                                                {(currentPage -
+                                                                    1) *
+                                                                    10 +
+                                                                    index +
+                                                                    1}
+                                                            </Badge>
+                                                            <Badge variant="secondary">
+                                                                {totalSlides}{" "}
+                                                                slides
+                                                            </Badge>
+                                                        </div>
+                                                        <CardTitle className="text-lg break-words">
+                                                            {riddle.title}
+                                                        </CardTitle>
                                                     </div>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="secondary">
-                                                    {
-                                                        riddle.carouselData
-                                                            .slides.length
-                                                    }{" "}
-                                                    slides
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        asChild
-                                                    >
-                                                        <Link
-                                                            href={`/template/${riddle._id}`}
-                                                        >
-                                                            <Eye className="h-4 w-4 mr-2" />
-                                                            Detail
-                                                        </Link>
-                                                    </Button>
+                                            </CardHeader>
+                                            <CardContent className="space-y-3">
+                                                <div className="space-y-2 text-sm">
+                                                    <div>
+                                                        <strong className="text-muted-foreground">
+                                                            Riddle:
+                                                        </strong>
+                                                        <p className="mt-1 break-words">
+                                                            {truncateText(
+                                                                riddle.riddle,
+                                                                100
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <strong className="text-muted-foreground">
+                                                            Solution:
+                                                        </strong>
+                                                        <p className="mt-1 break-words">
+                                                            {truncateText(
+                                                                riddle.solution,
+                                                                80
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                </div>
 
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        asChild
-                                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                    >
-                                                        <Link
-                                                            href={`/template/${riddle._id}?format=save`}
+                                                {/* Saved Status */}
+                                                <div className="pt-2">
+                                                    {savedSlides ===
+                                                    totalSlides ? (
+                                                        <Badge
+                                                            variant="default"
+                                                            className="bg-green-500 hover:bg-green-600"
                                                         >
-                                                            <Save className="h-4 w-4 mr-2" />
-                                                            Save
-                                                        </Link>
-                                                    </Button>
+                                                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                                                            {savedSlides}/
+                                                            {totalSlides} slides
+                                                            saved
+                                                        </Badge>
+                                                    ) : savedSlides > 0 ? (
+                                                        <Badge
+                                                            variant="default"
+                                                            className="bg-yellow-500 hover:bg-yellow-600"
+                                                        >
+                                                            {savedSlides}/
+                                                            {totalSlides} slides
+                                                            saved
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-gray-500"
+                                                        >
+                                                            <XCircle className="h-3 w-3 mr-1" />
+                                                            No slides saved
+                                                        </Badge>
+                                                    )}
+                                                </div>
+
+                                                {/* Action Buttons */}
+                                                <div className="flex flex-col gap-2 pt-2">
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="flex-1"
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={`/template/${riddle._id}`}
+                                                            >
+                                                                <Eye className="h-4 w-4 mr-2" />
+                                                                Detail
+                                                            </Link>
+                                                        </Button>
+
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="flex-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200"
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={`/template/${riddle._id}?format=save`}
+                                                            >
+                                                                <Save className="h-4 w-4 mr-2" />
+                                                                Save
+                                                            </Link>
+                                                        </Button>
+                                                    </div>
 
                                                     <AlertDialog>
                                                         <AlertDialogTrigger
                                                             asChild
                                                         >
                                                             <Button
-                                                                variant="ghost"
+                                                                variant="outline"
                                                                 size="sm"
-                                                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                className="w-full text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
                                                                 disabled={
                                                                     deletingId ===
                                                                     riddle._id
@@ -540,6 +820,7 @@ export default function RiddlesPage() {
                                                                     <>
                                                                         <Trash2 className="h-4 w-4 mr-2" />
                                                                         Delete
+                                                                        Riddle
                                                                     </>
                                                                 )}
                                                             </Button>
@@ -587,11 +868,11 @@ export default function RiddlesPage() {
                                                         </AlertDialogContent>
                                                     </AlertDialog>
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
+                            </div>
 
                             {/* Pagination */}
                             {totalPages > 1 && (
