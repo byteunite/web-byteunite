@@ -1,8 +1,9 @@
 {
     "functions": {
-        "app/api/**/*.ts": {
+        "app/api/**/*": {
             "maxDuration": 60,
-            "memory": 1024
+            "memory": 1024,
+            "includeFiles": "node_modules/@sparticuz/chromium/**"
         }
     }
 }
