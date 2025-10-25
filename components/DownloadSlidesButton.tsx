@@ -132,7 +132,9 @@ export default function DownloadSlidesButton({
 
     const copyHashtags = async () => {
         try {
-            const hashtagsText = hashtags.map((tag) => `#${tag}`).join(" ");
+            const hashtagsText =
+                "#ByteUniteDev #ByteUniteRiddle" +
+                hashtags.map((tag) => `${tag}`).join(" ");
             await navigator.clipboard.writeText(hashtagsText);
             setCopiedHashtags(true);
             setTimeout(() => setCopiedHashtags(false), 2000);
@@ -290,12 +292,13 @@ export default function DownloadSlidesButton({
                                     {/* Hashtags */}
                                     <div className="pl-[52px] space-y-2">
                                         <div className="flex flex-wrap gap-1.5">
+                                            #ByteUniteDev #ByteRiddle
                                             {hashtags.map((tag, index) => (
                                                 <span
                                                     key={index}
                                                     className="text-sm text-blue-600 font-normal"
                                                 >
-                                                    #{tag}
+                                                    {tag}
                                                 </span>
                                             ))}
                                         </div>
