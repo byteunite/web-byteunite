@@ -54,7 +54,7 @@ export default function ClickableImage({
             // setIsLoading(false);
             return saved_image_url;
         }
-        return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}`;
+        return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
     };
 
     useEffect(() => {
@@ -63,7 +63,7 @@ export default function ClickableImage({
             const initImageUrl = getImageUrl();
             setImageUrl(initImageUrl);
         } else {
-            const image = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}`;
+            const image = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
             setImageUrl(image);
         }
     }, [seed]);
@@ -89,7 +89,7 @@ export default function ClickableImage({
         }
 
         setIsSaving(true);
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}`;
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
 
         try {
             const response = await fetch(
