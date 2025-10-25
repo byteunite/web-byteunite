@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import sharp from "sharp";
 
 // Konfigurasi untuk production (Vercel)
@@ -35,19 +36,21 @@ export async function POST(request: NextRequest) {
             `📸 Capturing full screenshot: ${url} (${totalSlides} slides)`
         );
 
-        // Launch browser
+        // Launch browser dengan konfigurasi untuk Vercel
         const browser = await puppeteer.launch({
+            args: isProduction ? chromium.args : ["--no-sandbox"],
+            defaultViewport: {
+                width: 1920,
+                height: 1080,
+            },
+            executablePath: isProduction
+                ? await chromium.executablePath()
+                : process.platform === "win32"
+                ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+                : process.platform === "darwin"
+                ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+                : "/usr/bin/google-chrome",
             headless: true,
-            args: isProduction
-                ? [
-                      "--no-sandbox",
-                      "--disable-setuid-sandbox",
-                      "--disable-dev-shm-usage",
-                      "--disable-gpu",
-                      "--disable-software-rasterizer",
-                      "--single-process",
-                  ]
-                : ["--no-sandbox"],
         });
 
         const page = await browser.newPage();
