@@ -1,8 +1,8 @@
+export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer";
 
-// Konfigurasi untuk production (Vercel)
-const isProduction = process.env.NODE_ENV === "production";
+// Detect if running on Vercel
+const isVercel = !!process.env.VERCEL_ENV;
 
 /**
  * API Endpoint untuk capture screenshot menggunakan Puppeteer
@@ -28,20 +28,40 @@ export async function POST(request: NextRequest) {
 
         console.log(`📸 Capturing screenshot for slide ${slideIndex}: ${url}`);
 
-        // Launch browser dengan config untuk production/development
-        const browser = await puppeteer.launch({
+        // Dynamic import of puppeteer based on environment
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let puppeteer: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let launchOptions: any = {
             headless: true,
-            args: isProduction
-                ? [
-                      "--no-sandbox",
-                      "--disable-setuid-sandbox",
-                      "--disable-dev-shm-usage",
-                      "--disable-gpu",
-                      "--disable-software-rasterizer",
-                      "--single-process",
-                  ]
-                : ["--no-sandbox"],
-        });
+        };
+
+        if (isVercel) {
+            // On Vercel: use puppeteer-core with @sparticuz/chromium
+            const chromium = (await import("@sparticuz/chromium")).default;
+            puppeteer = await import("puppeteer-core");
+            launchOptions = {
+                ...launchOptions,
+                args: chromium.args,
+                executablePath: await chromium.executablePath(),
+            };
+        } else {
+            // Local development: use full puppeteer
+            puppeteer = await import("puppeteer");
+            launchOptions = {
+                ...launchOptions,
+                args: ["--no-sandbox"],
+                executablePath:
+                    process.platform === "win32"
+                        ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+                        : process.platform === "darwin"
+                        ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+                        : "/usr/bin/google-chrome",
+            };
+        }
+
+        // Launch browser dengan config yang sudah ditentukan
+        const browser = await puppeteer.launch(launchOptions);
 
         const page = await browser.newPage();
 
@@ -63,7 +83,7 @@ export async function POST(request: NextRequest) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // Get slide dimensions dan calculate position
-        const slideInfo = await page.evaluate((index) => {
+        const slideInfo = await page.evaluate((index: number) => {
             const wrapper = document.querySelector(
                 `[data-slide-index="${index}"]`
             );

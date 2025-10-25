@@ -1,11 +1,9 @@
 export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
 import sharp from "sharp";
 
-// Konfigurasi untuk production (Vercel)
-const isProduction = process.env.NODE_ENV === "production";
+// Detect if running on Vercel
+const isVercel = !!process.env.VERCEL_ENV;
 
 /**
  * API Endpoint untuk capture screenshot menggunakan Puppeteer
@@ -37,22 +35,48 @@ export async function POST(request: NextRequest) {
             `📸 Capturing full screenshot: ${url} (${totalSlides} slides)`
         );
 
-        // Launch browser dengan konfigurasi untuk Vercel
-        const browser = await puppeteer.launch({
-            args: isProduction ? chromium.args : ["--no-sandbox"],
-            defaultViewport: {
-                width: 1920,
-                height: 1080,
-            },
-            executablePath: isProduction
-                ? await chromium.executablePath()
-                : process.platform === "win32"
-                ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-                : process.platform === "darwin"
-                ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-                : "/usr/bin/google-chrome",
+        // Dynamic import of puppeteer based on environment
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let puppeteer: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let launchOptions: any = {
             headless: true,
-        });
+        };
+
+        if (isVercel) {
+            // On Vercel: use puppeteer-core with @sparticuz/chromium
+            const chromium = (await import("@sparticuz/chromium")).default;
+            puppeteer = await import("puppeteer-core");
+            launchOptions = {
+                ...launchOptions,
+                args: chromium.args,
+                executablePath: await chromium.executablePath(),
+                defaultViewport: {
+                    width: 1920,
+                    height: 1080,
+                },
+            };
+        } else {
+            // Local development: use full puppeteer
+            puppeteer = await import("puppeteer");
+            launchOptions = {
+                ...launchOptions,
+                args: ["--no-sandbox"],
+                defaultViewport: {
+                    width: 1920,
+                    height: 1080,
+                },
+                executablePath:
+                    process.platform === "win32"
+                        ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+                        : process.platform === "darwin"
+                        ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+                        : "/usr/bin/google-chrome",
+            };
+        }
+
+        // Launch browser dengan konfigurasi yang sudah ditentukan
+        const browser = await puppeteer.launch(launchOptions);
 
         const page = await browser.newPage();
 
