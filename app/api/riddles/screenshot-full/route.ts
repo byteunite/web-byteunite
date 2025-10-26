@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
 
         // Get slide dimensions from page
         // scale = 2.5, width = 1080/2.5 = 432, height = 1350/2.5 = 540
+        // Untuk hasil HD, kita gunakan scale yang sama tapi deviceScaleFactor lebih tinggi
         const scale = 2.5;
         const slideWidth = Math.floor(1080 / scale);
         const slideHeight = Math.floor(1350 / scale);
@@ -91,11 +92,11 @@ export async function POST(request: NextRequest) {
             `📐 Dimensions: ${slideWidth}x${slideHeight} per slide, total width: ${totalWidth}px`
         );
 
-        // Set viewport untuk accommodate semua slides
+        // Set viewport untuk accommodate semua slides dengan deviceScaleFactor tinggi untuk HD quality
         await page.setViewport({
             width: totalWidth + 100, // Extra space for safety
             height: slideHeight + 100,
-            deviceScaleFactor: 2, // High DPI
+            deviceScaleFactor: 3, // Increased from 2 to 3 for sharper HD quality
         });
 
         // Navigate ke halaman
@@ -106,6 +107,12 @@ export async function POST(request: NextRequest) {
 
         // Wait untuk fonts dan images
         await page.evaluateHandle("document.fonts.ready");
+
+        // Force repaint untuk ensure proper rendering
+        await page.evaluate(() => {
+            document.body.offsetHeight; // Trigger reflow
+        });
+
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // Find the main container dengan semua slides
@@ -138,6 +145,7 @@ export async function POST(request: NextRequest) {
         const fullScreenshot = await page.screenshot({
             type: "png",
             encoding: "binary",
+            optimizeForSpeed: false, // Prioritize quality over speed
             clip: {
                 x: containerInfo.x,
                 y: containerInfo.y,
@@ -157,12 +165,13 @@ export async function POST(request: NextRequest) {
 
         for (let i = 0; i < totalSlides; i++) {
             // Calculate crop area untuk slide ini
-            const left = i * slideWidth * 2; // * 2 karena deviceScaleFactor = 2
+            // Sekarang dengan deviceScaleFactor = 3
+            const left = i * slideWidth * 3; // * 3 karena deviceScaleFactor = 3
             const top = 0;
-            const width = slideWidth * 2;
-            const height = slideHeight * 2;
+            const width = slideWidth * 3;
+            const height = slideHeight * 3;
 
-            // Crop menggunakan sharp
+            // Crop menggunakan sharp dengan kualitas maksimal
             const croppedBuffer = await sharp(fullScreenshot as Buffer)
                 .extract({
                     left: Math.floor(left),
@@ -170,7 +179,20 @@ export async function POST(request: NextRequest) {
                     width: Math.floor(width),
                     height: Math.floor(height),
                 })
-                .png()
+                // Resize ke dimensi Instagram story (1080x1350) dengan algoritma high-quality
+                .resize(1080, 1350, {
+                    kernel: sharp.kernel.lanczos3, // Algoritma terbaik untuk quality
+                    fit: "fill",
+                })
+                .png({
+                    quality: 100, // Maksimal quality
+                    compressionLevel: 6, // Balance antara quality dan file size
+                    palette: false, // Full color, bukan palette
+                })
+                // Add metadata untuk social media
+                .withMetadata({
+                    density: 300, // 300 DPI untuk print-quality
+                })
                 .toBuffer();
 
             // Convert to base64
@@ -193,8 +215,8 @@ export async function POST(request: NextRequest) {
             totalSlides,
             slides: slideImages,
             dimensions: {
-                width: slideWidth * 2, // Actual pixel dimensions
-                height: slideHeight * 2,
+                width: 1080, // Dimensi Instagram Story standard
+                height: 1350,
             },
         });
     } catch (error) {
