@@ -157,9 +157,10 @@ export default async function TemplatePage({
                     return (
                         <div key={index} data-slide-index={index}>
                             <div
-                                className="border border-gray-100 h-full bg-gray-200 absolute top-0 z-99 mx-auto"
+                                className="border border-gray-100 h-full bg-gray-200 absolute top-0 mx-auto border-r-0"
                                 style={{
                                     left: `${((index + 1) * 1080) / scale}px`,
+                                    zIndex: 99,
                                 }}
                             ></div>
                             {post.tipe_slide !== "MISTERI" &&
@@ -395,6 +396,7 @@ export default async function TemplatePage({
                                             height: `${height}px`,
                                             left: `${(index * 1080) / scale}px`,
                                             position: "absolute",
+                                            zIndex: 98,
                                         }}
                                         className="flex items-center justify-center overflow-visible relative flex-col bg-white"
                                     >

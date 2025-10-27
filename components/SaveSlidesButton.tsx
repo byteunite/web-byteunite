@@ -54,37 +54,93 @@ export default function SaveSlidesButton({
             }
 
             console.log(`✅ Got ${screenshotData.slides.length} slide images`);
-            setProgress(50);
+            setProgress(30);
 
-            // Step 2: Upload dan save ke database
-            setStatus("Mengupload gambar ke cloud storage...");
+            // Step 2: Upload slides SATU PER SATU untuk menghindari 413 error
+            setStatus("Mengupload slides ke cloud storage...");
 
-            const capturedImages = screenshotData.slides.map((slide: any) => ({
-                slideIndex: slide.slideIndex,
-                dataUrl: slide.dataUrl,
-            }));
+            const uploadResults = [];
+            let successCount = 0;
+            let failCount = 0;
 
-            // Upload dan save ke database
-            setStatus("Mengupload gambar ke cloud storage...");
+            for (let i = 0; i < screenshotData.slides.length; i++) {
+                const slide = screenshotData.slides[i];
 
-            const response = await fetch("/api/riddles/save-slides", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    riddleId,
-                    images: capturedImages,
-                }),
-            });
+                // Update progress
+                const uploadProgress =
+                    30 + (i / screenshotData.slides.length) * 60;
+                setProgress(uploadProgress);
+                setStatus(
+                    `Mengupload slide ${i + 1}/${
+                        screenshotData.slides.length
+                    }...`
+                );
 
-            if (!response.ok) {
-                throw new Error("Gagal menyimpan slides");
+                try {
+                    // Upload slide satu per satu
+                    const uploadResponse = await fetch(
+                        "/api/riddles/save-slide-single",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                riddleId,
+                                slideIndex: slide.slideIndex,
+                                dataUrl: slide.dataUrl,
+                            }),
+                        }
+                    );
+
+                    if (!uploadResponse.ok) {
+                        const errorData = await uploadResponse.json();
+                        console.error(
+                            `Failed to upload slide ${i}:`,
+                            errorData
+                        );
+                        failCount++;
+                        uploadResults.push({
+                            slideIndex: slide.slideIndex,
+                            success: false,
+                            error: errorData.message || "Upload failed",
+                        });
+                    } else {
+                        const result = await uploadResponse.json();
+                        successCount++;
+                        uploadResults.push({
+                            slideIndex: slide.slideIndex,
+                            success: true,
+                            imageUrl: result.data?.imageUrl,
+                        });
+                        console.log(`✅ Slide ${i + 1} uploaded successfully`);
+                    }
+                } catch (error) {
+                    console.error(`Error uploading slide ${i}:`, error);
+                    failCount++;
+                    uploadResults.push({
+                        slideIndex: slide.slideIndex,
+                        success: false,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : "Unknown error",
+                    });
+                }
+
+                // Small delay to prevent rate limiting
+                await new Promise((resolve) => setTimeout(resolve, 200));
             }
 
-            const result = await response.json();
             setProgress(100);
-            setStatus("✅ Semua slide berhasil disimpan!");
+
+            if (failCount === 0) {
+                setStatus(`✅ Semua ${successCount} slide berhasil disimpan!`);
+            } else {
+                setStatus(
+                    `⚠️ ${successCount} berhasil, ${failCount} gagal dari ${totalSlides} slides`
+                );
+            }
 
             // Refresh halaman setelah 2 detik
             setTimeout(() => {
