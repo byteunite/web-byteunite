@@ -11,6 +11,7 @@ import {
     LogOut,
     Menu,
     X,
+    Puzzle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
     { href: "/templates", label: "Templates", icon: LayoutTemplate },
     { href: "/designs", label: "Designs", icon: ImageIcon },
+    { href: "/riddles", label: "Riddles", icon: Puzzle },
     { href: "/account", label: "Account", icon: User },
 ];
 
