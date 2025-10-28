@@ -4,6 +4,11 @@ import MisteriSlide from "./MisteriSlide";
 import SolusiSlide from "./SolusiSlide";
 import ClosingSlide from "./ClosingSlide";
 import WarningAnswerSlide from "./WarningAnswerSlide";
+import IntroSlide from "./IntroSlide";
+import FeaturesSlide from "./FeaturesSlide";
+import BenefitsSlide from "./BenefitsSlide";
+import UseCaseSlide from "./UseCaseSlide";
+import CTASlide from "./CTASlide";
 
 /**
  * SlideRenderer - Component yang merender slide berdasarkan tipe
@@ -32,6 +37,21 @@ export default function SlideRenderer(props: SlideComponentProps) {
 
         case "WARNING_ANSWER":
             return <WarningAnswerSlide {...props} />;
+
+        case "INTRO":
+            return <IntroSlide {...props} />;
+
+        case "FEATURES":
+            return <FeaturesSlide {...props} />;
+
+        case "BENEFITS":
+            return <BenefitsSlide {...props} />;
+
+        case "USE_CASE":
+            return <UseCaseSlide {...props} />;
+
+        case "CTA":
+            return <CTASlide {...props} />;
 
         default:
             // Fallback jika tipe slide tidak dikenali

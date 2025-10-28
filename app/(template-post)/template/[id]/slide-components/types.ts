@@ -7,7 +7,12 @@ export type SlideType =
     | "CLOSING"
     | "SOLUSI"
     | "FINAL"
-    | "WARNING_ANSWER";
+    | "WARNING_ANSWER"
+    | "INTRO"
+    | "FEATURES"
+    | "BENEFITS"
+    | "USE_CASE"
+    | "CTA";
 
 /**
  * Interface untuk struktur data slide

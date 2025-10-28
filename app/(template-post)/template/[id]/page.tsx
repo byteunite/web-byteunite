@@ -46,13 +46,28 @@ function insertWarningSlides(slides: Slide[]): Slide[] {
 }
 
 /**
- * Fetch riddle data from API
+ * Fetch data from API based on category
+ * @param id - The ID of the item to fetch
+ * @param category - The category/type of data (riddles, sites, etc.)
+ * @returns The fetched data or null if not found
  */
-async function getRiddleData(id: string) {
+async function getDataByCategory(id: string, category: string = "riddles") {
     try {
         const baseUrl =
             process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-        const response = await fetch(`${baseUrl}/api/riddles/${id}`, {
+
+        // Valid categories that have API endpoints
+        const validCategories = ["riddles", "sites"];
+
+        // If category is not valid, default to riddles
+        const validatedCategory = validCategories.includes(category)
+            ? category
+            : "riddles";
+
+        // Map category to API endpoint
+        const endpoint = `${baseUrl}/api/${validatedCategory}/${id}`;
+
+        const response = await fetch(endpoint, {
             cache: "no-store", // Disable caching for fresh data
         });
 
@@ -63,7 +78,7 @@ async function getRiddleData(id: string) {
         const result = await response.json();
         return result.data;
     } catch (error) {
-        console.error("Error fetching riddle:", error);
+        console.error(`Error fetching ${category}:`, error);
         return null;
     }
 }
@@ -77,25 +92,29 @@ export default async function TemplatePage({
         format?: string;
         screenshot?: string;
         slideIndex?: string;
+        data?: string;
     }>;
 }) {
     const { id } = await params;
-    const { format, screenshot, slideIndex } = await searchParams;
+    const { format, screenshot, slideIndex, data } = await searchParams;
 
-    // Fetch riddle data from API
-    const riddleData = await getRiddleData(id);
+    // Determine category from data parameter (default: riddles)
+    const category = data || "riddles";
 
-    // If riddle not found, show 404
+    // Fetch data from API based on category
+    const fetchedData = await getDataByCategory(id, category);
+
+    // If data not found, show 404
     if (
-        !riddleData ||
-        !riddleData.carouselData ||
-        !riddleData.carouselData.slides
+        !fetchedData ||
+        !fetchedData.carouselData ||
+        !fetchedData.carouselData.slides
     ) {
         notFound();
     }
 
-    // Extract slides from the riddle data
-    const slides: Slide[] = riddleData.carouselData.slides;
+    // Extract slides from the fetched data
+    const slides: Slide[] = fetchedData.carouselData.slides;
 
     const scale = 2.5;
 
@@ -215,8 +234,8 @@ export default async function TemplatePage({
                 <DownloadSlidesButton
                     slides={processedData}
                     riddleId={id}
-                    caption={riddleData.carouselData.caption}
-                    hashtags={riddleData.carouselData.hashtags}
+                    caption={fetchedData.carouselData.caption}
+                    hashtags={fetchedData.carouselData.hashtags}
                 />
             )}
         </div>

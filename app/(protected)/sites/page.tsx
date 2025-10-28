@@ -681,7 +681,7 @@ export default function SitesPage() {
                                                                 asChild
                                                             >
                                                                 <Link
-                                                                    href={`/sites/${site._id}`}
+                                                                    href={`/template/${site._id}?data=sites`}
                                                                 >
                                                                     <Eye className="h-4 w-4 mr-2" />
                                                                     Detail
@@ -695,7 +695,7 @@ export default function SitesPage() {
                                                                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                                             >
                                                                 <Link
-                                                                    href={`/sites/${site._id}?format=save`}
+                                                                    href={`/template/${site._id}?data=sites&format=save`}
                                                                 >
                                                                     <Save className="h-4 w-4 mr-2" />
                                                                     Save
@@ -897,7 +897,7 @@ export default function SitesPage() {
                                                             asChild
                                                         >
                                                             <Link
-                                                                href={`/sites/${site._id}`}
+                                                                href={`/template/${site._id}?data=sites`}
                                                             >
                                                                 <Eye className="h-4 w-4 mr-2" />
                                                                 Detail
@@ -911,7 +911,7 @@ export default function SitesPage() {
                                                             asChild
                                                         >
                                                             <Link
-                                                                href={`/sites/${site._id}?format=save`}
+                                                                href={`/template/${site._id}?data=sites&format=save`}
                                                             >
                                                                 <Save className="h-4 w-4 mr-2" />
                                                                 Save

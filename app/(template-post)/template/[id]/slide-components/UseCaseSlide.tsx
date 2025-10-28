@@ -1,0 +1,93 @@
+import ClickableImage from "@/components/ClickableImage";
+import RandomShape from "@/components/RandomShape";
+import { SlideComponentProps } from "./types";
+
+/**
+ * Component untuk slide tipe USE_CASE
+ * Menampilkan skenario penggunaan praktis dengan layout yang jelas
+ */
+export default function UseCaseSlide({
+    post,
+    index,
+    width,
+    height,
+    riddleId,
+    randomPrimaryColor,
+}: SlideComponentProps) {
+    return (
+        <div
+            style={{
+                width: `${width}px`,
+                height: `${height}px`,
+                left: `${(index * 1080) / 2.5}px`,
+                position: "absolute",
+                backgroundColor: "#F3F4F6",
+            }}
+            className="flex items-center justify-center overflow-visible relative"
+        >
+            {/* Centered decorative image */}
+            <ClickableImage
+                prompt={post.prompt_untuk_image || ""}
+                width={width * 2}
+                height={height * 2}
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-cover opacity-50"
+                style={{
+                    filter: `brightness(1.2) contrast(1.2)`,
+                    mixBlendMode: "multiply",
+                    width: `60%`,
+                }}
+                alt={post.judul_slide}
+                slideIndex={index}
+                riddleId={riddleId}
+                saved_image_url={post.saved_image_url}
+            />
+
+            {/* Content container */}
+            <div className="z-10 w-full h-full flex flex-col justify-center items-center px-10">
+                <div className="max-w-2xl text-center">
+                    {/* Title badge */}
+                    <div className="mb-3">
+                        <span
+                            className="text-xs font-bold uppercase tracking-wider px-4 py-2 text-white inline-block"
+                            style={{
+                                backgroundColor: randomPrimaryColor,
+                            }}
+                        >
+                            {post.judul_slide}
+                        </span>
+                    </div>
+
+                    {/* Subtitle */}
+                    <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                        {post.sub_judul_slide}
+                    </h3>
+
+                    {/* Use case content with white background for better readability */}
+                    <div className="bg-white/90 p-6 rounded-sm shadow-sm">
+                        <div
+                            className="text-sm leading-relaxed text-gray-700 text-left"
+                            dangerouslySetInnerHTML={{
+                                __html: post.konten_slide.replace(
+                                    /\n\n/g,
+                                    "<br/><br/>"
+                                ),
+                            }}
+                        />
+                    </div>
+
+                    {/* Decorative shapes */}
+                    <RandomShape
+                        fillColor={randomPrimaryColor}
+                        strokeColor={randomPrimaryColor}
+                        className="absolute top-10 left-10 z-1 opacity-5"
+                    />
+                    <RandomShape
+                        fillColor={randomPrimaryColor}
+                        strokeColor={randomPrimaryColor}
+                        className="absolute bottom-10 right-10 z-1 opacity-5"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
