@@ -13,6 +13,7 @@ export default function CTASlide({
     height,
     riddleId,
     randomPrimaryColor,
+    category,
 }: SlideComponentProps) {
     return (
         <div
@@ -48,6 +49,7 @@ export default function CTASlide({
                 slideIndex={index}
                 riddleId={riddleId}
                 saved_image_url={post.saved_image_url}
+                category={category}
             />
 
             {/* Content container */}

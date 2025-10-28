@@ -12,6 +12,7 @@ export default function ClosingSlide({
     height,
     riddleId,
     randomPrimaryColor,
+    category,
 }: SlideComponentProps) {
     return (
         <div
@@ -37,6 +38,7 @@ export default function ClosingSlide({
                     slideIndex={index}
                     riddleId={riddleId}
                     saved_image_url={post.saved_image_url}
+                    category={category}
                 />
             </div>
             <div className="z-50 w-full flex flex-col items-center justify-center">

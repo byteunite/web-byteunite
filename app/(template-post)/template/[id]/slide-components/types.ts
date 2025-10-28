@@ -38,4 +38,5 @@ export interface SlideComponentProps {
     riddleId: string;
     randomPrimaryColor: string;
     flag?: boolean; // Optional untuk komponen tertentu seperti MISTERI
+    category?: string; // Category untuk API endpoint dinamis
 }

@@ -12,6 +12,7 @@ export default function IntroSlide({
     height,
     riddleId,
     randomPrimaryColor,
+    category,
 }: SlideComponentProps) {
     return (
         <div
@@ -40,6 +41,7 @@ export default function IntroSlide({
                 slideIndex={index}
                 riddleId={riddleId}
                 saved_image_url={post.saved_image_url}
+                category={category}
             />
 
             {/* Content on the left side */}

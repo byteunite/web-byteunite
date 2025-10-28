@@ -14,6 +14,7 @@ export default function MisteriSlide({
     riddleId,
     randomPrimaryColor,
     flag = false,
+    category,
 }: SlideComponentProps) {
     return (
         <div
@@ -40,6 +41,7 @@ export default function MisteriSlide({
                     slideIndex={index}
                     riddleId={riddleId}
                     saved_image_url={post.saved_image_url}
+                    category={category}
                 />
             ) : (
                 <ClickableImage
@@ -56,6 +58,7 @@ export default function MisteriSlide({
                     slideIndex={index}
                     riddleId={riddleId}
                     saved_image_url={post.saved_image_url}
+                    category={category}
                 />
             )}
 

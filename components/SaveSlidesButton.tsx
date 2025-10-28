@@ -7,11 +7,13 @@ import { Download, Loader2 } from "lucide-react";
 interface SaveSlidesButtonProps {
     riddleId: string;
     totalSlides: number;
+    category?: string;
 }
 
 export default function SaveSlidesButton({
     riddleId,
     totalSlides,
+    category = "riddles",
 }: SaveSlidesButtonProps) {
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -27,8 +29,14 @@ export default function SaveSlidesButton({
             setStatus("Capturing semua slides sekaligus...");
             setProgress(10);
 
+            // Validasi kategori yang valid
+            const validCategories = ["riddles", "sites"];
+            const validatedCategory = validCategories.includes(category)
+                ? category
+                : "riddles";
+
             const screenshotResponse = await fetch(
-                "/api/riddles/screenshot-full",
+                `/api/${validatedCategory}/screenshot-full`,
                 {
                     method: "POST",
                     headers: {
@@ -79,7 +87,7 @@ export default function SaveSlidesButton({
                 try {
                     // Upload slide satu per satu
                     const uploadResponse = await fetch(
-                        "/api/riddles/save-slide-single",
+                        `/api/${validatedCategory}/save-slide-single`,
                         {
                             method: "POST",
                             headers: {

@@ -5,6 +5,19 @@ import SlideRenderer from "./slide-components/SlideRenderer";
 import { Slide, SlideType } from "./slide-components/types";
 
 /**
+ * Helper function to get branded hashtag based on category
+ * @param category - The category type (riddles, sites, etc.)
+ * @returns The branded hashtag for that category
+ */
+function getCategoryHashtag(category: string): string {
+    const hashtagMap: Record<string, string> = {
+        riddles: "#ByteRiddle",
+        sites: "#ByteSites",
+    };
+    return hashtagMap[category] || "#ByteUnite";
+}
+
+/**
  * Fungsi untuk menambahkan slide peringatan sebelum CLOSING dan SOLUSI
  *
  * Konsep:
@@ -129,6 +142,9 @@ export default async function TemplatePage({
     const randomPrimaryColor =
         primaryColors[Math.floor(Math.random() * primaryColors.length)];
 
+    // Get branded hashtag based on category
+    const categoryHashtag = getCategoryHashtag(category);
+
     // Jika mode screenshot, tambahkan data attribute untuk CSS optimization
     const isScreenshotMode = screenshot === "true";
     const targetSlideIndex = slideIndex ? parseInt(slideIndex) : undefined;
@@ -172,7 +188,7 @@ export default async function TemplatePage({
                                             }}
                                         >
                                             <span className="text-xs">
-                                                #ByteRiddle
+                                                {categoryHashtag}
                                             </span>
                                         </div>
                                         <div
@@ -214,6 +230,7 @@ export default async function TemplatePage({
                                 riddleId={id}
                                 randomPrimaryColor={randomPrimaryColor}
                                 flag={flag}
+                                category={category}
                             />
                         </div>
                     );
@@ -226,7 +243,11 @@ export default async function TemplatePage({
 
             {/* Show save button only when format=save parameter is present */}
             {format === "save" && !isScreenshotMode && (
-                <SaveSlidesButton riddleId={id} totalSlides={postCount} />
+                <SaveSlidesButton
+                    riddleId={id}
+                    totalSlides={postCount}
+                    category={category}
+                />
             )}
 
             {/* Show download button if all slides have been saved */}
@@ -236,6 +257,7 @@ export default async function TemplatePage({
                     riddleId={id}
                     caption={fetchedData.carouselData.caption}
                     hashtags={fetchedData.carouselData.hashtags}
+                    category={category}
                 />
             )}
         </div>

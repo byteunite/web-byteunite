@@ -12,6 +12,7 @@ export default function CoverSlide({
     height,
     riddleId,
     randomPrimaryColor,
+    category,
 }: SlideComponentProps) {
     return (
         <div
@@ -33,6 +34,7 @@ export default function CoverSlide({
                 slideIndex={index}
                 riddleId={riddleId}
                 saved_image_url={post.saved_image_url}
+                category={category}
             />
             <div className="z-10 px-10">
                 <h5

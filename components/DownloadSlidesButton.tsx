@@ -34,6 +34,20 @@ interface DownloadSlidesButtonProps {
     riddleId: string;
     caption: string;
     hashtags: string[];
+    category?: string;
+}
+
+/**
+ * Helper function to get branded hashtag based on category
+ * @param category - The category type (riddles, sites, etc.)
+ * @returns The branded hashtag for that category
+ */
+function getCategoryHashtag(category?: string): string {
+    const hashtagMap: Record<string, string> = {
+        riddles: "#ByteRiddle",
+        sites: "#ByteSites",
+    };
+    return hashtagMap[category || "riddles"] || "#ByteUnite";
 }
 
 export default function DownloadSlidesButton({
@@ -41,6 +55,7 @@ export default function DownloadSlidesButton({
     riddleId,
     caption,
     hashtags,
+    category,
 }: DownloadSlidesButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -132,8 +147,9 @@ export default function DownloadSlidesButton({
 
     const copyHashtags = async () => {
         try {
+            const categoryHashtag = getCategoryHashtag(category);
             const hashtagsText =
-                "#ByteUniteDev #ByteUniteRiddle" +
+                `#ByteUniteDev ${categoryHashtag} ` +
                 hashtags.map((tag) => `${tag}`).join(" ");
             await navigator.clipboard.writeText(hashtagsText);
             setCopiedHashtags(true);
@@ -144,6 +160,7 @@ export default function DownloadSlidesButton({
     };
 
     const currentSlide = slides[currentSlideIndex];
+    const categoryHashtag = getCategoryHashtag(category);
 
     return (
         <>
@@ -248,7 +265,7 @@ export default function DownloadSlidesButton({
                                             ByteUnite.dev
                                         </p>
                                         <p className="text-xs text-gray-500">
-                                            ByteRiddle
+                                            {categoryHashtag.replace("#", "")}
                                         </p>
                                     </div>
                                 </div>
@@ -292,7 +309,7 @@ export default function DownloadSlidesButton({
                                     {/* Hashtags */}
                                     <div className="pl-[52px] space-y-2">
                                         <div className="flex flex-wrap gap-1.5">
-                                            #ByteUniteDev #ByteRiddle
+                                            #ByteUniteDev {categoryHashtag}
                                             {hashtags.map((tag, index) => (
                                                 <span
                                                     key={index}

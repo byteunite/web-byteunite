@@ -23,6 +23,7 @@ interface ClickableImageProps {
     slideIndex?: number;
     riddleId?: string;
     saved_image_url?: string;
+    category?: string;
 }
 
 export default function ClickableImage({
@@ -35,6 +36,7 @@ export default function ClickableImage({
     slideIndex,
     riddleId,
     saved_image_url,
+    category = "riddles",
 }: ClickableImageProps) {
     const initSeed = Math.ceil(Math.random() * 15);
     const [seed, setSeed] = useState<number>(initSeed);
@@ -92,8 +94,14 @@ export default function ClickableImage({
         const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
 
         try {
+            // Validasi kategori yang valid
+            const validCategories = ["riddles", "sites"];
+            const validatedCategory = validCategories.includes(category)
+                ? category
+                : "riddles";
+
             const response = await fetch(
-                `/api/riddles/${riddleId}/save-image`,
+                `/api/${validatedCategory}/${riddleId}/save-image`,
                 {
                     method: "POST",
                     headers: {
