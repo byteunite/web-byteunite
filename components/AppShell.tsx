@@ -12,6 +12,7 @@ import {
     Menu,
     X,
     Puzzle,
+    Globe,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const navItems = [
     { href: "/templates", label: "Templates", icon: LayoutTemplate },
     { href: "/designs", label: "Designs", icon: ImageIcon },
     { href: "/riddles", label: "Riddles", icon: Puzzle },
+    { href: "/sites", label: "Sites", icon: Globe },
     { href: "/account", label: "Account", icon: User },
 ];
 
