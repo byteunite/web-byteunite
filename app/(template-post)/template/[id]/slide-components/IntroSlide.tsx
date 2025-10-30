@@ -36,6 +36,7 @@ export default function IntroSlide({
                     mixBlendMode: "multiply",
                     width: `45%`,
                     height: `100%`,
+                    zIndex: 999,
                 }}
                 alt={post.judul_slide}
                 slideIndex={index}
@@ -45,13 +46,12 @@ export default function IntroSlide({
             />
 
             {/* Content on the left side */}
-            <div className="z-10 px-12 w-4/5">
+            <div className="z-10 px-12 w-full">
                 <div className="mb-3">
                     <h2
-                        className="text-4xl font-bold tracking-tight inline-block px-3 py-2"
+                        className="text-4xl font-extrabold inline px-0 py-2 tracking-wide"
                         style={{
-                            backgroundColor: randomPrimaryColor,
-                            color: "#FFFFFF",
+                            color: randomPrimaryColor,
                         }}
                     >
                         {post.judul_slide}

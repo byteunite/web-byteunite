@@ -35,6 +35,15 @@ export default function SaveSlidesButton({
                 ? category
                 : "riddles";
 
+            let body = {
+                totalSlides,
+            };
+            if (validatedCategory === "sites") {
+                Object.assign(body, { siteId: riddleId });
+            } else {
+                Object.assign(body, { riddleId });
+            }
+
             const screenshotResponse = await fetch(
                 `/api/${validatedCategory}/screenshot-full`,
                 {
@@ -42,10 +51,7 @@ export default function SaveSlidesButton({
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({
-                        riddleId,
-                        totalSlides,
-                    }),
+                    body: JSON.stringify(body),
                 }
             );
 
@@ -94,7 +100,7 @@ export default function SaveSlidesButton({
                                 "Content-Type": "application/json",
                             },
                             body: JSON.stringify({
-                                riddleId,
+                                ...body,
                                 slideIndex: slide.slideIndex,
                                 dataUrl: slide.dataUrl,
                             }),

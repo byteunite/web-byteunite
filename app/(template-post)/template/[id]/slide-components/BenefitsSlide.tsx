@@ -36,6 +36,7 @@ export default function BenefitsSlide({
                     filter: `brightness(1.1) contrast(1.3)`,
                     mixBlendMode: "multiply",
                     width: `55%`,
+                    zIndex: 999,
                 }}
                 alt={post.judul_slide}
                 slideIndex={index}
@@ -50,9 +51,9 @@ export default function BenefitsSlide({
                     {/* Header with primary color background */}
                     <div className="mb-3">
                         <h2
-                            className="text-3xl font-bold tracking-tight inline-block px-4 py-2 text-white"
+                            className="text-3xl font-bold tracking-wide inline-block px-4 py-2 text-white"
                             style={{
-                                backgroundColor: randomPrimaryColor,
+                                color: randomPrimaryColor,
                             }}
                         >
                             {post.judul_slide}

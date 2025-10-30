@@ -31,11 +31,12 @@ export default function FeaturesSlide({
                 prompt={post.prompt_untuk_image || ""}
                 width={width * 2}
                 height={height * 2}
-                className="absolute -bottom-10 -left-20 object-cover opacity-60"
+                className="absolute -bottom-10 -right-20 object-cover opacity-60"
                 style={{
                     filter: `brightness(1.1) contrast(1.3)`,
                     mixBlendMode: "multiply",
                     width: `50%`,
+                    zIndex: 999,
                 }}
                 alt={post.judul_slide}
                 slideIndex={index}

@@ -24,28 +24,29 @@ export default function UseCaseSlide({
                 position: "absolute",
                 backgroundColor: "#F3F4F6",
             }}
-            className="flex items-center justify-center overflow-visible relative"
+            className="flex items-center justify-center overflow-visible relative flex-col"
         >
             {/* Centered decorative image */}
-            <ClickableImage
-                prompt={post.prompt_untuk_image || ""}
-                width={width * 2}
-                height={height * 2}
-                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 object-cover opacity-50"
-                style={{
-                    filter: `brightness(1.2) contrast(1.2)`,
-                    mixBlendMode: "multiply",
-                    width: `60%`,
-                }}
-                alt={post.judul_slide}
-                slideIndex={index}
-                riddleId={riddleId}
-                saved_image_url={post.saved_image_url}
-                category={category}
-            />
+            <div className="relative w-full h-64 mt-10">
+                <ClickableImage
+                    prompt={post.prompt_untuk_image || ""}
+                    width={width * 2}
+                    height={height * 2}
+                    className="absolute left-0 right-0 top-0 bottom-0 object-contain w-full h-full opacity-50"
+                    style={{
+                        filter: `brightness(1.2) contrast(1.2)`,
+                        mixBlendMode: "multiply",
+                    }}
+                    alt={post.judul_slide}
+                    slideIndex={index}
+                    riddleId={riddleId}
+                    saved_image_url={post.saved_image_url}
+                    category={category}
+                />
+            </div>
 
             {/* Content container */}
-            <div className="z-10 w-full h-full flex flex-col justify-center items-center px-10">
+            <div className="z-10 w-full h-full flex flex-col items-center px-10">
                 <div className="max-w-2xl text-center">
                     {/* Title badge */}
                     <div className="mb-3">
