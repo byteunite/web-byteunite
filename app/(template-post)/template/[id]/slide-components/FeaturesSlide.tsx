@@ -59,7 +59,7 @@ export default function FeaturesSlide({
                             {post.judul_slide}
                         </span>
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-6 tracking-tight">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-6 tracking-normal">
                         {post.sub_judul_slide}
                     </h3>
 

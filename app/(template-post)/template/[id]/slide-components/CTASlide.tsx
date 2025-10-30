@@ -58,7 +58,7 @@ export default function CTASlide({
                     {/* Main CTA title with large emphasis */}
                     <div className="mb-4">
                         <h2
-                            className="text-4xl font-bold tracking-tight inline-block px-6 py-3 text-white"
+                            className="text-4xl font-bold tracking-normal inline-block px-6 py-3 text-white"
                             style={{
                                 backgroundColor: randomPrimaryColor,
                                 boxShadow: `0 4px 6px -1px ${randomPrimaryColor}40`,
