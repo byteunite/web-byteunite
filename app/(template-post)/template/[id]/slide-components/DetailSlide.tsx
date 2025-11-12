@@ -36,7 +36,7 @@ export default function DetailSlide({
                     filter: `brightness(1.3) contrast(0.9) blur(2px)`,
                     width: `100%`,
                     height: `100%`,
-                    zIndex: 1,
+                    zIndex: 999,
                 }}
                 alt={post.judul_slide}
                 slideIndex={index}
@@ -46,7 +46,10 @@ export default function DetailSlide({
             />
 
             {/* Content overlay */}
-            <div className="z-10 w-full h-full flex flex-col justify-center px-12 py-10">
+            <div
+                className="z-10 w-full h-full flex flex-col justify-center px-12 py-10"
+                style={{ pointerEvents: "none" }}
+            >
                 <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-lg max-w-md mx-auto">
                     {/* Title section */}
                     <div className="mb-5">

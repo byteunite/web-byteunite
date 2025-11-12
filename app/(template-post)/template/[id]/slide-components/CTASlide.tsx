@@ -45,6 +45,7 @@ export default function CTASlide({
                     filter: `brightness(1.1) contrast(1.3)`,
                     mixBlendMode: "multiply",
                     width: `45%`,
+                    zIndex: 999,
                 }}
                 alt={post.judul_slide}
                 slideIndex={index}
@@ -54,7 +55,10 @@ export default function CTASlide({
             />
 
             {/* Content container */}
-            <div className="z-10 w-full h-full flex flex-col justify-center items-center px-12">
+            <div
+                className="z-10 w-full h-full flex flex-col justify-center items-center px-12"
+                style={{ pointerEvents: "none" }}
+            >
                 <div className="max-w-xl text-center">
                     {/* Main CTA title with large emphasis */}
                     <div className="mb-4">

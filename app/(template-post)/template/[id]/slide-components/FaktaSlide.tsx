@@ -38,7 +38,7 @@ export default function FaktaSlide({
                     mixBlendMode: "overlay",
                     width: `100%`,
                     height: `100%`,
-                    zIndex: 1,
+                    zIndex: 999,
                 }}
                 alt={post.judul_slide}
                 slideIndex={index}
@@ -48,7 +48,10 @@ export default function FaktaSlide({
             />
 
             {/* Content container */}
-            <div className="z-10 w-full h-full flex flex-col justify-center items-center px-12 py-10 text-center">
+            <div
+                className="z-10 w-full h-full flex flex-col justify-center items-center px-12 py-10 text-center"
+                style={{ pointerEvents: "none" }}
+            >
                 {/* Fact badge */}
                 <div className="mb-6">
                     <div className="inline-block bg-white/20 backdrop-blur-sm border-2 border-white/40 rounded-full px-6 py-2">

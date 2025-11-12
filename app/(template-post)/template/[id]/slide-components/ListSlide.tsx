@@ -37,7 +37,7 @@ export default function ListSlide({
                     mixBlendMode: "multiply",
                     width: `100%`,
                     height: `40%`,
-                    zIndex: 1,
+                    zIndex: 999,
                 }}
                 alt={post.judul_slide}
                 slideIndex={index}
@@ -47,7 +47,10 @@ export default function ListSlide({
             />
 
             {/* Content container */}
-            <div className="z-10 w-full h-full flex flex-col justify-center px-12 py-10">
+            <div
+                className="z-10 w-full h-full flex flex-col justify-center px-12 py-10"
+                style={{ pointerEvents: "none" }}
+            >
                 {/* Header */}
                 <div className="mb-6">
                     <div className="flex items-center gap-3 mb-2">

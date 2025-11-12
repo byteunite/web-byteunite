@@ -47,7 +47,10 @@ export default function IntroSlide({
             />
 
             {/* Content on the left side */}
-            <div className="z-10 px-12 w-full">
+            <div
+                className="z-10 px-12 w-full"
+                style={{ pointerEvents: "none" }}
+            >
                 <div className="mb-3">
                     <h2
                         className="text-4xl font-extrabold inline px-0 py-2 tracking-wide"
