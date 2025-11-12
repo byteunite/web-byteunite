@@ -6,13 +6,14 @@ import { Slide, SlideType } from "./slide-components/types";
 
 /**
  * Helper function to get branded hashtag based on category
- * @param category - The category type (riddles, sites, etc.)
+ * @param category - The category type (riddles, sites, topics, etc.)
  * @returns The branded hashtag for that category
  */
 function getCategoryHashtag(category: string): string {
     const hashtagMap: Record<string, string> = {
         riddles: "#ByteRiddle",
         sites: "#ByteSites",
+        topics: "#ByteTopics",
     };
     return hashtagMap[category] || "#ByteUnite";
 }
@@ -25,11 +26,18 @@ function getCategoryHashtag(category: string): string {
  * - Slide ini berfungsi sebagai pembatas antara pertanyaan dan jawaban
  * - Memberikan kesempatan kepada viewer untuk berpikir sebelum melihat jawaban
  * - Design simple dengan pesan yang jelas
+ * - HANYA untuk category "riddles", tidak untuk "sites" atau "topics"
  *
  * @param slides - Array slide asli yang akan dimodifikasi
- * @returns Array slide baru dengan slide peringatan yang sudah disisipkan
+ * @param category - Category untuk menentukan apakah perlu warning slide
+ * @returns Array slide baru dengan slide peringatan yang sudah disisipkan (jika riddles)
  */
-function insertWarningSlides(slides: Slide[]): Slide[] {
+function insertWarningSlides(slides: Slide[], category: string): Slide[] {
+    // WARNING_ANSWER hanya untuk riddles
+    if (category !== "riddles") {
+        return slides;
+    }
+
     const newSlides: Slide[] = [];
 
     slides.forEach((slide, index) => {
@@ -61,7 +69,7 @@ function insertWarningSlides(slides: Slide[]): Slide[] {
 /**
  * Fetch data from API based on category
  * @param id - The ID of the item to fetch
- * @param category - The category/type of data (riddles, sites, etc.)
+ * @param category - The category/type of data (riddles, sites, topics, etc.)
  * @returns The fetched data or null if not found
  */
 async function getDataByCategory(id: string, category: string = "riddles") {
@@ -70,7 +78,7 @@ async function getDataByCategory(id: string, category: string = "riddles") {
             process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
         // Valid categories that have API endpoints
-        const validCategories = ["riddles", "sites"];
+        const validCategories = ["riddles", "sites", "topics"];
 
         // If category is not valid, default to riddles
         const validatedCategory = validCategories.includes(category)
@@ -131,10 +139,10 @@ export default async function TemplatePage({
 
     const scale = 2.5;
 
-    // Terapkan fungsi insertWarningSlides untuk menambahkan slide peringatan
-    const processedData = insertWarningSlides(slides);
+    // Terapkan fungsi insertWarningSlides untuk menambahkan slide peringatan (hanya untuk riddles)
+    const processedData = insertWarningSlides(slides, category);
 
-    const postCount = processedData.length; // Gunakan processedData yang sudah ditambahkan warning slides
+    const postCount = processedData.length; // Gunakan processedData yang sudah ditambahkan warning slides (jika ada)
     const width = 1080 / scale;
     const height = 1350 / scale;
     const widthTotal = width * postCount;

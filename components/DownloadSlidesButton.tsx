@@ -39,13 +39,14 @@ interface DownloadSlidesButtonProps {
 
 /**
  * Helper function to get branded hashtag based on category
- * @param category - The category type (riddles, sites, etc.)
+ * @param category - The category type (riddles, sites, topics, etc.)
  * @returns The branded hashtag for that category
  */
 function getCategoryHashtag(category?: string): string {
     const hashtagMap: Record<string, string> = {
         riddles: "#ByteRiddle",
         sites: "#ByteSites",
+        topics: "#ByteTopics",
     };
     return hashtagMap[category || "riddles"] || "#ByteUnite";
 }

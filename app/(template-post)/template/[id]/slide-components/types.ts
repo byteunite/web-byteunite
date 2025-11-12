@@ -1,5 +1,12 @@
 /**
  * Type definition untuk tipe slide yang tersedia
+ *
+ * Riddles & Sites types:
+ * - COVER, MISTERI, CLOSING, SOLUSI, FINAL, WARNING_ANSWER
+ * - INTRO, FEATURES, BENEFITS, USE_CASE, CTA
+ *
+ * Topics types:
+ * - INTRO, POIN_UTAMA, DETAIL, LIST, FAKTA, KESIMPULAN, CALL_TO_ACTION
  */
 export type SlideType =
     | "COVER"
@@ -12,7 +19,13 @@ export type SlideType =
     | "FEATURES"
     | "BENEFITS"
     | "USE_CASE"
-    | "CTA";
+    | "CTA"
+    | "POIN_UTAMA"
+    | "DETAIL"
+    | "LIST"
+    | "FAKTA"
+    | "KESIMPULAN"
+    | "CALL_TO_ACTION";
 
 /**
  * Interface untuk struktur data slide

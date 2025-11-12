@@ -9,6 +9,11 @@ import FeaturesSlide from "./FeaturesSlide";
 import BenefitsSlide from "./BenefitsSlide";
 import UseCaseSlide from "./UseCaseSlide";
 import CTASlide from "./CTASlide";
+import PoinUtamaSlide from "./PoinUtamaSlide";
+import DetailSlide from "./DetailSlide";
+import ListSlide from "./ListSlide";
+import FaktaSlide from "./FaktaSlide";
+import KesimpulanSlide from "./KesimpulanSlide";
 
 /**
  * SlideRenderer - Component yang merender slide berdasarkan tipe
@@ -51,7 +56,23 @@ export default function SlideRenderer(props: SlideComponentProps) {
             return <UseCaseSlide {...props} />;
 
         case "CTA":
+        case "CALL_TO_ACTION":
             return <CTASlide {...props} />;
+
+        case "POIN_UTAMA":
+            return <PoinUtamaSlide {...props} />;
+
+        case "DETAIL":
+            return <DetailSlide {...props} />;
+
+        case "LIST":
+            return <ListSlide {...props} />;
+
+        case "FAKTA":
+            return <FaktaSlide {...props} />;
+
+        case "KESIMPULAN":
+            return <KesimpulanSlide {...props} />;
 
         default:
             // Fallback jika tipe slide tidak dikenali
