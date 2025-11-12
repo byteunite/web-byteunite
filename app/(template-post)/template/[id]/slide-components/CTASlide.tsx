@@ -1,5 +1,6 @@
 import ClickableImage from "@/components/ClickableImage";
 import RandomShape from "@/components/RandomShape";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -63,16 +64,22 @@ export default function CTASlide({
                                 backgroundColor: randomPrimaryColor,
                                 boxShadow: `0 4px 6px -1px ${randomPrimaryColor}40`,
                             }}
-                        >
-                            {post.judul_slide}
-                        </h2>
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(post.judul_slide),
+                            }}
+                        />
                     </div>
 
                     {/* Subtitle */}
                     <div className="mb-6">
-                        <span className="text-xl font-semibold text-gray-700 bg-white/80 px-4 py-2 inline-block rounded-sm">
-                            {post.sub_judul_slide}
-                        </span>
+                        <span
+                            className="text-xl font-semibold text-gray-700 bg-white/80 px-4 py-2 inline-block rounded-sm"
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(
+                                    post.sub_judul_slide
+                                ),
+                            }}
+                        />
                     </div>
 
                     {/* CTA content */}
@@ -80,10 +87,7 @@ export default function CTASlide({
                         <div
                             className="text-base leading-relaxed text-gray-700"
                             dangerouslySetInnerHTML={{
-                                __html: post.konten_slide.replace(
-                                    /\n\n/g,
-                                    "<br/><br/>"
-                                ),
+                                __html: parseMarkdownToHtml(post.konten_slide),
                             }}
                         />
                     </div>

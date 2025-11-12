@@ -1,5 +1,6 @@
 import ClickableImage from "@/components/ClickableImage";
 import RandomShape from "@/components/RandomShape";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -55,25 +56,26 @@ export default function UseCaseSlide({
                             style={{
                                 backgroundColor: randomPrimaryColor,
                             }}
-                        >
-                            {post.judul_slide}
-                        </span>
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(post.judul_slide),
+                            }}
+                        />
                     </div>
 
                     {/* Subtitle */}
-                    <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                        {post.sub_judul_slide}
-                    </h3>
+                    <h3
+                        className="text-2xl font-bold text-gray-800 mb-6"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.sub_judul_slide),
+                        }}
+                    />
 
                     {/* Use case content with white background for better readability */}
                     <div className="bg-white/90 p-6 rounded-sm shadow-sm">
                         <div
                             className="text-sm leading-relaxed text-gray-700 text-left"
                             dangerouslySetInnerHTML={{
-                                __html: post.konten_slide.replace(
-                                    /\n\n/g,
-                                    "<br/><br/>"
-                                ),
+                                __html: parseMarkdownToHtml(post.konten_slide),
                             }}
                         />
                     </div>

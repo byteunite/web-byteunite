@@ -1,5 +1,6 @@
 import ClickableImage from "@/components/ClickableImage";
 import RandomShape from "@/components/RandomShape";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -55,16 +56,22 @@ export default function BenefitsSlide({
                             style={{
                                 color: randomPrimaryColor,
                             }}
-                        >
-                            {post.judul_slide}
-                        </h2>
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(post.judul_slide),
+                            }}
+                        />
                     </div>
 
                     {/* Subtitle */}
                     <div className="mb-5">
-                        <span className="text-base font-semibold text-gray-600 bg-yellow-100 px-3 py-1 inline-block">
-                            {post.sub_judul_slide}
-                        </span>
+                        <span
+                            className="text-base font-semibold text-gray-600 bg-yellow-100 px-3 py-1 inline-block"
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(
+                                    post.sub_judul_slide
+                                ),
+                            }}
+                        />
                     </div>
 
                     {/* Benefits list with enhanced styling */}
@@ -72,10 +79,7 @@ export default function BenefitsSlide({
                         <div
                             className="text-sm leading-relaxed text-gray-700"
                             dangerouslySetInnerHTML={{
-                                __html: post.konten_slide.replace(
-                                    /\n/g,
-                                    "<br/>"
-                                ),
+                                __html: parseMarkdownToHtml(post.konten_slide),
                             }}
                         />
                     </div>

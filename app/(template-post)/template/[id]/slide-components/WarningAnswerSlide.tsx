@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -59,16 +60,22 @@ export default function WarningAnswerSlide({
                             style={{
                                 color: "white",
                             }}
-                        >
-                            {post.judul_slide}
-                        </span>
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(post.judul_slide),
+                            }}
+                        />
                     </div>
 
                     {/* Subtitle */}
                     <div className="mt-6">
-                        <p className="text-lg text-gray-700 font-semibold leading-5">
-                            {post.sub_judul_slide}
-                        </p>
+                        <p
+                            className="text-lg text-gray-700 font-semibold leading-5"
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(
+                                    post.sub_judul_slide
+                                ),
+                            }}
+                        />
                     </div>
 
                     {/* Content dengan box */}

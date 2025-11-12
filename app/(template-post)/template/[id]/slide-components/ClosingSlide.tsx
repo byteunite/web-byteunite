@@ -1,4 +1,5 @@
 import ClickableImage from "@/components/ClickableImage";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -52,13 +53,17 @@ export default function ClosingSlide({
                             style={{
                                 backgroundColor: randomPrimaryColor,
                             }}
-                        >
-                            {post.judul_slide}
-                        </span>
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(post.judul_slide),
+                            }}
+                        />
                     </div>
-                    <h5 className="text-2xl text-gray-600 tracking-wide inline leading-6">
-                        {post.sub_judul_slide}
-                    </h5>
+                    <h5
+                        className="text-2xl text-gray-600 tracking-wide inline leading-6"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.sub_judul_slide),
+                        }}
+                    />
                     <div className="z-10 w-full leading-5 mt-2">
                         <span
                             className="text-xs bg-white opacity-75 tracking-wide inline text-gray-500"

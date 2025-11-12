@@ -1,5 +1,6 @@
 import ClickableImage from "@/components/ClickableImage";
 import RandomShape from "@/components/RandomShape";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -55,23 +56,24 @@ export default function FeaturesSlide({
                             style={{
                                 backgroundColor: randomPrimaryColor,
                             }}
-                        >
-                            {post.judul_slide}
-                        </span>
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(post.judul_slide),
+                            }}
+                        />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-6 tracking-normal">
-                        {post.sub_judul_slide}
-                    </h3>
+                    <h3
+                        className="text-2xl font-bold text-gray-800 mb-6 tracking-normal"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.sub_judul_slide),
+                        }}
+                    />
 
                     {/* Features list */}
                     <div className="space-y-3">
                         <div
                             className="text-sm leading-relaxed text-gray-700"
                             dangerouslySetInnerHTML={{
-                                __html: post.konten_slide.replace(
-                                    /\n/g,
-                                    "<br/>"
-                                ),
+                                __html: parseMarkdownToHtml(post.konten_slide),
                             }}
                         />
                     </div>

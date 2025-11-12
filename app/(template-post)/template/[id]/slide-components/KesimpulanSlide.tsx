@@ -1,4 +1,5 @@
 import ClickableImage from "@/components/ClickableImage";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -69,12 +70,16 @@ export default function KesimpulanSlide({
                         style={{
                             textShadow: `3px 3px 0px ${randomPrimaryColor}`,
                         }}
-                    >
-                        {post.judul_slide}
-                    </h2>
-                    <p className="text-base font-semibold text-white/80">
-                        {post.sub_judul_slide}
-                    </p>
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.judul_slide),
+                        }}
+                    />
+                    <p
+                        className="text-base font-semibold text-white/80"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.sub_judul_slide),
+                        }}
+                    />
                 </div>
 
                 {/* Summary content */}
@@ -88,10 +93,7 @@ export default function KesimpulanSlide({
                         <div
                             className="text-sm leading-relaxed text-white/90"
                             dangerouslySetInnerHTML={{
-                                __html: post.konten_slide.replace(
-                                    /\n/g,
-                                    "<br/>"
-                                ),
+                                __html: parseMarkdownToHtml(post.konten_slide),
                             }}
                         />
                     </div>

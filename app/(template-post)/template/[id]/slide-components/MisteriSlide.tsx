@@ -1,5 +1,6 @@
 import ClickableImage from "@/components/ClickableImage";
 import RandomShape from "@/components/RandomShape";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -65,13 +66,19 @@ export default function MisteriSlide({
             <div className="z-10 w-full h-full flex flex-col items-center justify-center -mt-10">
                 <div className="m-auto w-64 relative">
                     <div className="mb-1 z-10 relative">
-                        <span className="bg-gray-600 text-white px-2 text-xs py-1 mb-1">
-                            {post.judul_slide}
-                        </span>
+                        <span
+                            className="bg-gray-600 text-white px-2 text-xs py-1 mb-1"
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(post.judul_slide),
+                            }}
+                        />
                     </div>
-                    <h6 className="text-2xl text-gray-600 tracking-wide inline leading-6 z-10 relative">
-                        {post.sub_judul_slide}
-                    </h6>
+                    <h6
+                        className="text-2xl text-gray-600 tracking-wide inline leading-6 z-10 relative"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.sub_judul_slide),
+                        }}
+                    />
                     <div className="z-10 w-full leading-5 mt-2">
                         <span
                             className="text-xs bg-white opacity-75 tracking-wide inline text-gray-500"

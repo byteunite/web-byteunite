@@ -49,6 +49,7 @@ export default function ClickableImage({
     const { toast } = useToast();
 
     const encodedPrompt = encodeURIComponent(prompt);
+    const model = "flux";
 
     // Gunakan saved_image_url jika ada, jika tidak gunakan URL dari pollinations
     const getImageUrl = () => {
@@ -56,7 +57,7 @@ export default function ClickableImage({
             // setIsLoading(false);
             return saved_image_url;
         }
-        return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
+        return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=${model}&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
     };
 
     useEffect(() => {
@@ -65,7 +66,7 @@ export default function ClickableImage({
             const initImageUrl = getImageUrl();
             setImageUrl(initImageUrl);
         } else {
-            const image = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
+            const image = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=${model}&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
             setImageUrl(image);
         }
     }, [seed]);
@@ -91,7 +92,7 @@ export default function ClickableImage({
         }
 
         setIsSaving(true);
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=kontext&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=${model}&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
 
         try {
             // Validasi kategori yang valid

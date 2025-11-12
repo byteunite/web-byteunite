@@ -1,4 +1,5 @@
 import ClickableImage from "@/components/ClickableImage";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -53,20 +54,24 @@ export default function IntroSlide({
                         style={{
                             color: randomPrimaryColor,
                         }}
-                    >
-                        {post.judul_slide}
-                    </h2>
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.judul_slide),
+                        }}
+                    />
                 </div>
                 <div className="mb-4">
-                    <span className="text-lg font-semibold text-gray-700 inline-block bg-gray-100 px-3 py-1">
-                        {post.sub_judul_slide}
-                    </span>
+                    <span
+                        className="text-lg font-semibold text-gray-700 inline-block bg-gray-100 px-3 py-1"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.sub_judul_slide),
+                        }}
+                    />
                 </div>
                 <div className="leading-relaxed">
                     <p
                         className="text-sm text-gray-600"
                         dangerouslySetInnerHTML={{
-                            __html: post.konten_slide,
+                            __html: parseMarkdownToHtml(post.konten_slide),
                         }}
                     />
                 </div>

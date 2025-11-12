@@ -1,4 +1,5 @@
 import ClickableImage from "@/components/ClickableImage";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -56,13 +57,19 @@ export default function ListSlide({
                                 backgroundColor: randomPrimaryColor,
                             }}
                         ></div>
-                        <h2 className="text-3xl font-extrabold text-gray-900">
-                            {post.judul_slide}
-                        </h2>
+                        <h2
+                            className="text-3xl font-extrabold text-gray-900"
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(post.judul_slide),
+                            }}
+                        />
                     </div>
-                    <p className="text-sm font-medium text-gray-600 ml-5">
-                        {post.sub_judul_slide}
-                    </p>
+                    <p
+                        className="text-sm font-medium text-gray-600 ml-5"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.sub_judul_slide),
+                        }}
+                    />
                 </div>
 
                 {/* List content */}
@@ -73,12 +80,12 @@ export default function ListSlide({
                             counterReset: "list-counter",
                         }}
                         dangerouslySetInnerHTML={{
-                            __html: post.konten_slide
-                                .replace(/\n/g, "<br/>")
-                                .replace(
-                                    /•/g,
-                                    `<span style="color: ${randomPrimaryColor}; font-weight: bold;">•</span>`
-                                ),
+                            __html: parseMarkdownToHtml(
+                                post.konten_slide
+                            ).replace(
+                                /•/g,
+                                `<span style="color: ${randomPrimaryColor}; font-weight: bold;">•</span>`
+                            ),
                         }}
                     />
                 </div>

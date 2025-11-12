@@ -253,6 +253,29 @@
         transform: translate(3px, 3px);
         outline: 2px solid var(--ring);
     }
+
+    /* Markdown formatting styles for slides */
+    strong {
+        @apply font-extrabold;
+        font-weight: 800;
+    }
+
+    em {
+        @apply italic;
+        font-style: italic;
+    }
+
+    /* Specific styling for slide content markdown */
+    .slide-content strong {
+        @apply font-extrabold;
+        font-weight: 900;
+    }
+
+    .slide-content em {
+        @apply italic;
+        font-style: italic;
+        opacity: 0.95;
+    }
 }
 
 @layer utilities {

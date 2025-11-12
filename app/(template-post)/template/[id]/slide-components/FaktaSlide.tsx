@@ -1,5 +1,6 @@
 import ClickableImage from "@/components/ClickableImage";
 import RandomShape from "@/components/RandomShape";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -59,23 +60,29 @@ export default function FaktaSlide({
 
                 {/* Main title */}
                 <div className="mb-5">
-                    <h2 className="text-4xl font-black text-white mb-3 drop-shadow-lg">
-                        {post.judul_slide}
-                    </h2>
+                    <h2
+                        className="text-4xl font-black text-white mb-3 drop-shadow-lg"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.judul_slide),
+                        }}
+                    />
                     <div className="h-1 w-20 bg-white/80 mx-auto"></div>
                 </div>
 
                 {/* Subtitle */}
-                <p className="text-lg font-semibold text-white/90 mb-6 max-w-md drop-shadow">
-                    {post.sub_judul_slide}
-                </p>
+                <p
+                    className="text-lg font-semibold text-white/90 mb-6 max-w-md drop-shadow"
+                    dangerouslySetInnerHTML={{
+                        __html: parseMarkdownToHtml(post.sub_judul_slide),
+                    }}
+                />
 
                 {/* Fact content */}
                 <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 max-w-md shadow-2xl">
                     <div
                         className="text-sm leading-relaxed text-gray-800 font-medium"
                         dangerouslySetInnerHTML={{
-                            __html: post.konten_slide.replace(/\n/g, "<br/>"),
+                            __html: parseMarkdownToHtml(post.konten_slide),
                         }}
                     />
                 </div>

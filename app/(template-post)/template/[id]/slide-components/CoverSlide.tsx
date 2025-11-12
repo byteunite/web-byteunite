@@ -1,4 +1,5 @@
 import ClickableImage from "@/components/ClickableImage";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -42,13 +43,17 @@ export default function CoverSlide({
                     style={{
                         backgroundColor: randomPrimaryColor,
                     }}
-                >
-                    {post.judul_slide}
-                </h5>
+                    dangerouslySetInnerHTML={{
+                        __html: parseMarkdownToHtml(post.judul_slide),
+                    }}
+                />
                 <div className="z-10 w-3/5 leading-0">
-                    <span className="text-xs bg-white opacity-90 tracking-wide inline font-bold">
-                        {post.sub_judul_slide}
-                    </span>
+                    <span
+                        className="text-xs bg-white opacity-90 tracking-wide inline font-bold"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.sub_judul_slide),
+                        }}
+                    />
                 </div>
             </div>
             <div className="z-10 leading-5 mt-2 absolute bottom-15 w-2/3 text-center">

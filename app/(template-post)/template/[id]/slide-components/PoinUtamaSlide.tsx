@@ -1,5 +1,6 @@
 import ClickableImage from "@/components/ClickableImage";
 import RandomShape from "@/components/RandomShape";
+import { parseMarkdownToHtml } from "@/lib/format-text";
 import { SlideComponentProps } from "./types";
 
 /**
@@ -56,13 +57,19 @@ export default function PoinUtamaSlide({
                             backgroundColor: randomPrimaryColor,
                         }}
                     >
-                        <h2 className="text-3xl font-black text-white tracking-tight">
-                            {post.judul_slide}
-                        </h2>
+                        <h2
+                            className="text-3xl font-black text-white tracking-tight"
+                            dangerouslySetInnerHTML={{
+                                __html: parseMarkdownToHtml(post.judul_slide),
+                            }}
+                        />
                     </div>
-                    <p className="text-base font-semibold text-gray-600 mt-2">
-                        {post.sub_judul_slide}
-                    </p>
+                    <p
+                        className="text-base font-semibold text-gray-600 mt-2"
+                        dangerouslySetInnerHTML={{
+                            __html: parseMarkdownToHtml(post.sub_judul_slide),
+                        }}
+                    />
                 </div>
 
                 {/* Main content */}
@@ -70,7 +77,7 @@ export default function PoinUtamaSlide({
                     <div
                         className="text-sm leading-relaxed text-gray-700 font-medium"
                         dangerouslySetInnerHTML={{
-                            __html: post.konten_slide.replace(/\n/g, "<br/>"),
+                            __html: parseMarkdownToHtml(post.konten_slide),
                         }}
                     />
                 </div>

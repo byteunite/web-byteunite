@@ -72,8 +72,58 @@ ATURAN KONTEN SLIDE (PENTING!):
 - Konten: MAKSIMAL 1-2 kalimat pendek (masing-masing max 10 kata) ATAU 2-4 bullet points super singkat (max 6 kata per poin)
   * PENTING: konten_slide HARUS berupa STRING, bukan array!
   * Jika bullet points, gabungkan dengan \\n (newline), contoh: "• Poin 1\\n• Poin 2\\n• Poin 3"
+  * GUNAKAN MARKDOWN untuk emphasis: **teks tebal**, *teks miring*
+  * Contoh: "**Poin penting** untuk diingat" atau "*Tips:* Lakukan ini setiap hari"
+  * Gunakan bold (**) untuk kata kunci atau poin penting yang perlu ditonjolkan
+  * Gunakan italic (*) untuk catatan tambahan atau penekanan ringan
 - Hindari paragraf panjang - orang Indonesia suka konten visual yang cepat dibaca!
 - Gunakan emoji dengan bijak untuk visual appeal
+
+GAYA VISUAL WAJIB (untuk prompt_untuk_image):
+1. Gaya harus konsisten: Foto monokrom (hitam-putih) dengan efek rasterize yang kuat dan terlihat jelas.
+2. Komposisi: Objek utama harus berukuran kecil dan merupakan benda nyata yang relevant (maksimal 1/3 dari total ruang), diposisikan di tengah (centered), dengan white space yang dominan.
+3. DILARANG menggunakan elemen grafis abstrak atau geometris di latar belakang - fokus HANYA pada objek utama dengan background putih polos.
+4. Efek Visual: Objek utama HARUS memiliki efek rasterize/halftone yang jelas dan terlihat, dengan dot pattern atau screen printing effect yang prominent.
+5. Objek HARUS utuh, tidak terpotong, dan berdiri sempurna (complete object, no cropping, full view).
+6. Format Prompt: Gunakan template berikut: "[Deskripsi Objek Tunggal yang Jelas], complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation."
+7. PENTING: Prompt HARUS URL-safe tanpa karakter khusus seperti parentheses, hashtag, atau tanda baca kompleks
+
+ATURAN PEMILIHAN OBJEK UNTUK TOPIK EDUKATIF (SANGAT PENTING):
+1. WAJIB gunakan objek KONKRET dan REALISTIS yang merepresentasikan konsep atau kategori topik
+2. DILARANG KERAS menggunakan objek abstrak seperti: icons, symbols, logos, atau elemen grafis
+3. Pilih objek fisik yang nyata dan relevan dengan topik seperti:
+   - Untuk topik pembelajaran: buku, pensil, laptop, kacamata, notepad
+   - Untuk topik teknologi: keyboard, mouse, smartphone, headphone, chip
+   - Untuk topik bisnis: briefcase, calculator, chart paper, pen
+   - Untuk topik kesehatan: apple, water bottle, yoga mat, running shoes
+   - Untuk topik produktivitas: clock, calendar, checklist, coffee cup
+
+PEMILIHAN OBJEK BERDASARKAN TIPE SLIDE:
+- INTRO: Objek yang merepresentasikan topik utama (misal: untuk "Belajar Coding" → "laptop", untuk "Kesehatan" → "apple")
+- POIN_UTAMA/DETAIL: Objek yang merepresentasikan konsep utama (misal: untuk "Tips" → "lightbulb", untuk "Strategi" → "chess piece")
+- LIST: Objek yang merepresentasikan item list (misal: untuk "Checklist" → "clipboard with checkmarks")
+- FAKTA: Objek yang merepresentasikan data/informasi (misal: untuk "Statistik" → "magnifying glass", untuk "Research" → "microscope")
+- KESIMPULAN: Objek yang merepresentasikan ringkasan (misal: untuk "Summary" → "notebook", untuk "Key Points" → "key")
+- CALL_TO_ACTION: Objek yang merepresentasikan action (misal: untuk "Start" → "rocket", untuk "Join" → "handshake", untuk "Learn" → "open book")
+
+CONTOH PROMPT YANG BENAR UNTUK TOPIK EDUKATIF:
+- "A modern laptop computer, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+- "An open book with visible pages, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+- "A lightbulb, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+- "A red apple, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+
+CONTOH PROMPT YANG SALAH (JANGAN GUNAKAN):
+- "An icon of a computer..." ❌ (gunakan objek konkret seperti "laptop")
+- "Abstract tech symbol..." ❌ (harus objek fisik yang nyata)
+- "Colorful background with..." ❌ (background harus pure white)
+- Prompt tanpa "complete object with no cropping, full view" ❌ (objek akan terpotong)
+- Prompt tanpa "no borders, no frames, clean isolation" ❌ (objek akan memiliki kotak/frame)
+
+ATURAN WARNA PUTIH (SANGAT PENTING - WAJIB DIPATUHI):
+1. Background HARUS SELALU menggunakan "pure white background" (#FFFFFF atau RGB 255,255,255) - TIDAK ADA variasi.
+2. White space HARUS SELALU konsisten dengan tone putih yang PERSIS SAMA di SETIAP slide.
+3. DILARANG menggunakan istilah seperti "light background", "bright background" - HARUS SELALU "pure white background #FFFFFF".
+4. Setiap prompt_untuk_image HARUS SELALU diakhiri dengan kalimat: "Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation."
 
 FORMAT OUTPUT WAJIB:
 {
@@ -82,8 +132,8 @@ FORMAT OUTPUT WAJIB:
             "tipe_slide": "INTRO",
             "judul_slide": "Judul menarik (max 5 kata)",
             "sub_judul_slide": "Sub judul yang mendukung (max 8 kata)",
-            "konten_slide": "Konten SUPER SINGKAT dalam bentuk STRING: bisa 1-2 kalimat pendek (max 10 kata/kalimat) ATAU bullet points digabung dengan \\n seperti: '• Poin 1\\n• Poin 2\\n• Poin 3' (max 6 kata/poin)",
-            "prompt_untuk_image": "Deskripsi untuk generate image yang eye-catching dan relevan (bahasa Inggris, detailed, vibrant, modern)"
+            "konten_slide": "Konten SUPER SINGKAT dalam bentuk STRING dengan **markdown formatting**: bisa 1-2 kalimat pendek (max 10 kata/kalimat) ATAU bullet points digabung dengan \\n seperti: '• **Poin penting** pertama\\n• *Catatan:* Poin kedua\\n• Poin ketiga' (max 6 kata/poin). Gunakan **bold** untuk emphasis dan *italic* untuk catatan.",
+            "prompt_untuk_image": "A [relevant object], complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
         }
     ],
     "caption": "Caption Instagram yang menarik dengan emoji, hook kuat di awal, dan call to action di akhir (max 100 kata, bahasa casual)",
