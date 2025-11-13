@@ -24,7 +24,7 @@ export default function ListSlide({
                 position: "absolute",
                 backgroundColor: "#FFFFFF",
             }}
-            className="flex items-center justify-center overflow-hidden relative"
+            className="flex items-center justify-center relative"
         >
             {/* Decorative image at bottom */}
             <ClickableImage

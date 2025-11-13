@@ -27,7 +27,7 @@ export default function WarningAnswerSlide({
                 position: "absolute",
                 background: "white",
             }}
-            className="flex items-center justify-center overflow-hidden relative flex-col"
+            className="flex items-center justify-center relative flex-col"
         >
             {/* Icon warning besar sebagai focal point */}
             <div

@@ -25,7 +25,7 @@ export default function FaktaSlide({
                 position: "absolute",
                 backgroundColor: randomPrimaryColor,
             }}
-            className="flex items-center justify-center overflow-hidden relative"
+            className="flex items-center justify-center relative"
         >
             {/* Image overlay with blend mode */}
             <ClickableImage

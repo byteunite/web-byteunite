@@ -64,6 +64,7 @@ export default function DownloadSlidesButton({
     const [downloadingAll, setDownloadingAll] = useState(false);
     const [copiedCaption, setCopiedCaption] = useState(false);
     const [copiedHashtags, setCopiedHashtags] = useState(false);
+    const [copiedAll, setCopiedAll] = useState(false);
 
     // Check if all slides have saved_slide_url
     const allSlidesSaved = slides.every((slide) => slide.saved_slide_url);
@@ -157,6 +158,21 @@ export default function DownloadSlidesButton({
             setTimeout(() => setCopiedHashtags(false), 2000);
         } catch (error) {
             console.error("Failed to copy hashtags:", error);
+        }
+    };
+
+    const copyAll = async () => {
+        try {
+            const categoryHashtag = getCategoryHashtag(category);
+            const hashtagsText =
+                `#ByteUniteDev ${categoryHashtag} ` +
+                hashtags.map((tag) => `${tag}`).join(" ");
+            const fullText = `${caption}\n\n${hashtagsText}`;
+            await navigator.clipboard.writeText(fullText);
+            setCopiedAll(true);
+            setTimeout(() => setCopiedAll(false), 2000);
+        } catch (error) {
+            console.error("Failed to copy all:", error);
         }
     };
 
@@ -320,24 +336,44 @@ export default function DownloadSlidesButton({
                                                 </span>
                                             ))}
                                         </div>
-                                        <Button
-                                            onClick={copyHashtags}
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-7 text-xs gap-1.5"
-                                        >
-                                            {copiedHashtags ? (
-                                                <>
-                                                    <Check className="h-3 w-3 text-green-600" />
-                                                    Copied!
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Copy className="h-3 w-3" />
-                                                    Copy Hashtags
-                                                </>
-                                            )}
-                                        </Button>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                onClick={copyHashtags}
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 text-xs gap-1.5"
+                                            >
+                                                {copiedHashtags ? (
+                                                    <>
+                                                        <Check className="h-3 w-3 text-green-600" />
+                                                        Copied!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Copy className="h-3 w-3" />
+                                                        Copy Hashtags
+                                                    </>
+                                                )}
+                                            </Button>
+                                            <Button
+                                                onClick={copyAll}
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 text-xs gap-1.5"
+                                            >
+                                                {copiedAll ? (
+                                                    <>
+                                                        <Check className="h-3 w-3 text-green-600" />
+                                                        Copied All!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Copy className="h-3 w-3" />
+                                                        Copy All
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
 

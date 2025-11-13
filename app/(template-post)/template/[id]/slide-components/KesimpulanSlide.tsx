@@ -24,7 +24,7 @@ export default function KesimpulanSlide({
                 position: "absolute",
                 backgroundColor: "#1F2937",
             }}
-            className="flex items-center justify-center overflow-hidden relative"
+            className="flex items-center justify-center relative"
         >
             {/* Subtle background image */}
             <ClickableImage

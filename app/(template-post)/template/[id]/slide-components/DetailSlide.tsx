@@ -24,7 +24,7 @@ export default function DetailSlide({
                 position: "absolute",
                 backgroundColor: "#F8F9FA",
             }}
-            className="flex items-center justify-center overflow-hidden relative"
+            className="flex items-center justify-center relative"
         >
             {/* Background image with low opacity */}
             <ClickableImage
