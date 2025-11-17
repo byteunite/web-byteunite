@@ -23,6 +23,9 @@ import {
     Github,
     ExternalLink,
     Star,
+    Award,
+    Briefcase,
+    MessageSquare,
 } from "lucide-react";
 import {
     Dialog,
@@ -57,6 +60,29 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
+interface ISkill {
+    name: string;
+    level: number;
+}
+
+interface IRecentProject {
+    title: string;
+    description: string;
+    tech: string[];
+    link: string;
+    image: string;
+    duration: string;
+    role: string;
+}
+
+interface ITestimonial {
+    name: string;
+    role: string;
+    company: string;
+    text: string;
+    rating: number;
+}
+
 interface IProgrammer {
     _id: string;
     name: string;
@@ -74,6 +100,10 @@ interface IProgrammer {
     experience: string;
     availability: string;
     hourlyRate: string;
+    skills: ISkill[];
+    certifications: string[];
+    recentProjects: IRecentProject[];
+    testimonials: ITestimonial[];
     createdAt: string;
     updatedAt: string;
 }
@@ -139,6 +169,53 @@ export default function ProgrammersAdminPage() {
     // Search and filter
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("all");
+
+    // Nested Data Management States
+    const [manageDialogOpen, setManageDialogOpen] = useState(false);
+    const [manageType, setManageType] = useState<
+        "skills" | "certifications" | "projects" | "testimonials" | null
+    >(null);
+    const [selectedProgrammer, setSelectedProgrammer] =
+        useState<IProgrammer | null>(null);
+
+    // Skills state
+    const [skillDialogOpen, setSkillDialogOpen] = useState(false);
+    const [editingSkillIndex, setEditingSkillIndex] = useState<number | null>(
+        null
+    );
+    const [skillForm, setSkillForm] = useState({ name: "", level: "50" });
+
+    // Certifications state
+    const [certDialogOpen, setCertDialogOpen] = useState(false);
+    const [certForm, setCertForm] = useState("");
+
+    // Recent Projects state
+    const [projectDialogOpen, setProjectDialogOpen] = useState(false);
+    const [editingProjectIndex, setEditingProjectIndex] = useState<
+        number | null
+    >(null);
+    const [projectForm, setProjectForm] = useState({
+        title: "",
+        description: "",
+        tech: "",
+        link: "",
+        image: "",
+        duration: "",
+        role: "",
+    });
+
+    // Testimonials state
+    const [testimonialDialogOpen, setTestimonialDialogOpen] = useState(false);
+    const [editingTestimonialIndex, setEditingTestimonialIndex] = useState<
+        number | null
+    >(null);
+    const [testimonialForm, setTestimonialForm] = useState({
+        name: "",
+        role: "",
+        company: "",
+        text: "",
+        rating: "5",
+    });
 
     const fetchProgrammers = async (page: number = 1) => {
         try {
@@ -423,6 +500,567 @@ export default function ProgrammersAdminPage() {
             });
         } finally {
             setDeletingId(null);
+        }
+    };
+
+    // ========== NESTED DATA MANAGEMENT FUNCTIONS ==========
+
+    const handleOpenManageDialog = (
+        programmer: IProgrammer,
+        type: "skills" | "certifications" | "projects" | "testimonials"
+    ) => {
+        setSelectedProgrammer(programmer);
+        setManageType(type);
+        setManageDialogOpen(true);
+    };
+
+    // Skills Functions
+    const handleAddSkill = () => {
+        setSkillForm({ name: "", level: "50" });
+        setEditingSkillIndex(null);
+        setSkillDialogOpen(true);
+    };
+
+    const handleEditSkill = (index: number) => {
+        if (!selectedProgrammer) return;
+        const skill = selectedProgrammer.skills[index];
+        setSkillForm({ name: skill.name, level: skill.level.toString() });
+        setEditingSkillIndex(index);
+        setSkillDialogOpen(true);
+    };
+
+    const handleSaveSkill = async () => {
+        if (!selectedProgrammer || !skillForm.name) {
+            toast({
+                title: "Error",
+                description: "Please fill in all fields",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const newSkill = {
+                name: skillForm.name,
+                level: parseInt(skillForm.level),
+            };
+
+            let updatedSkills;
+            if (editingSkillIndex !== null) {
+                updatedSkills = [...selectedProgrammer.skills];
+                updatedSkills[editingSkillIndex] = newSkill;
+            } else {
+                updatedSkills = [...selectedProgrammer.skills, newSkill];
+            }
+
+            const response = await fetch(
+                `/api/programmers/${selectedProgrammer._id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ skills: updatedSkills }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to save skill");
+            }
+
+            toast({
+                title: "Success!",
+                description: `Skill ${
+                    editingSkillIndex !== null ? "updated" : "added"
+                } successfully`,
+            });
+
+            setSkillDialogOpen(false);
+            fetchProgrammers(currentPage);
+
+            // Update selected programmer
+            const updatedProgrammer = {
+                ...selectedProgrammer,
+                skills: updatedSkills,
+            };
+            setSelectedProgrammer(updatedProgrammer);
+        } catch (err) {
+            toast({
+                title: "Error",
+                description:
+                    err instanceof Error ? err.message : "Failed to save skill",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleDeleteSkill = async (index: number) => {
+        if (!selectedProgrammer) return;
+
+        try {
+            const updatedSkills = selectedProgrammer.skills.filter(
+                (_, i) => i !== index
+            );
+
+            const response = await fetch(
+                `/api/programmers/${selectedProgrammer._id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ skills: updatedSkills }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to delete skill");
+            }
+
+            toast({
+                title: "Success!",
+                description: "Skill deleted successfully",
+            });
+
+            fetchProgrammers(currentPage);
+
+            const updatedProgrammer = {
+                ...selectedProgrammer,
+                skills: updatedSkills,
+            };
+            setSelectedProgrammer(updatedProgrammer);
+        } catch (err) {
+            toast({
+                title: "Error",
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to delete skill",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Certifications Functions
+    const handleAddCertification = () => {
+        setCertForm("");
+        setCertDialogOpen(true);
+    };
+
+    const handleSaveCertification = async () => {
+        if (!selectedProgrammer || !certForm) {
+            toast({
+                title: "Error",
+                description: "Please enter a certification",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const updatedCertifications = [
+                ...selectedProgrammer.certifications,
+                certForm,
+            ];
+
+            const response = await fetch(
+                `/api/programmers/${selectedProgrammer._id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        certifications: updatedCertifications,
+                    }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to save certification");
+            }
+
+            toast({
+                title: "Success!",
+                description: "Certification added successfully",
+            });
+
+            setCertDialogOpen(false);
+            fetchProgrammers(currentPage);
+
+            const updatedProgrammer = {
+                ...selectedProgrammer,
+                certifications: updatedCertifications,
+            };
+            setSelectedProgrammer(updatedProgrammer);
+        } catch (err) {
+            toast({
+                title: "Error",
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to save certification",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleDeleteCertification = async (index: number) => {
+        if (!selectedProgrammer) return;
+
+        try {
+            const updatedCertifications =
+                selectedProgrammer.certifications.filter((_, i) => i !== index);
+
+            const response = await fetch(
+                `/api/programmers/${selectedProgrammer._id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        certifications: updatedCertifications,
+                    }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.error || "Failed to delete certification"
+                );
+            }
+
+            toast({
+                title: "Success!",
+                description: "Certification deleted successfully",
+            });
+
+            fetchProgrammers(currentPage);
+
+            const updatedProgrammer = {
+                ...selectedProgrammer,
+                certifications: updatedCertifications,
+            };
+            setSelectedProgrammer(updatedProgrammer);
+        } catch (err) {
+            toast({
+                title: "Error",
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to delete certification",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Recent Projects Functions
+    const handleAddProject = () => {
+        setProjectForm({
+            title: "",
+            description: "",
+            tech: "",
+            link: "",
+            image: "",
+            duration: "",
+            role: "",
+        });
+        setEditingProjectIndex(null);
+        setProjectDialogOpen(true);
+    };
+
+    const handleEditProject = (index: number) => {
+        if (!selectedProgrammer) return;
+        const project = selectedProgrammer.recentProjects[index];
+        setProjectForm({
+            title: project.title,
+            description: project.description,
+            tech: project.tech.join(", "),
+            link: project.link,
+            image: project.image,
+            duration: project.duration,
+            role: project.role,
+        });
+        setEditingProjectIndex(index);
+        setProjectDialogOpen(true);
+    };
+
+    const handleSaveProject = async () => {
+        if (
+            !selectedProgrammer ||
+            !projectForm.title ||
+            !projectForm.description
+        ) {
+            toast({
+                title: "Error",
+                description: "Please fill in all required fields",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const newProject = {
+                title: projectForm.title,
+                description: projectForm.description,
+                tech: projectForm.tech
+                    .split(",")
+                    .map((t) => t.trim())
+                    .filter((t) => t),
+                link: projectForm.link,
+                image: projectForm.image || "/placeholder.svg",
+                duration: projectForm.duration,
+                role: projectForm.role,
+            };
+
+            let updatedProjects;
+            if (editingProjectIndex !== null) {
+                updatedProjects = [...selectedProgrammer.recentProjects];
+                updatedProjects[editingProjectIndex] = newProject;
+            } else {
+                updatedProjects = [
+                    ...selectedProgrammer.recentProjects,
+                    newProject,
+                ];
+            }
+
+            const response = await fetch(
+                `/api/programmers/${selectedProgrammer._id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ recentProjects: updatedProjects }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to save project");
+            }
+
+            toast({
+                title: "Success!",
+                description: `Project ${
+                    editingProjectIndex !== null ? "updated" : "added"
+                } successfully`,
+            });
+
+            setProjectDialogOpen(false);
+            fetchProgrammers(currentPage);
+
+            const updatedProgrammer = {
+                ...selectedProgrammer,
+                recentProjects: updatedProjects,
+            };
+            setSelectedProgrammer(updatedProgrammer);
+        } catch (err) {
+            toast({
+                title: "Error",
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to save project",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleDeleteProject = async (index: number) => {
+        if (!selectedProgrammer) return;
+
+        try {
+            const updatedProjects = selectedProgrammer.recentProjects.filter(
+                (_, i) => i !== index
+            );
+
+            const response = await fetch(
+                `/api/programmers/${selectedProgrammer._id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ recentProjects: updatedProjects }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to delete project");
+            }
+
+            toast({
+                title: "Success!",
+                description: "Project deleted successfully",
+            });
+
+            fetchProgrammers(currentPage);
+
+            const updatedProgrammer = {
+                ...selectedProgrammer,
+                recentProjects: updatedProjects,
+            };
+            setSelectedProgrammer(updatedProgrammer);
+        } catch (err) {
+            toast({
+                title: "Error",
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to delete project",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Testimonials Functions
+    const handleAddTestimonial = () => {
+        setTestimonialForm({
+            name: "",
+            role: "",
+            company: "",
+            text: "",
+            rating: "5",
+        });
+        setEditingTestimonialIndex(null);
+        setTestimonialDialogOpen(true);
+    };
+
+    const handleEditTestimonial = (index: number) => {
+        if (!selectedProgrammer) return;
+        const testimonial = selectedProgrammer.testimonials[index];
+        setTestimonialForm({
+            name: testimonial.name,
+            role: testimonial.role,
+            company: testimonial.company,
+            text: testimonial.text,
+            rating: testimonial.rating.toString(),
+        });
+        setEditingTestimonialIndex(index);
+        setTestimonialDialogOpen(true);
+    };
+
+    const handleSaveTestimonial = async () => {
+        if (
+            !selectedProgrammer ||
+            !testimonialForm.name ||
+            !testimonialForm.text
+        ) {
+            toast({
+                title: "Error",
+                description: "Please fill in all required fields",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const newTestimonial = {
+                name: testimonialForm.name,
+                role: testimonialForm.role,
+                company: testimonialForm.company,
+                text: testimonialForm.text,
+                rating: parseInt(testimonialForm.rating),
+            };
+
+            let updatedTestimonials;
+            if (editingTestimonialIndex !== null) {
+                updatedTestimonials = [...selectedProgrammer.testimonials];
+                updatedTestimonials[editingTestimonialIndex] = newTestimonial;
+            } else {
+                updatedTestimonials = [
+                    ...selectedProgrammer.testimonials,
+                    newTestimonial,
+                ];
+            }
+
+            const response = await fetch(
+                `/api/programmers/${selectedProgrammer._id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ testimonials: updatedTestimonials }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to save testimonial");
+            }
+
+            toast({
+                title: "Success!",
+                description: `Testimonial ${
+                    editingTestimonialIndex !== null ? "updated" : "added"
+                } successfully`,
+            });
+
+            setTestimonialDialogOpen(false);
+            fetchProgrammers(currentPage);
+
+            const updatedProgrammer = {
+                ...selectedProgrammer,
+                testimonials: updatedTestimonials,
+            };
+            setSelectedProgrammer(updatedProgrammer);
+        } catch (err) {
+            toast({
+                title: "Error",
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to save testimonial",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleDeleteTestimonial = async (index: number) => {
+        if (!selectedProgrammer) return;
+
+        try {
+            const updatedTestimonials = selectedProgrammer.testimonials.filter(
+                (_, i) => i !== index
+            );
+
+            const response = await fetch(
+                `/api/programmers/${selectedProgrammer._id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ testimonials: updatedTestimonials }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to delete testimonial");
+            }
+
+            toast({
+                title: "Success!",
+                description: "Testimonial deleted successfully",
+            });
+
+            fetchProgrammers(currentPage);
+
+            const updatedProgrammer = {
+                ...selectedProgrammer,
+                testimonials: updatedTestimonials,
+            };
+            setSelectedProgrammer(updatedProgrammer);
+        } catch (err) {
+            toast({
+                title: "Error",
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to delete testimonial",
+                variant: "destructive",
+            });
         }
     };
 
@@ -899,15 +1537,15 @@ export default function ProgrammersAdminPage() {
                 </CardContent>
             </Card>
 
-            <Card className="retro-card">
+            <Card className="retro-card overflow-visible">
                 <CardHeader>
                     <CardTitle>All Programmers</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-visible">
                     {programmers.length > 0 ? (
                         <>
                             {/* Desktop Table View */}
-                            <div className="hidden lg:block">
+                            <div className="hidden lg:block overflow-visible">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -1034,7 +1672,7 @@ export default function ProgrammersAdminPage() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                        <div className="flex justify-end gap-2">
+                                                        <div className="flex justify-end gap-1 flex-wrap">
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
@@ -1044,7 +1682,7 @@ export default function ProgrammersAdminPage() {
                                                                     href={`/programmers/${programmer._id}`}
                                                                     target="_blank"
                                                                 >
-                                                                    <Eye className="h-4 w-4 mr-2" />
+                                                                    <Eye className="h-4 w-4 mr-1" />
                                                                     View
                                                                 </Link>
                                                             </Button>
@@ -1059,8 +1697,93 @@ export default function ProgrammersAdminPage() {
                                                                     )
                                                                 }
                                                             >
-                                                                <Edit className="h-4 w-4 mr-2" />
+                                                                <Edit className="h-4 w-4 mr-1" />
                                                                 Edit
+                                                            </Button>
+
+                                                            {/* Manage Buttons - Direct Access */}
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                                                onClick={() =>
+                                                                    handleOpenManageDialog(
+                                                                        programmer,
+                                                                        "skills"
+                                                                    )
+                                                                }
+                                                                title="Manage Skills"
+                                                            >
+                                                                <Award className="h-4 w-4 mr-1" />
+                                                                Skills (
+                                                                {programmer
+                                                                    .skills
+                                                                    ?.length ||
+                                                                    0}
+                                                                )
+                                                            </Button>
+
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                                                onClick={() =>
+                                                                    handleOpenManageDialog(
+                                                                        programmer,
+                                                                        "certifications"
+                                                                    )
+                                                                }
+                                                                title="Manage Certifications"
+                                                            >
+                                                                <Award className="h-4 w-4 mr-1" />
+                                                                Certs (
+                                                                {programmer
+                                                                    .certifications
+                                                                    ?.length ||
+                                                                    0}
+                                                                )
+                                                            </Button>
+
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                                                onClick={() =>
+                                                                    handleOpenManageDialog(
+                                                                        programmer,
+                                                                        "projects"
+                                                                    )
+                                                                }
+                                                                title="Manage Projects"
+                                                            >
+                                                                <Briefcase className="h-4 w-4 mr-1" />
+                                                                Projects (
+                                                                {programmer
+                                                                    .recentProjects
+                                                                    ?.length ||
+                                                                    0}
+                                                                )
+                                                            </Button>
+
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                                                onClick={() =>
+                                                                    handleOpenManageDialog(
+                                                                        programmer,
+                                                                        "testimonials"
+                                                                    )
+                                                                }
+                                                                title="Manage Testimonials"
+                                                            >
+                                                                <MessageSquare className="h-4 w-4 mr-1" />
+                                                                Reviews (
+                                                                {programmer
+                                                                    .testimonials
+                                                                    ?.length ||
+                                                                    0}
+                                                                )
                                                             </Button>
 
                                                             <AlertDialog>
@@ -1260,6 +1983,79 @@ export default function ProgrammersAdminPage() {
                                                     </Button>
                                                 </div>
 
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200"
+                                                        onClick={() =>
+                                                            handleOpenManageDialog(
+                                                                programmer,
+                                                                "skills"
+                                                            )
+                                                        }
+                                                    >
+                                                        <Award className="h-4 w-4 mr-2" />
+                                                        Skills (
+                                                        {programmer.skills
+                                                            ?.length || 0}
+                                                        )
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200"
+                                                        onClick={() =>
+                                                            handleOpenManageDialog(
+                                                                programmer,
+                                                                "certifications"
+                                                            )
+                                                        }
+                                                    >
+                                                        <Award className="h-4 w-4 mr-2" />
+                                                        Certs (
+                                                        {programmer
+                                                            .certifications
+                                                            ?.length || 0}
+                                                        )
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200"
+                                                        onClick={() =>
+                                                            handleOpenManageDialog(
+                                                                programmer,
+                                                                "projects"
+                                                            )
+                                                        }
+                                                    >
+                                                        <Briefcase className="h-4 w-4 mr-2" />
+                                                        Projects (
+                                                        {programmer
+                                                            .recentProjects
+                                                            ?.length || 0}
+                                                        )
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200"
+                                                        onClick={() =>
+                                                            handleOpenManageDialog(
+                                                                programmer,
+                                                                "testimonials"
+                                                            )
+                                                        }
+                                                    >
+                                                        <MessageSquare className="h-4 w-4 mr-2" />
+                                                        Reviews (
+                                                        {programmer.testimonials
+                                                            ?.length || 0}
+                                                        )
+                                                    </Button>
+                                                </div>
+
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
                                                         <Button
@@ -1380,6 +2176,636 @@ export default function ProgrammersAdminPage() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Nested Data Management Dialog */}
+            <Dialog
+                open={manageDialogOpen}
+                onOpenChange={(open) => {
+                    setManageDialogOpen(open);
+                    if (!open) {
+                        setSelectedProgrammer(null);
+                        setManageType(null);
+                    }
+                }}
+            >
+                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>
+                            Manage{" "}
+                            {manageType === "skills"
+                                ? "Skills"
+                                : manageType === "certifications"
+                                ? "Certifications"
+                                : manageType === "projects"
+                                ? "Recent Projects"
+                                : "Testimonials"}{" "}
+                            - {selectedProgrammer?.name}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Add, edit, or remove items from this programmer's
+                            profile
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {/* Skills Management */}
+                    {manageType === "skills" && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-semibold">Skills</h3>
+                                <Button onClick={handleAddSkill} size="sm">
+                                    <PlusCircle className="h-4 w-4 mr-2" />
+                                    Add Skill
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
+                                {selectedProgrammer?.skills?.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                        No skills yet
+                                    </p>
+                                ) : (
+                                    selectedProgrammer?.skills?.map(
+                                        (skill, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between p-3 border rounded-lg"
+                                            >
+                                                <div className="flex-1">
+                                                    <div className="font-medium">
+                                                        {skill.name}
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        Level: {skill.level}%
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                                        <div
+                                                            className="bg-blue-600 h-2 rounded-full"
+                                                            style={{
+                                                                width: `${skill.level}%`,
+                                                            }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2 ml-4">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleEditSkill(
+                                                                index
+                                                            )
+                                                        }
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDeleteSkill(
+                                                                index
+                                                            )
+                                                        }
+                                                        className="text-red-500"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Certifications Management */}
+                    {manageType === "certifications" && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-semibold">
+                                    Certifications
+                                </h3>
+                                <Button
+                                    onClick={handleAddCertification}
+                                    size="sm"
+                                >
+                                    <PlusCircle className="h-4 w-4 mr-2" />
+                                    Add Certification
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
+                                {selectedProgrammer?.certifications?.length ===
+                                0 ? (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                        No certifications yet
+                                    </p>
+                                ) : (
+                                    selectedProgrammer?.certifications?.map(
+                                        (cert, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between p-3 border rounded-lg"
+                                            >
+                                                <div className="flex-1">
+                                                    <div className="font-medium">
+                                                        {cert}
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleDeleteCertification(
+                                                            index
+                                                        )
+                                                    }
+                                                    className="text-red-500"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        )
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Recent Projects Management */}
+                    {manageType === "projects" && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-semibold">
+                                    Recent Projects
+                                </h3>
+                                <Button onClick={handleAddProject} size="sm">
+                                    <PlusCircle className="h-4 w-4 mr-2" />
+                                    Add Project
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
+                                {selectedProgrammer?.recentProjects?.length ===
+                                0 ? (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                        No projects yet
+                                    </p>
+                                ) : (
+                                    selectedProgrammer?.recentProjects?.map(
+                                        (project, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-start justify-between p-3 border rounded-lg"
+                                            >
+                                                <div className="flex-1">
+                                                    <div className="font-medium">
+                                                        {project.title}
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        {project.description}
+                                                    </div>
+                                                    <div className="flex gap-2 mt-2">
+                                                        {project.tech.map(
+                                                            (tech) => (
+                                                                <Badge
+                                                                    key={tech}
+                                                                    variant="secondary"
+                                                                    className="text-xs"
+                                                                >
+                                                                    {tech}
+                                                                </Badge>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground mt-1">
+                                                        {project.role} •{" "}
+                                                        {project.duration}
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2 ml-4">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleEditProject(
+                                                                index
+                                                            )
+                                                        }
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDeleteProject(
+                                                                index
+                                                            )
+                                                        }
+                                                        className="text-red-500"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Testimonials Management */}
+                    {manageType === "testimonials" && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-semibold">Testimonials</h3>
+                                <Button
+                                    onClick={handleAddTestimonial}
+                                    size="sm"
+                                >
+                                    <PlusCircle className="h-4 w-4 mr-2" />
+                                    Add Testimonial
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
+                                {selectedProgrammer?.testimonials?.length ===
+                                0 ? (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                        No testimonials yet
+                                    </p>
+                                ) : (
+                                    selectedProgrammer?.testimonials?.map(
+                                        (testimonial, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-start justify-between p-3 border rounded-lg"
+                                            >
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="font-medium">
+                                                            {testimonial.name}
+                                                        </div>
+                                                        <div className="flex">
+                                                            {Array.from({
+                                                                length: testimonial.rating,
+                                                            }).map((_, i) => (
+                                                                <Star
+                                                                    key={i}
+                                                                    className="h-3 w-3 text-yellow-500 fill-current"
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        {testimonial.role} at{" "}
+                                                        {testimonial.company}
+                                                    </div>
+                                                    <div className="text-sm mt-1">
+                                                        "{testimonial.text}"
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2 ml-4">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleEditTestimonial(
+                                                                index
+                                                            )
+                                                        }
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDeleteTestimonial(
+                                                                index
+                                                            )
+                                                        }
+                                                        className="text-red-500"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Skill Dialog */}
+            <Dialog open={skillDialogOpen} onOpenChange={setSkillDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editingSkillIndex !== null
+                                ? "Edit Skill"
+                                : "Add Skill"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Skill Name *</Label>
+                            <Input
+                                placeholder="e.g., React, Python, AWS"
+                                value={skillForm.name}
+                                onChange={(e) =>
+                                    setSkillForm({
+                                        ...skillForm,
+                                        name: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Level (0-100) * - {skillForm.level}%</Label>
+                            <Input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={skillForm.level}
+                                onChange={(e) =>
+                                    setSkillForm({
+                                        ...skillForm,
+                                        level: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setSkillDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSaveSkill}>Save</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Certification Dialog */}
+            <Dialog open={certDialogOpen} onOpenChange={setCertDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Certification</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Certification Name *</Label>
+                            <Input
+                                placeholder="e.g., AWS Certified Solutions Architect"
+                                value={certForm}
+                                onChange={(e) => setCertForm(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setCertDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSaveCertification}>Add</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Project Dialog */}
+            <Dialog
+                open={projectDialogOpen}
+                onOpenChange={setProjectDialogOpen}
+            >
+                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editingProjectIndex !== null
+                                ? "Edit Project"
+                                : "Add Project"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Title *</Label>
+                                <Input
+                                    placeholder="Project title"
+                                    value={projectForm.title}
+                                    onChange={(e) =>
+                                        setProjectForm({
+                                            ...projectForm,
+                                            title: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Role *</Label>
+                                <Input
+                                    placeholder="e.g., Lead Developer"
+                                    value={projectForm.role}
+                                    onChange={(e) =>
+                                        setProjectForm({
+                                            ...projectForm,
+                                            role: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Description *</Label>
+                            <Textarea
+                                placeholder="Project description"
+                                value={projectForm.description}
+                                onChange={(e) =>
+                                    setProjectForm({
+                                        ...projectForm,
+                                        description: e.target.value,
+                                    })
+                                }
+                                rows={3}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Technologies (comma-separated) *</Label>
+                            <Input
+                                placeholder="React, Node.js, MongoDB"
+                                value={projectForm.tech}
+                                onChange={(e) =>
+                                    setProjectForm({
+                                        ...projectForm,
+                                        tech: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Duration *</Label>
+                                <Input
+                                    placeholder="e.g., 3 months"
+                                    value={projectForm.duration}
+                                    onChange={(e) =>
+                                        setProjectForm({
+                                            ...projectForm,
+                                            duration: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Link</Label>
+                                <Input
+                                    placeholder="https://project-url.com"
+                                    value={projectForm.link}
+                                    onChange={(e) =>
+                                        setProjectForm({
+                                            ...projectForm,
+                                            link: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Image URL</Label>
+                            <Input
+                                placeholder="https://image-url.com/image.jpg"
+                                value={projectForm.image}
+                                onChange={(e) =>
+                                    setProjectForm({
+                                        ...projectForm,
+                                        image: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setProjectDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSaveProject}>Save</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Testimonial Dialog */}
+            <Dialog
+                open={testimonialDialogOpen}
+                onOpenChange={setTestimonialDialogOpen}
+            >
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editingTestimonialIndex !== null
+                                ? "Edit Testimonial"
+                                : "Add Testimonial"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Name *</Label>
+                                <Input
+                                    placeholder="Client name"
+                                    value={testimonialForm.name}
+                                    onChange={(e) =>
+                                        setTestimonialForm({
+                                            ...testimonialForm,
+                                            name: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Role *</Label>
+                                <Input
+                                    placeholder="e.g., CEO"
+                                    value={testimonialForm.role}
+                                    onChange={(e) =>
+                                        setTestimonialForm({
+                                            ...testimonialForm,
+                                            role: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Company *</Label>
+                            <Input
+                                placeholder="Company name"
+                                value={testimonialForm.company}
+                                onChange={(e) =>
+                                    setTestimonialForm({
+                                        ...testimonialForm,
+                                        company: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Testimonial Text *</Label>
+                            <Textarea
+                                placeholder="What they said about you..."
+                                value={testimonialForm.text}
+                                onChange={(e) =>
+                                    setTestimonialForm({
+                                        ...testimonialForm,
+                                        text: e.target.value,
+                                    })
+                                }
+                                rows={4}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Rating (1-5) *</Label>
+                            <Select
+                                value={testimonialForm.rating}
+                                onValueChange={(value) =>
+                                    setTestimonialForm({
+                                        ...testimonialForm,
+                                        rating: value,
+                                    })
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="5">5 Stars</SelectItem>
+                                    <SelectItem value="4">4 Stars</SelectItem>
+                                    <SelectItem value="3">3 Stars</SelectItem>
+                                    <SelectItem value="2">2 Stars</SelectItem>
+                                    <SelectItem value="1">1 Star</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setTestimonialDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSaveTestimonial}>Save</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
