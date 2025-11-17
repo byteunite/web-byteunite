@@ -34,7 +34,7 @@ export default function PoinUtamaSlide({
                 height={height * 2}
                 className="absolute -top-10 -right-20 object-cover opacity-50"
                 style={{
-                    filter: `brightness(1.2) contrast(1.1) saturate(0.9)`,
+                    // filter: `brightness(1.2) contrast(1.1) saturate(0.9)`,
                     mixBlendMode: "multiply",
                     width: `55%`,
                     height: `55%`,

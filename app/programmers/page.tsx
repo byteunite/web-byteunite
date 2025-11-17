@@ -20,134 +20,98 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import { useState } from "react";
-import { Search, Github, ExternalLink, MapPin, Star } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+    Search,
+    Github,
+    ExternalLink,
+    MapPin,
+    Star,
+    Loader2,
+} from "lucide-react";
 
-// Mock data for programmers
-const programmersData = [
-    {
-        id: 1,
-        name: "Sarah Chen",
-        role: "Frontend Developer",
-        location: "San Francisco, CA",
-        bio: "Passionate about creating beautiful, accessible user interfaces with React and modern CSS.",
-        stack: ["React", "TypeScript", "Tailwind CSS", "Next.js"],
-        category: "frontend",
-        avatar: "/professional-woman-developer.png",
-        github: "sarahchen",
-        portfolio: "sarahchen.dev",
-        rating: 4.9,
-        projects: 12,
-    },
-    {
-        id: 2,
-        name: "Marcus Rodriguez",
-        role: "Full Stack Engineer",
-        location: "Austin, TX",
-        bio: "Building scalable web applications with modern technologies and best practices.",
-        stack: ["Node.js", "Python", "PostgreSQL", "Docker", "AWS"],
-        category: "fullstack",
-        avatar: "/professional-man-developer.png",
-        github: "marcusdev",
-        portfolio: "marcus.codes",
-        rating: 4.8,
-        projects: 18,
-    },
-    {
-        id: 3,
-        name: "Aisha Patel",
-        role: "Mobile Developer",
-        location: "Toronto, ON",
-        bio: "Creating native and cross-platform mobile experiences that users love.",
-        stack: ["React Native", "Swift", "Kotlin", "Flutter"],
-        category: "mobile",
-        avatar: "/professional-woman-mobile-developer.jpg",
-        github: "aishapatel",
-        portfolio: "aisha.app",
-        rating: 4.9,
-        projects: 15,
-    },
-    {
-        id: 4,
-        name: "David Kim",
-        role: "Backend Developer",
-        location: "Seattle, WA",
-        bio: "Designing robust APIs and distributed systems for high-scale applications.",
-        stack: ["Go", "Kubernetes", "Redis", "MongoDB", "gRPC"],
-        category: "backend",
-        avatar: "/professional-asian-man-developer.jpg",
-        github: "davidkim",
-        portfolio: "davidkim.dev",
-        rating: 4.7,
-        projects: 22,
-    },
-    {
-        id: 5,
-        name: "Elena Volkov",
-        role: "DevOps Engineer",
-        location: "Berlin, Germany",
-        bio: "Automating infrastructure and improving developer experience through CI/CD.",
-        stack: ["Terraform", "Jenkins", "Docker", "AWS", "Ansible"],
-        category: "backend",
-        avatar: "/professional-woman-devops-engineer.jpg",
-        github: "elenavolkov",
-        portfolio: "elena.cloud",
-        rating: 4.8,
-        projects: 9,
-    },
-    {
-        id: 6,
-        name: "James Wilson",
-        role: "Frontend Architect",
-        location: "London, UK",
-        bio: "Leading frontend teams and establishing scalable architecture patterns.",
-        stack: ["Vue.js", "Nuxt.js", "GraphQL", "Storybook", "Webpack"],
-        category: "frontend",
-        avatar: "/professional-british-man-developer.jpg",
-        github: "jameswilson",
-        portfolio: "jameswilson.tech",
-        rating: 4.9,
-        projects: 25,
-    },
-];
+interface Programmer {
+    _id: string;
+    name: string;
+    role: string;
+    location: string;
+    bio: string;
+    stack: string[];
+    category: string;
+    avatar: string;
+    github: string;
+    portfolio: string;
+    rating: number;
+    projects: number;
+}
 
 export default function ProgrammersPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [sortBy, setSortBy] = useState("name");
+    const [programmers, setProgrammers] = useState<Programmer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Filter and sort programmers
-    const filteredProgrammers = programmersData
-        .filter((programmer) => {
-            const matchesSearch =
-                programmer.name
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase()) ||
-                programmer.role
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase()) ||
-                programmer.stack.some((tech) =>
-                    tech.toLowerCase().includes(searchTerm.toLowerCase())
-                );
+    useEffect(() => {
+        async function fetchProgrammers() {
+            try {
+                setLoading(true);
+                const params = new URLSearchParams({
+                    category: selectedCategory,
+                    search: searchTerm,
+                    sortBy,
+                });
+                const response = await fetch(`/api/programmers?${params}`);
+                const result = await response.json();
 
-            const matchesCategory =
-                selectedCategory === "all" ||
-                programmer.category === selectedCategory;
-
-            return matchesSearch && matchesCategory;
-        })
-        .sort((a, b) => {
-            switch (sortBy) {
-                case "name":
-                    return a.name.localeCompare(b.name);
-                case "rating":
-                    return b.rating - a.rating;
-                case "projects":
-                    return b.projects - a.projects;
-                default:
-                    return 0;
+                if (result.success) {
+                    setProgrammers(result.data);
+                } else {
+                    setError("Failed to load programmers");
+                }
+            } catch (err) {
+                console.error("Error fetching programmers:", err);
+                setError("Failed to load programmers");
+            } finally {
+                setLoading(false);
             }
-        });
+        }
+
+        fetchProgrammers();
+    }, [selectedCategory, searchTerm, sortBy]);
+
+    // Filter and sort programmers (now done on client for immediate feedback)
+    const filteredProgrammers = programmers;
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Navigation />
+                <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Navigation />
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                        <p className="text-red-500 mb-4">{error}</p>
+                        <Button onClick={() => window.location.reload()}>
+                            Try Again
+                        </Button>
+                    </div>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -236,7 +200,7 @@ export default function ProgrammersPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredProgrammers.map((programmer) => (
                             <Card
-                                key={programmer.id}
+                                key={programmer._id}
                                 className="hover:shadow-lg transition-all duration-300 hover:scale-105"
                             >
                                 <CardHeader className="text-center">
@@ -331,7 +295,7 @@ export default function ProgrammersPage() {
 
                                     <Button className="w-full" asChild>
                                         <Link
-                                            href={`/programmers/${programmer.id}`}
+                                            href={`/programmers/${programmer._id}`}
                                         >
                                             View Profile
                                         </Link>
