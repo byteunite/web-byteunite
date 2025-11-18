@@ -18,12 +18,20 @@ export interface ICarouselData {
     hashtags: string[];
 }
 
+// Interface untuk Video Script Data
+export interface IVideoScript {
+    script: string;
+    estimatedDuration: string;
+    tips: string[];
+}
+
 // Interface untuk Riddle Document
 export interface IRiddle extends Document {
     title: string;
     riddle: string;
     solution: string;
     carouselData: ICarouselData;
+    videoScript?: IVideoScript; // Optional, script untuk video TikTok/Reels/Shorts
     createdAt: Date;
     updatedAt: Date;
 }
@@ -82,6 +90,25 @@ const CarouselDataSchema = new Schema<ICarouselData>(
     { _id: false }
 );
 
+// Schema untuk Video Script
+const VideoScriptSchema = new Schema<IVideoScript>(
+    {
+        script: {
+            type: String,
+            required: true,
+        },
+        estimatedDuration: {
+            type: String,
+            required: true,
+        },
+        tips: {
+            type: [String],
+            required: true,
+        },
+    },
+    { _id: false }
+);
+
 // Schema untuk Riddle
 const RiddleSchema = new Schema<IRiddle>(
     {
@@ -101,6 +128,10 @@ const RiddleSchema = new Schema<IRiddle>(
         carouselData: {
             type: CarouselDataSchema,
             required: [true, "Carousel data is required"],
+        },
+        videoScript: {
+            type: VideoScriptSchema,
+            required: false, // Optional, akan diisi ketika user generate script
         },
     },
     {

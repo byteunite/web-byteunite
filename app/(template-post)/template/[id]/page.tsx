@@ -266,6 +266,7 @@ export default async function TemplatePage({
                     caption={fetchedData.carouselData.caption}
                     hashtags={fetchedData.carouselData.hashtags}
                     category={category}
+                    contentId={id}
                 />
             )}
         </div>

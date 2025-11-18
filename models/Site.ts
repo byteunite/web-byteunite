@@ -18,6 +18,13 @@ export interface ICarouselData {
     hashtags: string[];
 }
 
+// Interface untuk Video Script Data
+export interface IVideoScript {
+    script: string;
+    estimatedDuration: string;
+    tips: string[];
+}
+
 // Interface untuk Site Document
 export interface ISite extends Document {
     title: string;
@@ -27,6 +34,7 @@ export interface ISite extends Document {
     thumbnails: string[];
     isFree: boolean;
     carouselData: ICarouselData;
+    videoScript?: IVideoScript; // Optional, script untuk video TikTok/Reels/Shorts
     createdAt: Date;
     updatedAt: Date;
 }
@@ -85,6 +93,25 @@ const CarouselDataSchema = new Schema<ICarouselData>(
     { _id: false }
 );
 
+// Schema untuk Video Script
+const VideoScriptSchema = new Schema<IVideoScript>(
+    {
+        script: {
+            type: String,
+            required: true,
+        },
+        estimatedDuration: {
+            type: String,
+            required: true,
+        },
+        tips: {
+            type: [String],
+            required: true,
+        },
+    },
+    { _id: false }
+);
+
 // Schema untuk Site
 const SiteSchema = new Schema<ISite>(
     {
@@ -120,6 +147,10 @@ const SiteSchema = new Schema<ISite>(
         carouselData: {
             type: CarouselDataSchema,
             required: [true, "Carousel data is required"],
+        },
+        videoScript: {
+            type: VideoScriptSchema,
+            required: false, // Optional, akan diisi ketika user generate script
         },
     },
     {

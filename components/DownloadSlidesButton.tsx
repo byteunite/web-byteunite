@@ -10,6 +10,8 @@ import {
     ChevronRight,
     Copy,
     Check,
+    Video,
+    FileText,
 } from "lucide-react";
 import {
     Dialog,
@@ -35,6 +37,7 @@ interface DownloadSlidesButtonProps {
     caption: string;
     hashtags: string[];
     category?: string;
+    contentId?: string; // ID untuk save video script ke database
 }
 
 /**
@@ -51,12 +54,141 @@ function getCategoryHashtag(category?: string): string {
     return hashtagMap[category || "riddles"] || "#ByteUnite";
 }
 
+/**
+ * Helper function to render markdown text
+ * Supports: **bold**, *italic*, [visual cues], and line breaks
+ */
+function renderMarkdown(text: string): React.ReactNode {
+    if (!text) return null;
+
+    // Split by line breaks first
+    const lines = text.split('\n');
+    
+    return lines.map((line, lineIndex) => {
+        const parts: React.ReactNode[] = [];
+        let currentIndex = 0;
+        
+        // Regex untuk match **bold**, *italic*, dan [visual cues]
+        const regex = /(\*\*.*?\*\*|\*.*?\*|\[.*?\])/g;
+        let match;
+        
+        while ((match = regex.exec(line)) !== null) {
+            // Add text before match
+            if (match.index > currentIndex) {
+                parts.push(line.substring(currentIndex, match.index));
+            }
+            
+            const matchedText = match[0];
+            
+            // Check type of match
+            if (matchedText.startsWith('**') && matchedText.endsWith('**')) {
+                // Bold text
+                parts.push(
+                    <strong key={`bold-${lineIndex}-${match.index}`} className="font-bold text-gray-900">
+                        {matchedText.slice(2, -2)}
+                    </strong>
+                );
+            } else if (matchedText.startsWith('*') && matchedText.endsWith('*')) {
+                // Italic text
+                parts.push(
+                    <em key={`italic-${lineIndex}-${match.index}`} className="italic text-gray-700">
+                        {matchedText.slice(1, -1)}
+                    </em>
+                );
+            } else if (matchedText.startsWith('[') && matchedText.endsWith(']')) {
+                // Visual cues
+                parts.push(
+                    <span key={`cue-${lineIndex}-${match.index}`} className="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs font-medium">
+                        {matchedText.slice(1, -1)}
+                    </span>
+                );
+            }
+            
+            currentIndex = match.index + matchedText.length;
+        }
+        
+        // Add remaining text
+        if (currentIndex < line.length) {
+            parts.push(line.substring(currentIndex));
+        }
+        
+        // Return line with line break (except last line)
+        return (
+            <span key={`line-${lineIndex}`}>
+                {parts.length > 0 ? parts : line}
+                {lineIndex < lines.length - 1 && <br />}
+            </span>
+        );
+    });
+}
+
+/**
+ * Helper function to clean script for prompter
+ * Removes markdown formatting, visual cues, and identifiers
+ * Formats with proper line breaks for easy reading
+ */
+function cleanScriptForPrompter(text: string): string {
+    if (!text) return "";
+
+    // 1. Remove identifiers like "CREATOR:", "HOST:", etc.
+    let cleaned = text.replace(/^(CREATOR|HOST|NARRATOR|SPEAKER|INTRO|HOOK|OUTRO):\s*/gim, '');
+    
+    // 2. Remove visual cues [text]
+    cleaned = cleaned.replace(/\[.*?\]/g, '');
+    
+    // 3. Remove bold **text**
+    cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '$1');
+    
+    // 4. Remove italic *text*
+    cleaned = cleaned.replace(/\*(.*?)\*/g, '$1');
+    
+    // 5. Remove markdown headers (###, ##, #)
+    cleaned = cleaned.replace(/^#+\s+/gm, '');
+    
+    // 6. Clean up multiple spaces
+    cleaned = cleaned.replace(/\s+/g, ' ');
+    
+    // 7. Clean up spaces around punctuation
+    cleaned = cleaned.replace(/\s+([.,!?])/g, '$1');
+    
+    // 8. Split into sentences for better readability
+    // Add line break after sentences (. ! ?)
+    cleaned = cleaned.replace(/([.!?])\s+/g, '$1\n');
+    
+    // 9. Add line break after commas in long sentences (for natural pauses)
+    // But only if the segment is long enough (> 50 chars)
+    const lines = cleaned.split('\n');
+    cleaned = lines.map(line => {
+        if (line.length > 80) {
+            // For long lines, add breaks after commas for easier reading
+            return line.replace(/,\s+/g, ',\n');
+        }
+        return line;
+    }).join('\n');
+    
+    // 10. Clean up excessive line breaks (max 2 consecutive)
+    cleaned = cleaned.replace(/\n\s*\n\s*\n+/g, '\n\n');
+    
+    // 11. Trim each line
+    cleaned = cleaned.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0) // Remove empty lines
+        .join('\n');
+    
+    // 12. Add spacing between logical sections (double line break before certain patterns)
+    // Detect new sections by keywords
+    cleaned = cleaned.replace(/\n(Halo|Hai|Nah|Jadi|Kalau|Oke|Dan yang terakhir)/g, '\n\n$1');
+    
+    return cleaned.trim();
+}
+
 export default function DownloadSlidesButton({
     slides,
     riddleId,
     caption,
     hashtags,
     category,
+    contentId,
 }: DownloadSlidesButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -65,6 +197,18 @@ export default function DownloadSlidesButton({
     const [copiedCaption, setCopiedCaption] = useState(false);
     const [copiedHashtags, setCopiedHashtags] = useState(false);
     const [copiedAll, setCopiedAll] = useState(false);
+
+    // Video Script states
+    const [videoScript, setVideoScript] = useState<{
+        script: string;
+        estimatedDuration: string;
+        tips: string[];
+    } | null>(null);
+    const [generatingScript, setGeneratingScript] = useState(false);
+    const [savingScript, setSavingScript] = useState(false);
+    const [copiedScript, setCopiedScript] = useState(false);
+    const [copiedNarration, setCopiedNarration] = useState(false); // For prompter copy
+    const [showScriptSection, setShowScriptSection] = useState(false);
 
     // Check if all slides have saved_slide_url
     const allSlidesSaved = slides.every((slide) => slide.saved_slide_url);
@@ -173,6 +317,114 @@ export default function DownloadSlidesButton({
             setTimeout(() => setCopiedAll(false), 2000);
         } catch (error) {
             console.error("Failed to copy all:", error);
+        }
+    };
+
+    const generateVideoScript = async () => {
+        setGeneratingScript(true);
+        try {
+            const response = await fetch("/api/generate-video-script", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    caption,
+                    slides: slides.map((slide) => ({
+                        tipe_slide: slide.tipe_slide,
+                        judul_slide: slide.judul_slide,
+                        sub_judul_slide: slide.sub_judul_slide,
+                        konten_slide: slide.konten_slide,
+                    })),
+                    category: category || "riddles",
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to generate video script");
+            }
+
+            const result = await response.json();
+            setVideoScript(result.data);
+            setShowScriptSection(true);
+        } catch (error) {
+            console.error("Error generating video script:", error);
+            alert("Gagal generate video script");
+        } finally {
+            setGeneratingScript(false);
+        }
+    };
+
+    const saveVideoScript = async () => {
+        if (!videoScript || !contentId) {
+            alert(
+                "Video script belum di-generate atau contentId tidak tersedia"
+            );
+            return;
+        }
+
+        setSavingScript(true);
+        try {
+            const response = await fetch("/api/save-video-script", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    contentId,
+                    category: category || "riddles",
+                    videoScript,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to save video script");
+            }
+
+            alert("Video script berhasil disimpan!");
+        } catch (error) {
+            console.error("Error saving video script:", error);
+            alert("Gagal menyimpan video script");
+        } finally {
+            setSavingScript(false);
+        }
+    };
+
+    const copyVideoScript = async () => {
+        if (!videoScript) return;
+
+        try {
+            const scriptText = `VIDEO SCRIPT - ${
+                category?.toUpperCase() || "CONTENT"
+            }
+Duration: ${videoScript.estimatedDuration}
+
+${videoScript.script}
+
+---
+TIPS FOR DELIVERY:
+${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
+
+            await navigator.clipboard.writeText(scriptText);
+            setCopiedScript(true);
+            setTimeout(() => setCopiedScript(false), 2000);
+        } catch (error) {
+            console.error("Failed to copy script:", error);
+        }
+    };
+
+    const copyNarrationForPrompter = async () => {
+        if (!videoScript) return;
+
+        try {
+            // Clean script - remove markdown and visual cues
+            const cleanedScript = cleanScriptForPrompter(videoScript.script);
+            
+            await navigator.clipboard.writeText(cleanedScript);
+            setCopiedNarration(true);
+            setTimeout(() => setCopiedNarration(false), 2000);
+        } catch (error) {
+            console.error("Failed to copy narration:", error);
         }
     };
 
@@ -417,6 +669,155 @@ export default function DownloadSlidesButton({
                                         </>
                                     )}
                                 </Button>
+
+                                {/* Video Script Section */}
+                                <div className="pt-4 border-t space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Video className="h-4 w-4 text-purple-600" />
+                                            <p className="text-sm font-semibold text-gray-700">
+                                                Video Script
+                                                (TikTok/Reels/Shorts)
+                                            </p>
+                                        </div>
+                                        {!showScriptSection && (
+                                            <Button
+                                                onClick={generateVideoScript}
+                                                disabled={generatingScript}
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 gap-1.5"
+                                            >
+                                                {generatingScript ? (
+                                                    <>
+                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                        Generating...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <FileText className="h-3 w-3" />
+                                                        Generate Script
+                                                    </>
+                                                )}
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    {showScriptSection && videoScript && (
+                                        <div className="space-y-3 bg-purple-50 p-4 rounded-lg">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-xs font-medium text-purple-700">
+                                                    Duration:{" "}
+                                                    {
+                                                        videoScript.estimatedDuration
+                                                    }
+                                                </span>
+                                            </div>
+
+                                            <div className="bg-white p-3 rounded border border-purple-200 max-h-48 overflow-y-auto">
+                                                <div className="text-sm text-gray-800 leading-relaxed">
+                                                    {renderMarkdown(videoScript.script)}
+                                                </div>
+                                            </div>
+
+                                            {videoScript.tips &&
+                                                videoScript.tips.length > 0 && (
+                                                    <div className="bg-white p-3 rounded border border-purple-200">
+                                                        <p className="text-xs font-semibold text-purple-700 mb-2">
+                                                            Tips for Delivery:
+                                                        </p>
+                                                        <ul className="text-xs text-gray-700 space-y-1.5">
+                                                            {videoScript.tips.map(
+                                                                (
+                                                                    tip,
+                                                                    index
+                                                                ) => (
+                                                                    <li
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="flex gap-2 items-start"
+                                                                    >
+                                                                        <span className="text-purple-600 mt-0.5 shrink-0">
+                                                                            •
+                                                                        </span>
+                                                                        <span className="flex-1 leading-relaxed">
+                                                                            {renderMarkdown(tip)}
+                                                                        </span>
+                                                                    </li>
+                                                                )
+                                                            )}
+                                                        </ul>
+                                                    </div>
+                                                )}
+
+                                            {/* Primary Action: Copy for Prompter */}
+                                            <Button
+                                                onClick={copyNarrationForPrompter}
+                                                variant="default"
+                                                size="lg"
+                                                className="w-full bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md"
+                                            >
+                                                {copiedNarration ? (
+                                                    <>
+                                                        <Check className="mr-2 h-4 w-4" />
+                                                        Copied for Prompter!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <FileText className="mr-2 h-4 w-4" />
+                                                        Copy Narration for Prompter
+                                                    </>
+                                                )}
+                                            </Button>
+
+                                            {/* Secondary Actions */}
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    onClick={copyVideoScript}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex-1 h-8 text-xs gap-1.5"
+                                                >
+                                                    {copiedScript ? (
+                                                        <>
+                                                            <Check className="h-3 w-3 text-green-600" />
+                                                            Copied!
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Copy className="h-3 w-3" />
+                                                            Full Script
+                                                        </>
+                                                    )}
+                                                </Button>
+                                                {contentId && (
+                                                    <Button
+                                                        onClick={
+                                                            saveVideoScript
+                                                        }
+                                                        disabled={savingScript}
+                                                        variant="default"
+                                                        size="sm"
+                                                        className="flex-1 h-8 text-xs gap-1.5"
+                                                    >
+                                                        {savingScript ? (
+                                                            <>
+                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                                Saving...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Download className="h-3 w-3" />
+                                                                Save to DB
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

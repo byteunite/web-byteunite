@@ -16,6 +16,12 @@ const CarouselDataSchema = new mongoose.Schema({
     hashtags: [{ type: String }],
 });
 
+const VideoScriptSchema = new mongoose.Schema({
+    script: { type: String, required: true },
+    estimatedDuration: { type: String, required: true },
+    tips: [{ type: String }],
+});
+
 const TopicSchema = new mongoose.Schema(
     {
         title: {
@@ -39,6 +45,10 @@ const TopicSchema = new mongoose.Schema(
         carouselData: {
             type: CarouselDataSchema,
             required: true,
+        },
+        videoScript: {
+            type: VideoScriptSchema,
+            required: false, // Optional, akan diisi ketika user generate script
         },
     },
     {
