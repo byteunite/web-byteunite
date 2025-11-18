@@ -62,56 +62,71 @@ function renderMarkdown(text: string): React.ReactNode {
     if (!text) return null;
 
     // Split by line breaks first
-    const lines = text.split('\n');
-    
+    const lines = text.split("\n");
+
     return lines.map((line, lineIndex) => {
         const parts: React.ReactNode[] = [];
         let currentIndex = 0;
-        
+
         // Regex untuk match **bold**, *italic*, dan [visual cues]
         const regex = /(\*\*.*?\*\*|\*.*?\*|\[.*?\])/g;
         let match;
-        
+
         while ((match = regex.exec(line)) !== null) {
             // Add text before match
             if (match.index > currentIndex) {
                 parts.push(line.substring(currentIndex, match.index));
             }
-            
+
             const matchedText = match[0];
-            
+
             // Check type of match
-            if (matchedText.startsWith('**') && matchedText.endsWith('**')) {
+            if (matchedText.startsWith("**") && matchedText.endsWith("**")) {
                 // Bold text
                 parts.push(
-                    <strong key={`bold-${lineIndex}-${match.index}`} className="font-bold text-gray-900">
+                    <strong
+                        key={`bold-${lineIndex}-${match.index}`}
+                        className="font-bold text-gray-900"
+                    >
                         {matchedText.slice(2, -2)}
                     </strong>
                 );
-            } else if (matchedText.startsWith('*') && matchedText.endsWith('*')) {
+            } else if (
+                matchedText.startsWith("*") &&
+                matchedText.endsWith("*")
+            ) {
                 // Italic text
                 parts.push(
-                    <em key={`italic-${lineIndex}-${match.index}`} className="italic text-gray-700">
+                    <em
+                        key={`italic-${lineIndex}-${match.index}`}
+                        className="italic text-gray-700"
+                    >
                         {matchedText.slice(1, -1)}
                     </em>
                 );
-            } else if (matchedText.startsWith('[') && matchedText.endsWith(']')) {
+            } else if (
+                matchedText.startsWith("[") &&
+                matchedText.endsWith("]")
+            ) {
                 // Visual cues
                 parts.push(
-                    <span key={`cue-${lineIndex}-${match.index}`} className="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs font-medium">
+                    <span
+                        key={`cue-${lineIndex}-${match.index}`}
+                        className="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs font-medium"
+                    >
                         {matchedText.slice(1, -1)}
                     </span>
                 );
             }
-            
+
             currentIndex = match.index + matchedText.length;
         }
-        
+
         // Add remaining text
         if (currentIndex < line.length) {
             parts.push(line.substring(currentIndex));
         }
-        
+
         // Return line with line break (except last line)
         return (
             <span key={`line-${lineIndex}`}>
@@ -131,54 +146,63 @@ function cleanScriptForPrompter(text: string): string {
     if (!text) return "";
 
     // 1. Remove identifiers like "CREATOR:", "HOST:", etc.
-    let cleaned = text.replace(/^(CREATOR|HOST|NARRATOR|SPEAKER|INTRO|HOOK|OUTRO):\s*/gim, '');
-    
+    let cleaned = text.replace(
+        /^(CREATOR|HOST|NARRATOR|SPEAKER|INTRO|HOOK|OUTRO):\s*/gim,
+        ""
+    );
+
     // 2. Remove visual cues [text]
-    cleaned = cleaned.replace(/\[.*?\]/g, '');
-    
+    cleaned = cleaned.replace(/\[.*?\]/g, "");
+
     // 3. Remove bold **text**
-    cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '$1');
-    
+    cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, "$1");
+
     // 4. Remove italic *text*
-    cleaned = cleaned.replace(/\*(.*?)\*/g, '$1');
-    
+    cleaned = cleaned.replace(/\*(.*?)\*/g, "$1");
+
     // 5. Remove markdown headers (###, ##, #)
-    cleaned = cleaned.replace(/^#+\s+/gm, '');
-    
+    cleaned = cleaned.replace(/^#+\s+/gm, "");
+
     // 6. Clean up multiple spaces
-    cleaned = cleaned.replace(/\s+/g, ' ');
-    
+    cleaned = cleaned.replace(/\s+/g, " ");
+
     // 7. Clean up spaces around punctuation
-    cleaned = cleaned.replace(/\s+([.,!?])/g, '$1');
-    
+    cleaned = cleaned.replace(/\s+([.,!?])/g, "$1");
+
     // 8. Split into sentences for better readability
     // Add line break after sentences (. ! ?)
-    cleaned = cleaned.replace(/([.!?])\s+/g, '$1\n');
-    
+    cleaned = cleaned.replace(/([.!?])\s+/g, "$1\n");
+
     // 9. Add line break after commas in long sentences (for natural pauses)
     // But only if the segment is long enough (> 50 chars)
-    const lines = cleaned.split('\n');
-    cleaned = lines.map(line => {
-        if (line.length > 80) {
-            // For long lines, add breaks after commas for easier reading
-            return line.replace(/,\s+/g, ',\n');
-        }
-        return line;
-    }).join('\n');
-    
+    const lines = cleaned.split("\n");
+    cleaned = lines
+        .map((line) => {
+            if (line.length > 80) {
+                // For long lines, add breaks after commas for easier reading
+                return line.replace(/,\s+/g, ",\n");
+            }
+            return line;
+        })
+        .join("\n");
+
     // 10. Clean up excessive line breaks (max 2 consecutive)
-    cleaned = cleaned.replace(/\n\s*\n\s*\n+/g, '\n\n');
-    
+    cleaned = cleaned.replace(/\n\s*\n\s*\n+/g, "\n\n");
+
     // 11. Trim each line
-    cleaned = cleaned.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0) // Remove empty lines
-        .join('\n');
-    
+    cleaned = cleaned
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0) // Remove empty lines
+        .join("\n");
+
     // 12. Add spacing between logical sections (double line break before certain patterns)
     // Detect new sections by keywords
-    cleaned = cleaned.replace(/\n(Halo|Hai|Nah|Jadi|Kalau|Oke|Dan yang terakhir)/g, '\n\n$1');
-    
+    cleaned = cleaned.replace(
+        /\n(Halo|Hai|Nah|Jadi|Kalau|Oke|Dan yang terakhir)/g,
+        "\n\n$1"
+    );
+
     return cleaned.trim();
 }
 
@@ -419,7 +443,7 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
         try {
             // Clean script - remove markdown and visual cues
             const cleanedScript = cleanScriptForPrompter(videoScript.script);
-            
+
             await navigator.clipboard.writeText(cleanedScript);
             setCopiedNarration(true);
             setTimeout(() => setCopiedNarration(false), 2000);
@@ -716,7 +740,9 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
 
                                             <div className="bg-white p-3 rounded border border-purple-200 max-h-48 overflow-y-auto">
                                                 <div className="text-sm text-gray-800 leading-relaxed">
-                                                    {renderMarkdown(videoScript.script)}
+                                                    {renderMarkdown(
+                                                        videoScript.script
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -742,7 +768,9 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
                                                                             •
                                                                         </span>
                                                                         <span className="flex-1 leading-relaxed">
-                                                                            {renderMarkdown(tip)}
+                                                                            {renderMarkdown(
+                                                                                tip
+                                                                            )}
                                                                         </span>
                                                                     </li>
                                                                 )
@@ -753,7 +781,9 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
 
                                             {/* Primary Action: Copy for Prompter */}
                                             <Button
-                                                onClick={copyNarrationForPrompter}
+                                                onClick={
+                                                    copyNarrationForPrompter
+                                                }
                                                 variant="default"
                                                 size="lg"
                                                 className="w-full bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md"
@@ -766,7 +796,8 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
                                                 ) : (
                                                     <>
                                                         <FileText className="mr-2 h-4 w-4" />
-                                                        Copy Narration for Prompter
+                                                        Copy Narration for
+                                                        Prompter
                                                     </>
                                                 )}
                                             </Button>

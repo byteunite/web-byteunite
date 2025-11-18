@@ -4,24 +4,25 @@
 export const testMarkdownExamples = {
     // Test 1: Bold text
     bold: "Ini adalah **teks tebal** di dalam kalimat.",
-    
+
     // Test 2: Italic text
     italic: "Ini adalah *teks miring* di dalam kalimat.",
-    
+
     // Test 3: Visual cues
     visualCues: "[Close up] Lihat bagian ini [Zoom out]",
-    
+
     // Test 4: Kombinasi semua
-    combined: "[Close up] **Penting!** Ini adalah *tips* yang harus diikuti. [Transition]",
-    
+    combined:
+        "[Close up] **Penting!** Ini adalah *tips* yang harus diikuti. [Transition]",
+
     // Test 5: Multiple formatting dalam satu baris
     multipleSame: "**Bold pertama** dan **bold kedua** dalam satu baris.",
-    
+
     // Test 6: Line breaks
     multiLine: `**Hook pertama** di baris satu.
 *Tips kedua* di baris dua.
 [Visual cue] di baris tiga.`,
-    
+
     // Test 7: Script lengkap realistis
     fullScript: `[Close up ke wajah] **Eh, tau gak sih?** [pause] *90% developer* masih salah di hal ini!
 
@@ -41,9 +42,9 @@ Kalau bermanfaat, **save** dan **share** ya! [wave]`,
         "*Practice* beberapa kali sebelum recording",
         "Gunakan **visual cues** untuk [shot variety]",
         "[Close up] saat deliver poin penting",
-        "Keep **energy high** especially di *hook*"
+        "Keep **energy high** especially di *hook*",
     ],
-    
+
     // Test 9: Edge cases
     edgeCases: {
         emptyBold: "**",
@@ -53,7 +54,7 @@ Kalau bermanfaat, **save** dan **share** ya! [wave]`,
         unclosedBracket: "[Ini tidak tertutup",
         nested: "**Bold dengan *italic* di dalamnya**", // May not work as expected
         adjacent: "**Bold***Italic*", // Adjacent formatting
-    }
+    },
 };
 
 // Expected rendering untuk test 7 (fullScript):
@@ -81,25 +82,33 @@ Visual Structure:
 `;
 
 // Console log test untuk quick verification
-if (typeof window !== 'undefined') {
-    console.log('=== MARKDOWN RENDERING TEST ===');
-    console.log('\n1. Bold Test:');
-    console.log('Input:', testMarkdownExamples.bold);
-    console.log('Expected: "Ini adalah [BOLD]teks tebal[/BOLD] di dalam kalimat."\n');
-    
-    console.log('2. Italic Test:');
-    console.log('Input:', testMarkdownExamples.italic);
-    console.log('Expected: "Ini adalah [ITALIC]teks miring[/ITALIC] di dalam kalimat."\n');
-    
-    console.log('3. Visual Cues Test:');
-    console.log('Input:', testMarkdownExamples.visualCues);
-    console.log('Expected: "[BADGE]Close up[/BADGE] Lihat bagian ini [BADGE]Zoom out[/BADGE]"\n');
-    
-    console.log('4. Combined Test:');
-    console.log('Input:', testMarkdownExamples.combined);
-    console.log('Expected: "[BADGE]Close up[/BADGE] [BOLD]Penting![/BOLD] Ini adalah [ITALIC]tips[/ITALIC] yang harus diikuti. [BADGE]Transition[/BADGE]"\n');
-    
-    console.log('=== END OF TESTS ===');
+if (typeof window !== "undefined") {
+    console.log("=== MARKDOWN RENDERING TEST ===");
+    console.log("\n1. Bold Test:");
+    console.log("Input:", testMarkdownExamples.bold);
+    console.log(
+        'Expected: "Ini adalah [BOLD]teks tebal[/BOLD] di dalam kalimat."\n'
+    );
+
+    console.log("2. Italic Test:");
+    console.log("Input:", testMarkdownExamples.italic);
+    console.log(
+        'Expected: "Ini adalah [ITALIC]teks miring[/ITALIC] di dalam kalimat."\n'
+    );
+
+    console.log("3. Visual Cues Test:");
+    console.log("Input:", testMarkdownExamples.visualCues);
+    console.log(
+        'Expected: "[BADGE]Close up[/BADGE] Lihat bagian ini [BADGE]Zoom out[/BADGE]"\n'
+    );
+
+    console.log("4. Combined Test:");
+    console.log("Input:", testMarkdownExamples.combined);
+    console.log(
+        'Expected: "[BADGE]Close up[/BADGE] [BOLD]Penting![/BOLD] Ini adalah [ITALIC]tips[/ITALIC] yang harus diikuti. [BADGE]Transition[/BADGE]"\n'
+    );
+
+    console.log("=== END OF TESTS ===");
 }
 
 export default testMarkdownExamples;
