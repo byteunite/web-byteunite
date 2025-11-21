@@ -244,33 +244,43 @@ export async function fetchAllBlogArticles(options?: {
             ? [category]
             : ["riddles", "sites", "topics", "tutorials"];
 
-        const allArticles: BlogArticle[] = [];
-
-        // Fetch dari setiap category
-        for (const cat of categories) {
-            try {
-                const response = await fetch(
-                    `${baseUrl}/api/${cat}?page=1&limit=100`,
-                    {
-                        cache: "no-store",
+        // Fetch semua categories secara paralel menggunakan Promise.all
+        const fetchPromises = categories.map((cat) =>
+            fetch(`${baseUrl}/api/${cat}?page=1&limit=100`, {
+                cache: "no-store",
+            })
+                .then((response) => {
+                    if (response.ok) {
+                        return response.json();
                     }
-                );
+                    return null;
+                })
+                .then((result) => {
+                    if (!result) return [];
 
-                if (response.ok) {
-                    const result = await response.json();
                     const items = result.data || [];
+                    const articles: BlogArticle[] = [];
 
                     items.forEach((item: any) => {
                         const article = convertToBlogArticle(item, cat);
                         if (article) {
-                            allArticles.push(article);
+                            articles.push(article);
                         }
                     });
-                }
-            } catch (error) {
-                console.error(`Error fetching ${cat}:`, error);
-            }
-        }
+
+                    return articles;
+                })
+                .catch((error) => {
+                    console.error(`Error fetching ${cat}:`, error);
+                    return [];
+                })
+        );
+
+        // Tunggu semua fetch selesai secara paralel
+        const results = await Promise.all(fetchPromises);
+
+        // Gabungkan semua articles dari berbagai kategori
+        const allArticles: BlogArticle[] = results.flat();
 
         // Sort by date (newest first)
         allArticles.sort(
