@@ -16,18 +16,35 @@ cloudinary.config({
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { image, folder = "uploads", public_id } = body;
+        const { image, imageUrl, folder = "uploads", public_id } = body;
 
-        // Validasi input
-        if (!image || typeof image !== "string") {
+        // Validasi input - bisa dari base64 image atau URL
+        if (!image && !imageUrl) {
+            return NextResponse.json(
+                { error: "Image data or URL is required" },
+                { status: 400 }
+            );
+        }
+
+        if (image && typeof image !== "string") {
             return NextResponse.json(
                 { error: "Invalid image data" },
                 { status: 400 }
             );
         }
 
+        if (imageUrl && typeof imageUrl !== "string") {
+            return NextResponse.json(
+                { error: "Invalid image URL" },
+                { status: 400 }
+            );
+        }
+
+        // Gunakan imageUrl jika ada, jika tidak gunakan image (base64)
+        const uploadSource = imageUrl || image;
+
         // Upload ke Cloudinary
-        const uploadResponse = await cloudinary.uploader.upload(image, {
+        const uploadResponse = await cloudinary.uploader.upload(uploadSource, {
             folder: folder,
             public_id: public_id || `upload-${Date.now()}`,
             resource_type: "image",

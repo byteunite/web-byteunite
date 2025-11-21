@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Save, Loader2, Upload } from "lucide-react";
+import { RefreshCw, Save, Loader2, Upload, Link } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import ReactCrop, {
@@ -18,6 +18,8 @@ import ReactCrop, {
     makeAspectCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface ClickableImageProps {
     prompt: string;
@@ -54,6 +56,9 @@ export default function ClickableImage({
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [isUploading, setIsUploading] = useState<boolean>(false);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
+    const [isUrlModalOpen, setIsUrlModalOpen] = useState<boolean>(false);
+    const [imageUrlInput, setImageUrlInput] = useState<string>("");
+    const [isLoadingUrlImage, setIsLoadingUrlImage] = useState<boolean>(false);
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
     const [crop, setCrop] = useState<Crop>();
     const [completedCrop, setCompletedCrop] = useState<Crop>();
@@ -98,6 +103,99 @@ export default function ClickableImage({
 
     const handleOpenUpload = () => {
         fileInputRef.current?.click();
+    };
+
+    const handleOpenUrlInput = () => {
+        setIsModalOpen(false);
+        setIsUrlModalOpen(true);
+    };
+
+    const handleLoadImageFromUrl = async () => {
+        if (!imageUrlInput.trim()) {
+            toast({
+                title: "Error",
+                description: "Masukkan URL gambar terlebih dahulu",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // Validasi URL
+        try {
+            new URL(imageUrlInput);
+        } catch {
+            toast({
+                title: "Error",
+                description: "URL tidak valid",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setIsLoadingUrlImage(true);
+
+        // Test if image can be loaded
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+
+        img.onload = () => {
+            // Image loaded successfully, upload to Cloudinary
+            uploadUrlImageToCloudinary(imageUrlInput);
+        };
+
+        img.onerror = () => {
+            setIsLoadingUrlImage(false);
+            toast({
+                title: "Error",
+                description:
+                    "Gagal memuat gambar dari URL. Pastikan URL valid dan dapat diakses.",
+                variant: "destructive",
+            });
+        };
+
+        img.src = imageUrlInput;
+    };
+
+    const uploadUrlImageToCloudinary = async (url: string) => {
+        try {
+            const response = await fetch("/api/upload-image", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    imageUrl: url,
+                    folder: `${category}/${riddleId || "temp"}`,
+                    public_id: `slide-${slideIndex}-${Date.now()}`,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to upload image");
+            }
+
+            const data = await response.json();
+            setUploadedImageUrl(data.data.url);
+            setImageUrl(data.data.url);
+
+            toast({
+                title: "Berhasil!",
+                description: "Gambar dari URL berhasil diupload ke Cloudinary",
+            });
+
+            setIsUrlModalOpen(false);
+            setImageUrlInput("");
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error("Error uploading image from URL:", error);
+            toast({
+                title: "Error",
+                description: "Gagal mengupload gambar dari URL",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoadingUrlImage(false);
+        }
     };
 
     const handleSaveImage = async () => {
@@ -392,6 +490,15 @@ export default function ClickableImage({
                             Upload Gambar
                         </Button>
                         <Button
+                            onClick={handleOpenUrlInput}
+                            variant="outline"
+                            className="w-full"
+                            disabled={isSaving}
+                        >
+                            <Link className="mr-2 h-4 w-4" />
+                            Gunakan URL Gambar
+                        </Button>
+                        <Button
                             onClick={handleRefreshImage}
                             variant="outline"
                             className="w-full"
@@ -434,6 +541,77 @@ export default function ClickableImage({
                                 </p>
                             </div>
                         )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* URL Input Modal */}
+            <Dialog open={isUrlModalOpen} onOpenChange={setIsUrlModalOpen}>
+                <DialogContent className="sm:max-w-[500px] z-1000">
+                    <DialogHeader>
+                        <DialogTitle>Gunakan URL Gambar</DialogTitle>
+                        <DialogDescription>
+                            Masukkan URL gambar dari internet yang ingin
+                            digunakan
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="imageUrl">URL Gambar</Label>
+                            <Input
+                                id="imageUrl"
+                                type="url"
+                                placeholder="https://example.com/image.jpg"
+                                value={imageUrlInput}
+                                onChange={(e) =>
+                                    setImageUrlInput(e.target.value)
+                                }
+                                onKeyDown={(e) => {
+                                    if (
+                                        e.key === "Enter" &&
+                                        !isLoadingUrlImage
+                                    ) {
+                                        handleLoadImageFromUrl();
+                                    }
+                                }}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Pastikan URL gambar valid dan dapat diakses
+                                publik
+                            </p>
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleLoadImageFromUrl}
+                                disabled={
+                                    isLoadingUrlImage || !imageUrlInput.trim()
+                                }
+                                className="flex-1"
+                            >
+                                {isLoadingUrlImage ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Memuat...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link className="mr-2 h-4 w-4" />
+                                        Gunakan Gambar
+                                    </>
+                                )}
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setIsUrlModalOpen(false);
+                                    setImageUrlInput("");
+                                    setIsModalOpen(true);
+                                }}
+                                variant="outline"
+                                disabled={isLoadingUrlImage}
+                            >
+                                Batal
+                            </Button>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
