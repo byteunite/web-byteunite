@@ -30,7 +30,7 @@ export default function SaveSlidesButton({
             setProgress(10);
 
             // Validasi kategori yang valid
-            const validCategories = ["riddles", "sites", "topics"];
+            const validCategories = ["riddles", "sites", "topics", "tutorials"];
             const validatedCategory = validCategories.includes(category)
                 ? category
                 : "riddles";
@@ -42,6 +42,8 @@ export default function SaveSlidesButton({
                 Object.assign(body, { siteId: riddleId });
             } else if (validatedCategory === "topics") {
                 Object.assign(body, { topicId: riddleId });
+            } else if (validatedCategory === "tutorials") {
+                Object.assign(body, { tutorialId: riddleId });
             } else {
                 Object.assign(body, { riddleId });
             }
