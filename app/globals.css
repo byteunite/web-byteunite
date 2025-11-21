@@ -333,3 +333,7 @@
         transform: translateY(-50%);
     }
 }
+
+.prose p {
+    margin: 0;
+}
