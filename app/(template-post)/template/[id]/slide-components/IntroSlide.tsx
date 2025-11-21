@@ -31,12 +31,12 @@ export default function IntroSlide({
                 prompt={`${post.prompt_untuk_image}&enhance=true`}
                 width={width * 2}
                 height={height * 2}
-                className="absolute -right-20 object-cover opacity-80"
+                className="absolute -right-20 object-cover opacity-80 "
                 style={{
                     filter: `brightness(1.1) contrast(1.2)`,
                     mixBlendMode: "multiply",
                     width: `45%`,
-                    height: `100%`,
+                    // height: `100%`,
                     zIndex: 999,
                 }}
                 alt={post.judul_slide}
