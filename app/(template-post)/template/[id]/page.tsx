@@ -6,7 +6,7 @@ import { Slide, SlideType } from "./slide-components/types";
 
 /**
  * Helper function to get branded hashtag based on category
- * @param category - The category type (riddles, sites, topics, etc.)
+ * @param category - The category type (riddles, sites, topics, tutorials, etc.)
  * @returns The branded hashtag for that category
  */
 function getCategoryHashtag(category: string): string {
@@ -14,6 +14,7 @@ function getCategoryHashtag(category: string): string {
         riddles: "#ByteRiddle",
         sites: "#ByteSites",
         topics: "#ByteTopics",
+        tutorials: "#ByteTutorials",
     };
     return hashtagMap[category] || "#ByteUnite";
 }
@@ -69,7 +70,7 @@ function insertWarningSlides(slides: Slide[], category: string): Slide[] {
 /**
  * Fetch data from API based on category
  * @param id - The ID of the item to fetch
- * @param category - The category/type of data (riddles, sites, topics, etc.)
+ * @param category - The category/type of data (riddles, sites, topics, tutorials, etc.)
  * @returns The fetched data or null if not found
  */
 async function getDataByCategory(id: string, category: string = "riddles") {
@@ -78,7 +79,7 @@ async function getDataByCategory(id: string, category: string = "riddles") {
             process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
         // Valid categories that have API endpoints
-        const validCategories = ["riddles", "sites", "topics"];
+        const validCategories = ["riddles", "sites", "topics", "tutorials"];
 
         // If category is not valid, default to riddles
         const validatedCategory = validCategories.includes(category)

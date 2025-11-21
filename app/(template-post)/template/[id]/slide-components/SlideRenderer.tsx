@@ -14,6 +14,10 @@ import DetailSlide from "./DetailSlide";
 import ListSlide from "./ListSlide";
 import FaktaSlide from "./FaktaSlide";
 import KesimpulanSlide from "./KesimpulanSlide";
+import PersiapanSlide from "./PersiapanSlide";
+import LangkahSlide from "./LangkahSlide";
+import TipsSlide from "./TipsSlide";
+import ContohSlide from "./ContohSlide";
 
 /**
  * SlideRenderer - Component yang merender slide berdasarkan tipe
@@ -73,6 +77,19 @@ export default function SlideRenderer(props: SlideComponentProps) {
 
         case "KESIMPULAN":
             return <KesimpulanSlide {...props} />;
+
+        // Tutorial-specific slide types
+        case "PERSIAPAN":
+            return <PersiapanSlide {...props} />;
+
+        case "LANGKAH":
+            return <LangkahSlide {...props} />;
+
+        case "TIPS":
+            return <TipsSlide {...props} />;
+
+        case "CONTOH":
+            return <ContohSlide {...props} />;
 
         default:
             // Fallback jika tipe slide tidak dikenali

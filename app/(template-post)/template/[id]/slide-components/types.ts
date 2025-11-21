@@ -7,6 +7,9 @@
  *
  * Topics types:
  * - INTRO, POIN_UTAMA, DETAIL, LIST, FAKTA, KESIMPULAN, CALL_TO_ACTION
+ *
+ * Tutorials types:
+ * - INTRO, PERSIAPAN, LANGKAH, TIPS, CONTOH, KESIMPULAN, CALL_TO_ACTION
  */
 export type SlideType =
     | "COVER"
@@ -25,7 +28,11 @@ export type SlideType =
     | "LIST"
     | "FAKTA"
     | "KESIMPULAN"
-    | "CALL_TO_ACTION";
+    | "CALL_TO_ACTION"
+    | "PERSIAPAN"
+    | "LANGKAH"
+    | "TIPS"
+    | "CONTOH";
 
 /**
  * Interface untuk struktur data slide

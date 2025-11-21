@@ -294,7 +294,7 @@ export default function ClickableImage({
 
         try {
             // Validasi kategori yang valid
-            const validCategories = ["riddles", "sites", "topics"];
+            const validCategories = ["riddles", "sites", "topics", "tutorials"];
             const validatedCategory = validCategories.includes(category)
                 ? category
                 : "riddles";

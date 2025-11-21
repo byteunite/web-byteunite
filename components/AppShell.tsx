@@ -16,6 +16,7 @@ import {
     BookOpen,
     Users,
     FolderOpen,
+    BookOpenCheck,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,11 @@ const navItems = [
     { href: "/riddles", label: "Riddles", icon: Puzzle },
     { href: "/sites", label: "Sites", icon: Globe },
     { href: "/topics", label: "Topics", icon: BookOpen },
+    {
+        href: "/tutorials",
+        label: "Tutorials",
+        icon: BookOpenCheck,
+    },
     { href: "/list-categories", label: "Categories", icon: FolderOpen },
     { href: "/list-programmers", label: "Programmers", icon: Users },
     { href: "/account", label: "Account", icon: User },
