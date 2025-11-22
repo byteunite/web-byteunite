@@ -15,7 +15,9 @@ export default function BlogPostPage({ params }: { params: { id: string } }) {
     const [currentSlide, setCurrentSlide] = useState(0);
 
     useEffect(() => {
-        fetch(`/api/blog/${params.id}?category=${category}`)
+        fetch(`/api/blog/${params.id}?category=${category}`, {
+            next: { revalidate: 60 },
+        })
             .then((res) => res.json())
             .then((result) => {
                 if (result.success) {
