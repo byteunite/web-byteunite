@@ -35,11 +35,9 @@ export default function BlogPage() {
     return (
         <div className="min-h-screen flex flex-col">
             <Navigation />
-            <section className="py-20 px-4">
+            <section className="pt-20 px-4">
                 <div className="container mx-auto text-center">
-                    <h1 className="font-heading text-6xl mb-6">
-                        Developer Blog
-                    </h1>
+                    <h1 className="font-heading text-6xl mb-6">Byte Blog</h1>
                     <p className="text-xl mb-8">
                         Total: {blogPosts.length} articles
                     </p>
@@ -51,7 +49,7 @@ export default function BlogPage() {
                         {blogPosts.map((post) => (
                             <div
                                 key={post.id}
-                                className="border rounded p-4 bg-white"
+                                className="border rounded bg-white flex flex-col border-gray-200"
                             >
                                 {post.coverImage && (
                                     <img
@@ -61,21 +59,23 @@ export default function BlogPage() {
                                     />
                                 )}
 
-                                <h3 className="font-bold text-xl mb-2">
-                                    {post.title}
-                                </h3>
-                                <div
-                                    className="text-sm mb-4"
-                                    dangerouslySetInnerHTML={{
-                                        __html: post.excerpt || "",
-                                    }}
-                                />
-                                <a
-                                    href={`/blog/${post.id}?category=${post.sourceCategory}`}
-                                    className="text-primary"
-                                >
-                                    Read More
-                                </a>
+                                <div className="p-4 flex flex-col flex-1">
+                                    <h3 className="font-bold text-xl mb-2">
+                                        {post.title}
+                                    </h3>
+                                    <div
+                                        className="text-sm mb-4 flex-1"
+                                        dangerouslySetInnerHTML={{
+                                            __html: post.excerpt || "",
+                                        }}
+                                    />
+                                    <a
+                                        href={`/blog/${post.id}?category=${post.sourceCategory}`}
+                                        className="text-orange-500 hover:underline"
+                                    >
+                                        Read More
+                                    </a>
+                                </div>
                             </div>
                         ))}
                     </div>
