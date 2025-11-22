@@ -27,7 +27,10 @@ export default function BlogPage() {
     const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
 
     useEffect(() => {
-        fetch("/api/blog?limit=100")
+        fetch("/api/blog?limit=100", {
+            cache: "force-cache",
+            next: { revalidate: 60 },
+        })
             .then((res) => res.json())
             .then((result) => {
                 if (result.success) {
