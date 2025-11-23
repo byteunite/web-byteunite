@@ -268,6 +268,7 @@ export default async function TemplatePage({
                     hashtags={fetchedData.carouselData.hashtags}
                     category={category}
                     contentId={id}
+                    savedVideoScript={fetchedData.videoScript || null}
                 />
             )}
         </div>

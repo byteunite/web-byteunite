@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Download,
@@ -38,6 +38,12 @@ interface DownloadSlidesButtonProps {
     hashtags: string[];
     category?: string;
     contentId?: string; // ID untuk save video script ke database
+    savedVideoScript?: {
+        // Video script yang sudah disimpan di database
+        script: string;
+        estimatedDuration: string;
+        tips: string[];
+    } | null;
 }
 
 /**
@@ -213,6 +219,7 @@ export default function DownloadSlidesButton({
     hashtags,
     category,
     contentId,
+    savedVideoScript,
 }: DownloadSlidesButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -227,15 +234,27 @@ export default function DownloadSlidesButton({
         script: string;
         estimatedDuration: string;
         tips: string[];
-    } | null>(null);
+    } | null>(savedVideoScript || null); // Initialize dengan savedVideoScript dari database
     const [generatingScript, setGeneratingScript] = useState(false);
     const [savingScript, setSavingScript] = useState(false);
+    const [scriptSavedToDB, setScriptSavedToDB] = useState(!!savedVideoScript); // Track apakah sudah tersimpan di DB
     const [copiedScript, setCopiedScript] = useState(false);
     const [copiedNarration, setCopiedNarration] = useState(false); // For prompter copy
-    const [showScriptSection, setShowScriptSection] = useState(false);
+    const [showScriptSection, setShowScriptSection] = useState(
+        !!savedVideoScript
+    ); // Tampilkan jika sudah ada saved script
 
     // Check if all slides have saved_slide_url
     const allSlidesSaved = slides.every((slide) => slide.saved_slide_url);
+
+    // Update video script state when savedVideoScript prop changes
+    useEffect(() => {
+        if (savedVideoScript) {
+            setVideoScript(savedVideoScript);
+            setShowScriptSection(true);
+            setScriptSavedToDB(true);
+        }
+    }, [savedVideoScript]);
 
     if (!allSlidesSaved) {
         return null; // Don't show button if not all slides are saved
