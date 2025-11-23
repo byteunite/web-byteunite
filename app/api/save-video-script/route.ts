@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongodb";
 import Riddle from "@/models/Riddle";
 import Site from "@/models/Site";
 import Topic from "@/models/Topic";
+import Tutorial from "@/models/Tutorial";
 
 export async function POST(request: NextRequest) {
     try {
@@ -46,6 +47,9 @@ export async function POST(request: NextRequest) {
                 break;
             case "topics":
                 Model = Topic;
+                break;
+            case "tutorials":
+                Model = Tutorial;
                 break;
             default:
                 return NextResponse.json(
