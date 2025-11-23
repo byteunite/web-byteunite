@@ -424,6 +424,7 @@ export default function DownloadSlidesButton({
                 throw new Error("Failed to save video script");
             }
 
+            setScriptSavedToDB(true); // Mark as saved
             alert("Video script berhasil disimpan!");
         } catch (error) {
             console.error("Error saving video script:", error);
@@ -846,15 +847,31 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
                                                         onClick={
                                                             saveVideoScript
                                                         }
-                                                        disabled={savingScript}
-                                                        variant="default"
+                                                        disabled={
+                                                            savingScript ||
+                                                            scriptSavedToDB
+                                                        }
+                                                        variant={
+                                                            scriptSavedToDB
+                                                                ? "outline"
+                                                                : "default"
+                                                        }
                                                         size="sm"
-                                                        className="flex-1 h-8 text-xs gap-1.5"
+                                                        className={`flex-1 h-8 text-xs gap-1.5 ${
+                                                            scriptSavedToDB
+                                                                ? "border-green-500 text-green-600 bg-green-50"
+                                                                : ""
+                                                        }`}
                                                     >
                                                         {savingScript ? (
                                                             <>
                                                                 <Loader2 className="h-3 w-3 animate-spin" />
                                                                 Saving...
+                                                            </>
+                                                        ) : scriptSavedToDB ? (
+                                                            <>
+                                                                <Check className="h-3 w-3" />
+                                                                Saved to DB
                                                             </>
                                                         ) : (
                                                             <>
