@@ -1,15 +1,18 @@
 # Fix: Video Script Persistence After Reload
 
 ## Problem
+
 Ketika video script disimpan ke database, tanda "berhasil" muncul, tapi setelah reload halaman, video script tidak terpopulate kembali.
 
 ## Root Cause
+
 1. **Data tidak dikirim ke component**: Meskipun API fetch data dari database mengambil field `videoScript`, data tersebut tidak dipass ke component `DownloadSlidesButton`.
 2. **Component tidak initialize dari props**: Component `DownloadSlidesButton` tidak menerima atau menggunakan data `videoScript` yang sudah tersimpan di database.
 
 ## Solution
 
 ### 1. Update Interface `DownloadSlidesButton` Props
+
 **File**: `components/DownloadSlidesButton.tsx`
 
 Menambahkan prop `savedVideoScript` untuk menerima data dari database:
@@ -22,7 +25,8 @@ interface DownloadSlidesButtonProps {
     hashtags: string[];
     category?: string;
     contentId?: string;
-    savedVideoScript?: {  // ✅ NEW
+    savedVideoScript?: {
+        // ✅ NEW
         script: string;
         estimatedDuration: string;
         tips: string[];
@@ -31,6 +35,7 @@ interface DownloadSlidesButtonProps {
 ```
 
 ### 2. Initialize State Dengan Data Dari Database
+
 **File**: `components/DownloadSlidesButton.tsx`
 
 ```tsx
@@ -51,6 +56,7 @@ const [showScriptSection, setShowScriptSection] = useState(
 ```
 
 ### 3. Update State Saat Props Berubah
+
 **File**: `components/DownloadSlidesButton.tsx`
 
 ```tsx
@@ -65,6 +71,7 @@ useEffect(() => {
 ```
 
 ### 4. Pass Data Dari Page ke Component
+
 **File**: `app/(template-post)/template/[id]/page.tsx`
 
 ```tsx
@@ -75,11 +82,12 @@ useEffect(() => {
     hashtags={fetchedData.carouselData.hashtags}
     category={category}
     contentId={id}
-    savedVideoScript={fetchedData.videoScript || null}  // ✅ Pass from DB
+    savedVideoScript={fetchedData.videoScript || null} // ✅ Pass from DB
 />
 ```
 
 ### 5. Visual Indicator untuk Status "Saved"
+
 **File**: `components/DownloadSlidesButton.tsx`
 
 Update button "Save to DB" untuk menampilkan status berbeda:
@@ -87,9 +95,11 @@ Update button "Save to DB" untuk menampilkan status berbeda:
 ```tsx
 <Button
     onClick={saveVideoScript}
-    disabled={savingScript || scriptSavedToDB}  // ✅ Disable if saved
-    variant={scriptSavedToDB ? "outline" : "default"}  // ✅ Different style
-    className={scriptSavedToDB ? "border-green-500 text-green-600 bg-green-50" : ""}
+    disabled={savingScript || scriptSavedToDB} // ✅ Disable if saved
+    variant={scriptSavedToDB ? "outline" : "default"} // ✅ Different style
+    className={
+        scriptSavedToDB ? "border-green-500 text-green-600 bg-green-50" : ""
+    }
 >
     {savingScript ? (
         <>
@@ -99,7 +109,7 @@ Update button "Save to DB" untuk menampilkan status berbeda:
     ) : scriptSavedToDB ? (
         <>
             <Check className="h-3 w-3" />
-            Saved to DB  // ✅ Show "Saved" status
+            Saved to DB // ✅ Show "Saved" status
         </>
     ) : (
         <>
@@ -111,19 +121,20 @@ Update button "Save to DB" untuk menampilkan status berbeda:
 ```
 
 ### 6. Update saveVideoScript Function
+
 **File**: `components/DownloadSlidesButton.tsx`
 
 ```tsx
 const saveVideoScript = async () => {
     // ... existing code ...
-    
+
     if (!response.ok) {
         throw new Error("Failed to save video script");
     }
 
     setScriptSavedToDB(true); // ✅ Mark as saved setelah berhasil
     alert("Video script berhasil disimpan!");
-    
+
     // ... existing code ...
 };
 ```
@@ -212,25 +223,26 @@ const saveVideoScript = async () => {
 
 ## Testing Checklist
 
-- [x] Generate video script → shows in UI
-- [x] Save to DB → button shows success
-- [x] Reload page → script still visible
-- [x] Button shows "Saved to DB" with green styling
-- [x] Button is disabled after save
-- [x] Copy buttons still work
-- [x] Works for all categories (riddles, sites, topics)
+-   [x] Generate video script → shows in UI
+-   [x] Save to DB → button shows success
+-   [x] Reload page → script still visible
+-   [x] Button shows "Saved to DB" with green styling
+-   [x] Button is disabled after save
+-   [x] Copy buttons still work
+-   [x] Works for all categories (riddles, sites, topics)
 
 ## Files Modified
 
 1. ✅ `components/DownloadSlidesButton.tsx`
-   - Added `savedVideoScript` prop
-   - Initialize state from prop
-   - Added `scriptSavedToDB` state
-   - Added `useEffect` to sync with prop
-   - Updated button styling and logic
+
+    - Added `savedVideoScript` prop
+    - Initialize state from prop
+    - Added `scriptSavedToDB` state
+    - Added `useEffect` to sync with prop
+    - Updated button styling and logic
 
 2. ✅ `app/(template-post)/template/[id]/page.tsx`
-   - Pass `savedVideoScript` prop to component
+    - Pass `savedVideoScript` prop to component
 
 ## Database Schema (Already Exists)
 
@@ -246,10 +258,10 @@ videoScript: {
 
 ## API Endpoints (Already Working)
 
-- ✅ `POST /api/save-video-script` - Save to DB
-- ✅ `GET /api/riddles/[id]` - Fetch with videoScript
-- ✅ `GET /api/sites/[id]` - Fetch with videoScript  
-- ✅ `GET /api/topics/[id]` - Fetch with videoScript
+-   ✅ `POST /api/save-video-script` - Save to DB
+-   ✅ `GET /api/riddles/[id]` - Fetch with videoScript
+-   ✅ `GET /api/sites/[id]` - Fetch with videoScript
+-   ✅ `GET /api/topics/[id]` - Fetch with videoScript
 
 ## Result
 
