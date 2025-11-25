@@ -21,6 +21,10 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
+import type {
+    VideoScriptData,
+    LegacyVideoScriptData,
+} from "@/lib/gemini-video-script-generator";
 
 interface Slide {
     tipe_slide: string;
@@ -38,12 +42,7 @@ interface DownloadSlidesButtonProps {
     hashtags: string[];
     category?: string;
     contentId?: string; // ID untuk save video script ke database
-    savedVideoScript?: {
-        // Video script yang sudah disimpan di database
-        script: string;
-        estimatedDuration: string;
-        tips: string[];
-    } | null;
+    savedVideoScript?: VideoScriptData | LegacyVideoScriptData | null; // Support both new and legacy formats
 }
 
 /**
@@ -229,12 +228,28 @@ export default function DownloadSlidesButton({
     const [copiedHashtags, setCopiedHashtags] = useState(false);
     const [copiedAll, setCopiedAll] = useState(false);
 
-    // Video Script states
-    const [videoScript, setVideoScript] = useState<{
-        script: string;
-        estimatedDuration: string;
-        tips: string[];
-    } | null>(savedVideoScript || null); // Initialize dengan savedVideoScript dari database
+    // Video Script states - Support multi-part
+    const [videoScript, setVideoScript] = useState<VideoScriptData | null>(
+        () => {
+            // Backward compatibility: Convert old format to new format
+            if (savedVideoScript) {
+                // Check if it's already in new format
+                if ("parts" in savedVideoScript) {
+                    return savedVideoScript;
+                }
+                // Convert old format to new single-part format
+                return {
+                    parts: 1,
+                    reason: "Legacy script format",
+                    script: savedVideoScript.script,
+                    estimatedDuration: savedVideoScript.estimatedDuration,
+                    keyPoints: [],
+                    tips: savedVideoScript.tips,
+                };
+            }
+            return null;
+        }
+    );
     const [generatingScript, setGeneratingScript] = useState(false);
     const [savingScript, setSavingScript] = useState(false);
     const [scriptSavedToDB, setScriptSavedToDB] = useState(!!savedVideoScript); // Track apakah sudah tersimpan di DB
@@ -250,7 +265,20 @@ export default function DownloadSlidesButton({
     // Update video script state when savedVideoScript prop changes
     useEffect(() => {
         if (savedVideoScript) {
-            setVideoScript(savedVideoScript);
+            // Check if it's already in new format
+            if ("parts" in savedVideoScript) {
+                setVideoScript(savedVideoScript);
+            } else {
+                // Convert old format to new single-part format
+                setVideoScript({
+                    parts: 1,
+                    reason: "Legacy script format",
+                    script: savedVideoScript.script,
+                    estimatedDuration: savedVideoScript.estimatedDuration,
+                    keyPoints: [],
+                    tips: savedVideoScript.tips,
+                });
+            }
             setShowScriptSection(true);
             setScriptSavedToDB(true);
         }
@@ -438,16 +466,62 @@ export default function DownloadSlidesButton({
         if (!videoScript) return;
 
         try {
-            const scriptText = `VIDEO SCRIPT - ${
-                category?.toUpperCase() || "CONTENT"
-            }
+            let scriptText = "";
+
+            if (videoScript.parts === 1) {
+                // Single part script
+                scriptText = `VIDEO SCRIPT - ${
+                    category?.toUpperCase() || "CONTENT"
+                }
 Duration: ${videoScript.estimatedDuration}
 
 ${videoScript.script}
 
 ---
+KEY POINTS:
+${videoScript.keyPoints.map((point, i) => `${i + 1}. ${point}`).join("\n")}
+
 TIPS FOR DELIVERY:
 ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
+            } else {
+                // Multi-part script
+                scriptText = `VIDEO SCRIPT - ${
+                    category?.toUpperCase() || "CONTENT"
+                } (2 PARTS)
+
+REASON FOR SPLIT: ${videoScript.reason}
+
+━━━━━━━━━━━━━━━━━━━━━━
+PART 1 - Duration: ${videoScript.part1.estimatedDuration}
+━━━━━━━━━━━━━━━━━━━━━━
+
+${videoScript.part1.script}
+
+CLIFFHANGER: ${videoScript.part1.cliffhanger}
+
+KEY POINTS (PART 1):
+${videoScript.part1.keyPoints
+    .map((point, i) => `${i + 1}. ${point}`)
+    .join("\n")}
+
+━━━━━━━━━━━━━━━━━━━━━━
+PART 2 - Duration: ${videoScript.part2.estimatedDuration}
+━━━━━━━━━━━━━━━━━━━━━━
+
+${videoScript.part2.script}
+
+CONNECTION: ${videoScript.part2.connection}
+
+KEY POINTS (PART 2):
+${videoScript.part2.keyPoints
+    .map((point, i) => `${i + 1}. ${point}`)
+    .join("\n")}
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+TIPS FOR DELIVERY:
+${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
+            }
 
             await navigator.clipboard.writeText(scriptText);
             setCopiedScript(true);
@@ -461,8 +535,22 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
         if (!videoScript) return;
 
         try {
-            // Clean script - remove markdown and visual cues
-            const cleanedScript = cleanScriptForPrompter(videoScript.script);
+            let cleanedScript = "";
+
+            if (videoScript.parts === 1) {
+                // Single part - clean script
+                cleanedScript = cleanScriptForPrompter(videoScript.script);
+            } else {
+                // Multi-part - combine both parts
+                const part1Cleaned = cleanScriptForPrompter(
+                    videoScript.part1.script
+                );
+                const part2Cleaned = cleanScriptForPrompter(
+                    videoScript.part2.script
+                );
+
+                cleanedScript = `━━━ PART 1 ━━━\n\n${part1Cleaned}\n\n━━━ PART 2 ━━━\n\n${part2Cleaned}`;
+            }
 
             await navigator.clipboard.writeText(cleanedScript);
             setCopiedNarration(true);
@@ -749,23 +837,222 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
 
                                     {showScriptSection && videoScript && (
                                         <div className="space-y-3 bg-purple-50 p-4 rounded-lg">
+                                            {/* Header with Duration and Parts Info */}
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="text-xs font-medium text-purple-700">
-                                                    Duration:{" "}
-                                                    {
-                                                        videoScript.estimatedDuration
-                                                    }
-                                                </span>
-                                            </div>
-
-                                            <div className="bg-white p-3 rounded border border-purple-200 max-h-48 overflow-y-auto">
-                                                <div className="text-sm text-gray-800 leading-relaxed">
-                                                    {renderMarkdown(
-                                                        videoScript.script
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-medium text-purple-700">
+                                                        {videoScript.parts === 1
+                                                            ? `Duration: ${videoScript.estimatedDuration}`
+                                                            : `2 Parts (${videoScript.part1.estimatedDuration} + ${videoScript.part2.estimatedDuration})`}
+                                                    </span>
+                                                    {videoScript.parts ===
+                                                        2 && (
+                                                        <span className="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-semibold">
+                                                            Multi-Part
+                                                        </span>
                                                     )}
                                                 </div>
                                             </div>
 
+                                            {/* Reason untuk split (jika 2 parts) */}
+                                            {videoScript.parts === 2 && (
+                                                <div className="bg-purple-100 p-2.5 rounded border border-purple-300">
+                                                    <p className="text-xs text-purple-800">
+                                                        <span className="font-semibold">
+                                                            Why 2 parts:
+                                                        </span>{" "}
+                                                        {videoScript.reason}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {/* Script Content */}
+                                            {videoScript.parts === 1 ? (
+                                                // Single Part Display
+                                                <>
+                                                    <div className="bg-white p-3 rounded border border-purple-200 max-h-48 overflow-y-auto">
+                                                        <div className="text-sm text-gray-800 leading-relaxed">
+                                                            {renderMarkdown(
+                                                                videoScript.script
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Key Points */}
+                                                    {videoScript.keyPoints &&
+                                                        videoScript.keyPoints
+                                                            .length > 0 && (
+                                                            <div className="bg-white p-3 rounded border border-purple-200">
+                                                                <p className="text-xs font-semibold text-purple-700 mb-2">
+                                                                    Key Points:
+                                                                </p>
+                                                                <ul className="text-xs text-gray-700 space-y-1">
+                                                                    {videoScript.keyPoints.map(
+                                                                        (
+                                                                            point,
+                                                                            index
+                                                                        ) => (
+                                                                            <li
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="flex gap-2 items-start"
+                                                                            >
+                                                                                <span className="text-purple-600 shrink-0">
+                                                                                    •
+                                                                                </span>
+                                                                                <span>
+                                                                                    {
+                                                                                        point
+                                                                                    }
+                                                                                </span>
+                                                                            </li>
+                                                                        )
+                                                                    )}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                </>
+                                            ) : (
+                                                // Multi-Part Display
+                                                <div className="space-y-3">
+                                                    {/* Part 1 */}
+                                                    <div className="bg-white p-3 rounded border-2 border-purple-300">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <span className="text-xs font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded">
+                                                                PART 1
+                                                            </span>
+                                                            <span className="text-xs text-gray-600">
+                                                                {
+                                                                    videoScript
+                                                                        .part1
+                                                                        .estimatedDuration
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-sm text-gray-800 leading-relaxed max-h-32 overflow-y-auto mb-2">
+                                                            {renderMarkdown(
+                                                                videoScript
+                                                                    .part1
+                                                                    .script
+                                                            )}
+                                                        </div>
+                                                        <div className="bg-orange-50 border border-orange-200 p-2 rounded">
+                                                            <p className="text-xs text-orange-800">
+                                                                <span className="font-semibold">
+                                                                    🪝
+                                                                    Cliffhanger:
+                                                                </span>{" "}
+                                                                {
+                                                                    videoScript
+                                                                        .part1
+                                                                        .cliffhanger
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                        {videoScript.part1
+                                                            .keyPoints &&
+                                                            videoScript.part1
+                                                                .keyPoints
+                                                                .length > 0 && (
+                                                                <div className="mt-2 bg-purple-50 p-2 rounded">
+                                                                    <p className="text-xs font-semibold text-purple-700 mb-1">
+                                                                        Key
+                                                                        Points:
+                                                                    </p>
+                                                                    <ul className="text-xs text-gray-700 space-y-0.5">
+                                                                        {videoScript.part1.keyPoints.map(
+                                                                            (
+                                                                                point,
+                                                                                i
+                                                                            ) => (
+                                                                                <li
+                                                                                    key={
+                                                                                        i
+                                                                                    }
+                                                                                >
+                                                                                    •{" "}
+                                                                                    {
+                                                                                        point
+                                                                                    }
+                                                                                </li>
+                                                                            )
+                                                                        )}
+                                                                    </ul>
+                                                                </div>
+                                                            )}
+                                                    </div>
+
+                                                    {/* Part 2 */}
+                                                    <div className="bg-white p-3 rounded border-2 border-pink-300">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <span className="text-xs font-bold text-pink-700 bg-pink-100 px-2 py-1 rounded">
+                                                                PART 2
+                                                            </span>
+                                                            <span className="text-xs text-gray-600">
+                                                                {
+                                                                    videoScript
+                                                                        .part2
+                                                                        .estimatedDuration
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        <div className="bg-blue-50 border border-blue-200 p-2 rounded mb-2">
+                                                            <p className="text-xs text-blue-800">
+                                                                <span className="font-semibold">
+                                                                    🔗
+                                                                    Connection:
+                                                                </span>{" "}
+                                                                {
+                                                                    videoScript
+                                                                        .part2
+                                                                        .connection
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-sm text-gray-800 leading-relaxed max-h-32 overflow-y-auto">
+                                                            {renderMarkdown(
+                                                                videoScript
+                                                                    .part2
+                                                                    .script
+                                                            )}
+                                                        </div>
+                                                        {videoScript.part2
+                                                            .keyPoints &&
+                                                            videoScript.part2
+                                                                .keyPoints
+                                                                .length > 0 && (
+                                                                <div className="mt-2 bg-pink-50 p-2 rounded">
+                                                                    <p className="text-xs font-semibold text-pink-700 mb-1">
+                                                                        Key
+                                                                        Points:
+                                                                    </p>
+                                                                    <ul className="text-xs text-gray-700 space-y-0.5">
+                                                                        {videoScript.part2.keyPoints.map(
+                                                                            (
+                                                                                point,
+                                                                                i
+                                                                            ) => (
+                                                                                <li
+                                                                                    key={
+                                                                                        i
+                                                                                    }
+                                                                                >
+                                                                                    •{" "}
+                                                                                    {
+                                                                                        point
+                                                                                    }
+                                                                                </li>
+                                                                            )
+                                                                        )}
+                                                                    </ul>
+                                                                </div>
+                                                            )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Tips for Delivery */}
                                             {videoScript.tips &&
                                                 videoScript.tips.length > 0 && (
                                                     <div className="bg-white p-3 rounded border border-purple-200">
