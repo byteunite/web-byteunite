@@ -9,7 +9,15 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Save, Loader2, Upload, Link } from "lucide-react";
+import {
+    RefreshCw,
+    Save,
+    Loader2,
+    Upload,
+    Link,
+    Copy,
+    Check,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import ReactCrop, {
@@ -63,6 +71,7 @@ export default function ClickableImage({
     const [crop, setCrop] = useState<Crop>();
     const [completedCrop, setCompletedCrop] = useState<Crop>();
     const [uploadedFile, setUploadedFile] = useState<string>("");
+    const [copiedPrompt, setCopiedPrompt] = useState<boolean>(false);
     const imgRef = useRef<HTMLImageElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
@@ -108,6 +117,25 @@ export default function ClickableImage({
     const handleOpenUrlInput = () => {
         setIsModalOpen(false);
         setIsUrlModalOpen(true);
+    };
+
+    const handleCopyPrompt = async () => {
+        try {
+            await navigator.clipboard.writeText(prompt);
+            setCopiedPrompt(true);
+            setTimeout(() => setCopiedPrompt(false), 2000);
+            toast({
+                title: "Berhasil!",
+                description: "Prompt berhasil dicopy ke clipboard",
+            });
+        } catch (error) {
+            console.error("Failed to copy prompt:", error);
+            toast({
+                title: "Error",
+                description: "Gagal copy prompt",
+                variant: "destructive",
+            });
+        }
     };
 
     const handleLoadImageFromUrl = async () => {
@@ -480,6 +508,37 @@ export default function ClickableImage({
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4 w-full">
+                        {/* Prompt Display Section */}
+                        <div className="bg-muted/50 p-3 rounded-lg space-y-2 border">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-sm font-semibold">
+                                    AI Prompt:
+                                </Label>
+                                <Button
+                                    onClick={handleCopyPrompt}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 text-xs gap-1.5"
+                                >
+                                    {copiedPrompt ? (
+                                        <>
+                                            <Check className="h-3 w-3 text-green-600" />
+                                            Copied!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy className="h-3 w-3" />
+                                            Copy
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                            <p className="text-sm text-muted-foreground leading-relaxed max-h-24 overflow-y-auto">
+                                {prompt}
+                            </p>
+                        </div>
+
+                        {/* Action Buttons */}
                         <Button
                             onClick={handleOpenUpload}
                             variant="outline"
