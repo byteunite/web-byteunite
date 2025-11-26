@@ -28,7 +28,6 @@ export default function BlogPage() {
 
     useEffect(() => {
         fetch("/api/blog?limit=100", {
-            cache: "force-cache",
             next: { revalidate: 60 },
         })
             .then((res) => res.json())
