@@ -229,8 +229,6 @@ export default function DownloadSlidesButton({
     const [copiedHashtags, setCopiedHashtags] = useState(false);
     const [copiedAll, setCopiedAll] = useState(false);
 
-    console.log("Saved Video Script prop:", savedVideoScript);
-
     // Video Script states - Support multi-part
     const [videoScript, setVideoScript] = useState<VideoScriptData | null>(
         () => {
