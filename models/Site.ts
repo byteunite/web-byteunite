@@ -18,12 +18,58 @@ export interface ICarouselData {
     hashtags: string[];
 }
 
-// Interface untuk Video Script Data
-export interface IVideoScript {
+// Interface untuk Video Prompt
+export interface IVideoPrompt {
+    slideNumber: number;
+    duration: string;
+    prompt: string;
+    visualStyle: string;
+    cameraMovement: string;
+    mood: string;
+}
+
+// Interface untuk Video Script Data (Single Part)
+export interface IVideoScriptSinglePart {
+    parts: 1;
+    reason: string;
     script: string;
     estimatedDuration: string;
+    keyPoints: string[];
+    tips: string[];
+    videoPrompts: IVideoPrompt[];
+}
+
+// Interface untuk Video Script Data (Multi Part)
+export interface IVideoScriptMultiPart {
+    parts: 2;
+    reason: string;
+    part1: {
+        script: string;
+        estimatedDuration: string;
+        keyPoints: string[];
+        cliffhanger: string;
+        videoPrompts: IVideoPrompt[];
+    };
+    part2: {
+        script: string;
+        estimatedDuration: string;
+        keyPoints: string[];
+        connection: string;
+        videoPrompts: IVideoPrompt[];
+    };
     tips: string[];
 }
+
+// Union type untuk Video Script
+export type IVideoScript =
+    | IVideoScriptSinglePart
+    | IVideoScriptMultiPart
+    | {
+          // Legacy format for backward compatibility
+          script: string;
+          estimatedDuration: string;
+          tips: string[];
+      };
 
 // Interface untuk Site Document
 export interface ISite extends Document {
@@ -93,23 +139,21 @@ const CarouselDataSchema = new Schema<ICarouselData>(
     { _id: false }
 );
 
-// Schema untuk Video Script
-const VideoScriptSchema = new Schema<IVideoScript>(
+// Schema untuk Video Script (flexible untuk support multiple formats)
+// Using Mixed type for maximum flexibility
+const VideoScriptSchema = new Schema(
     {
-        script: {
-            type: String,
-            required: true,
-        },
-        estimatedDuration: {
-            type: String,
-            required: true,
-        },
-        tips: {
-            type: [String],
-            required: true,
-        },
+        parts: Schema.Types.Mixed,
+        reason: Schema.Types.Mixed,
+        tips: Schema.Types.Mixed,
+        script: Schema.Types.Mixed,
+        estimatedDuration: Schema.Types.Mixed,
+        keyPoints: Schema.Types.Mixed,
+        videoPrompts: Schema.Types.Mixed,
+        part1: Schema.Types.Mixed,
+        part2: Schema.Types.Mixed,
     },
-    { _id: false }
+    { _id: false, strict: false }
 );
 
 // Schema untuk Site

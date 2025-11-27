@@ -137,6 +137,7 @@ export default async function TemplatePage({
 
     // Extract slides from the fetched data
     const slides: Slide[] = fetchedData.carouselData.slides;
+    console.log(fetchedData);
 
     const scale = 2.5;
 

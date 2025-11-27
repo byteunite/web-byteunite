@@ -12,6 +12,15 @@ export interface SlideData {
     konten_slide: string;
 }
 
+export interface VideoPrompt {
+    slideNumber: number;
+    duration: string;
+    prompt: string;
+    visualStyle: string;
+    cameraMovement: string;
+    mood: string;
+}
+
 export interface VideoScriptSinglePart {
     parts: 1;
     reason: string;
@@ -19,6 +28,7 @@ export interface VideoScriptSinglePart {
     estimatedDuration: string;
     keyPoints: string[];
     tips: string[];
+    videoPrompts: VideoPrompt[];
 }
 
 export interface VideoScriptMultiPart {
@@ -29,12 +39,14 @@ export interface VideoScriptMultiPart {
         estimatedDuration: string;
         keyPoints: string[];
         cliffhanger: string;
+        videoPrompts: VideoPrompt[];
     };
     part2: {
         script: string;
         estimatedDuration: string;
         keyPoints: string[];
         connection: string;
+        videoPrompts: VideoPrompt[];
     };
     tips: string[];
 }
@@ -185,7 +197,26 @@ FORMAT OUTPUT WAJIB:
     "script": "Script lengkap TANPA label/identifier, hanya narasi bersih dengan [visual cue]",
     "estimatedDuration": "25-35 detik",
     "keyPoints": ["Poin penting 1", "Poin penting 2", "Poin penting 3"],
-    "tips": ["Tip untuk delivery", "Tip untuk editing", "Tip untuk retention"]
+    "tips": ["Tip untuk delivery", "Tip untuk editing", "Tip untuk retention"],
+    "videoPrompts": [
+        {
+            "slideNumber": 1,
+            "duration": "3-4 detik",
+            "prompt": "Detailed visual description untuk AI video generator - include subject, action, setting, lighting, camera angle",
+            "visualStyle": "cinematic/documentary/modern/vibrant/minimal/dramatic",
+            "cameraMovement": "slow zoom in/pan right/tracking shot/static/push in",
+            "mood": "mysterious/exciting/informative/emotional/dramatic"
+        },
+        {
+            "slideNumber": 2,
+            "duration": "3-4 detik",
+            "prompt": "Next scene description yang connect seamlessly dengan scene sebelumnya",
+            "visualStyle": "consistent style",
+            "cameraMovement": "smooth transition",
+            "mood": "building mood"
+        }
+        // ... untuk setiap slide + key moments
+    ]
 }
 
 **JIKA 2 PART:**
@@ -196,16 +227,152 @@ FORMAT OUTPUT WAJIB:
         "script": "Script Part 1 dengan cliffhanger kuat di akhir",
         "estimatedDuration": "25-35 detik",
         "keyPoints": ["Poin penting yang dibahas di Part 1"],
-        "cliffhanger": "Kalimat cliffhanger yang bikin penasaran Part 2"
+        "cliffhanger": "Kalimat cliffhanger yang bikin penasaran Part 2",
+        "videoPrompts": [
+            {
+                "slideNumber": 1,
+                "duration": "3 detik",
+                "prompt": "Opening scene untuk Part 1",
+                "visualStyle": "style yang sesuai kategori",
+                "cameraMovement": "dynamic opening movement",
+                "mood": "hook mood"
+            }
+            // ... video prompts untuk Part 1
+        ]
     },
     "part2": {
         "script": "Script Part 2 dengan recap singkat di awal",
         "estimatedDuration": "25-35 detik",
         "keyPoints": ["Poin penting yang dibahas di Part 2"],
-        "connection": "Cara Part 2 connect ke Part 1"
+        "connection": "Cara Part 2 connect ke Part 1",
+        "videoPrompts": [
+            {
+                "slideNumber": 1,
+                "duration": "3 detik",
+                "prompt": "Continuation scene dari Part 1",
+                "visualStyle": "consistent dengan Part 1",
+                "cameraMovement": "connecting movement",
+                "mood": "continuation mood"
+            }
+            // ... video prompts untuk Part 2
+        ]
     },
     "tips": ["Tip untuk kontinuitas antar part", "Tip untuk maintain engagement", "Tip untuk CTA"]
 }
+
+🎬 VIDEO GENERATION PROMPTS (untuk Veo 3, Sora, atau AI Video Generator lainnya):
+
+INSTRUKSI PENTING UNTUK VIDEO PROMPTS:
+1. Buat prompt video TERSTRUKTUR PER SLIDE untuk menghasilkan video yang koheren
+2. Setiap video clip maksimal 3-5 detik untuk maintain attention
+3. Video clips harus seamlessly connected membentuk satu kesatuan cerita
+4. Style visual konsisten di semua clips untuk continuity
+5. Camera movement smooth dan purposeful
+6. Mood/tone sesuai dengan kategori dan konteks konten
+
+FORMAT VIDEO PROMPTS (wajib include dalam JSON output):
+
+**JIKA 1 PART:**
+"videoPrompts": [
+    {
+        "slideNumber": 1,
+        "duration": "3-4 detik",
+        "prompt": "Deskripsi visual scene yang detail untuk AI video generator. Include: subject, action, setting, lighting, camera angle",
+        "visualStyle": "cinematic/documentary/modern/vibrant/minimal/dramatic",
+        "cameraMovement": "slow zoom in/pan right/tracking shot/static/push in",
+        "mood": "mysterious/exciting/informative/emotional/dramatic"
+    },
+    {
+        "slideNumber": 2,
+        "duration": "3-4 detik",
+        "prompt": "Deskripsi visual yang connect dengan slide sebelumnya",
+        "visualStyle": "consistent dengan slide 1",
+        "cameraMovement": "smooth transition movement",
+        "mood": "build dari slide sebelumnya"
+    }
+    // ... untuk setiap slide + transition shots
+]
+
+**JIKA 2 PART:**
+"part1": {
+    "videoPrompts": [...array of video prompts untuk Part 1...]
+},
+"part2": {
+    "videoPrompts": [...array of video prompts untuk Part 2...]
+}
+
+PEDOMAN MEMBUAT VIDEO PROMPTS:
+1. **Untuk Slide Opening/Hook:**
+   - Prompt: Dynamic, attention-grabbing visual
+   - Style: High energy, vivid colors
+   - Camera: Fast zoom in atau dramatic reveal
+   - Mood: Exciting, intriguing
+
+2. **Untuk Content Slides:**
+   - Prompt: Clear visual yang support narasi
+   - Style: Clean dan focused
+   - Camera: Smooth movements yang guide attention
+   - Mood: Informative yet engaging
+
+3. **Untuk Transition antar Slides:**
+   - Prompt: Smooth connecting visual element
+   - Style: Consistent dengan overall aesthetic
+   - Camera: Fluid movement yang natural
+   - Mood: Maintain momentum
+
+4. **Untuk Cliffhanger (jika 2 part):**
+   - Prompt: Dramatic visual yang build tension
+   - Style: Bold dan impactful
+   - Camera: Slow push in atau dramatic pause
+   - Mood: Suspenseful, curious
+
+5. **Untuk CTA/Outro:**
+   - Prompt: Strong concluding visual
+   - Style: Memorable dan branded
+   - Camera: Pull back atau settling shot
+   - Mood: Satisfying yet encouraging action
+
+CONTOH VIDEO PROMPTS YANG BAIK:
+
+**Contoh untuk Riddles/Mystery Content:**
+{
+    "slideNumber": 1,
+    "duration": "3 detik",
+    "prompt": "Close-up of an ancient mysterious artifact glowing in dim light, camera slowly rotating around it, shadows dancing on stone walls, cinematic lighting with golden hour ambiance",
+    "visualStyle": "cinematic mysterious",
+    "cameraMovement": "slow orbital rotation",
+    "mood": "mysterious and intriguing"
+}
+
+**Contoh untuk Educational/Sites Content:**
+{
+    "slideNumber": 2,
+    "duration": "4 detik",
+    "prompt": "Aerial drone shot sweeping over famous historical landmark, golden hour lighting, revealing intricate architectural details, smooth forward movement transitioning to slight tilt down",
+    "visualStyle": "documentary cinematic",
+    "cameraMovement": "aerial forward tracking with tilt",
+    "mood": "awe-inspiring and educational"
+}
+
+**Contoh untuk Trending Topics:**
+{
+    "slideNumber": 1,
+    "duration": "3 detik",
+    "prompt": "Fast-paced montage of social media notifications popping up, vibrant neon colors, modern tech aesthetic, quick zoom transitions between smartphone screens showing trending content",
+    "visualStyle": "modern vibrant digital",
+    "cameraMovement": "quick zoom cuts",
+    "mood": "energetic and current"
+}
+
+TIPS UNTUK VIDEO PROMPTS:
+✅ Spesifik dan detail: Include subject, setting, lighting, time of day
+✅ Konsistensi visual: Maintain same style/palette throughout
+✅ Camera movement purposeful: Setiap movement ada alasannya
+✅ Duration realistic: 3-5 detik per clip untuk short-form content
+✅ Mood progression: Build emotional arc throughout video
+✅ Transition planning: Pikirkan bagaimana clip A connect ke clip B
+✅ Context relevant: Visual harus support narasi script
+✅ AI-friendly language: Gunakan deskripsi yang clear untuk AI generator
 
 CONTOH SCRIPT YANG BAIK:
 
@@ -294,17 +461,23 @@ PENTING:
 - Setiap segmen dirancang untuk cut setiap 3 detik
 - Tips harus fokus pada pace cepat, retention, dan engagement
 - Jika 2 part: Setiap part harus valuable sendiri tapi lebih powerful kalau ditonton berurutan
+- **WAJIB INCLUDE videoPrompts array:** Buat prompt video detail untuk setiap slide/scene yang akan digenerate menggunakan Veo 3, Sora, atau AI video generator lainnya
+- Video prompts harus koheren, membentuk satu kesatuan cerita visual yang seamless
+- Setiap video prompt maksimal 3-5 detik, total durasi match dengan estimatedDuration script
     `;
 
     const systemMessage = `
-Anda adalah expert video script writer untuk ultra-short-form content (TikTok, Reels, Shorts).
-Spesialisasi: Cut-to-cut editing style dengan pace sangat cepat (cut setiap 3 detik).
+Anda adalah expert video script writer untuk ultra-short-form content (TikTok, Reels, Shorts) DAN expert video prompt engineer untuk AI video generators (Veo 3, Sora, Runway, Pika, dll).
+Spesialisasi: Cut-to-cut editing style dengan pace sangat cepat (cut setiap 3 detik) + AI-generated video prompts yang koheren.
 
 TUGAS UTAMA:
 1. ANALISIS konten untuk tentukan optimal 1 atau 2 part
 2. Prioritaskan KUALITAS ENGAGEMENT dan RETENTION
 3. JANGAN HILANGKAN detail penting dari konten original
 4. Buat script yang natural, cepat, dan engaging
+5. **GENERATE VIDEO PROMPTS yang detailed dan koheren untuk setiap slide/scene**
+6. Video prompts harus optimized untuk AI video generators (Veo 3, Sora, Runway, dll)
+7. Pastikan visual continuity antar clips untuk storytelling yang seamless
 
 KRITERIA PEMBAGIAN PART:
 ✅ 1 PART jika:
@@ -320,7 +493,7 @@ KRITERIA PEMBAGIAN PART:
 - Engagement lebih baik dengan build-up dan cliffhanger
 - Part 1 bisa create curiosity yang kuat untuk Part 2
 
-ATURAN WAJIB:
+ATURAN WAJIB UNTUK SCRIPT:
 1. Super pendek dan padat: TARGET 25-35 detik per part
 2. BERSIH dari label/identifier - langsung narasi yang siap dibaca
 3. Natural dan conversational dengan pace cepat
@@ -332,25 +505,42 @@ ATURAN WAJIB:
 9. SEMUA detail penting WAJIB masuk (jangan ada yang terlewat!)
 10. Jika 2 part: Cliffhanger Part 1 harus kuat, Part 2 harus connect smooth
 
+ATURAN WAJIB UNTUK VIDEO PROMPTS:
+1. **Detailed & Specific:** Setiap prompt harus sangat detailed (subject, action, setting, lighting, camera angle, mood)
+2. **Consistency:** Visual style konsisten di semua clips untuk cohesive storytelling
+3. **Duration Management:** Setiap clip 3-5 detik, total match dengan estimatedDuration
+4. **Smooth Transitions:** Pikirkan bagaimana clip A seamlessly flow ke clip B
+5. **Context-Relevant:** Visual harus 100% support narasi script dan konten slides
+6. **AI-Optimized:** Gunakan descriptive language yang AI-friendly (avoid ambiguous terms)
+7. **Camera Work:** Purposeful camera movements yang enhance storytelling
+8. **Mood Progression:** Build emotional arc dari opening sampai closing
+9. **Per-Slide Basis:** Minimal 1 video prompt per slide, bisa lebih untuk complex slides
+10. **Branded Aesthetic:** Jika kategori/brand punya visual signature, maintain konsistensi
+
 OPTIMASI RETENTION:
 - Pace super cepat, langsung to the point
 - Cut setiap 3 detik untuk maintain attention
 - Hook kuat di awal (critical first 3 seconds!)
 - Jika 2 part: End Part 1 dengan pertanyaan atau statement yang bikin penasaran
 - Jangan bertele-tele, setiap kata harus purposeful
+- Visual harus dynamic dan engaging di setiap frame
 
-CRITICAL: Script harus 100% bersih dan langsung siap dibaca di teleprompter.
+CRITICAL: 
+- Script harus 100% bersih dan langsung siap dibaca di teleprompter
+- Video prompts harus ready untuk di-input ke AI video generators (Veo 3, Sora, etc)
 
 Output HARUS berupa JSON Object dengan struktur:
-- Jika 1 part: "parts", "reason", "script", "estimatedDuration", "keyPoints", "tips"
-- Jika 2 part: "parts", "reason", "part1", "part2", "tips"
+- Jika 1 part: "parts", "reason", "script", "estimatedDuration", "keyPoints", "tips", "videoPrompts"
+- Jika 2 part: "parts", "reason", "part1" (with videoPrompts), "part2" (with videoPrompts), "tips"
 
-Script dioptimasi untuk:
+Script & Video Prompts dioptimasi untuk:
 - Format vertical video 9:16
 - Durasi 25-35 detik per part
 - Cut setiap 3 detik untuk maintain attention
 - Pace sangat cepat dengan kalimat pendek (5-10 kata)
 - High retention rate dengan quick cuts dan strong hooks
+- AI-generated video yang cinematic dan professional
+- Seamless visual storytelling yang support narasi
 - Jika 2 part: Continuity dan curiosity yang kuat antar part
     `;
 
@@ -382,7 +572,8 @@ Script dioptimasi untuk:
             if (
                 !scriptData.script ||
                 !scriptData.estimatedDuration ||
-                !scriptData.keyPoints
+                !scriptData.keyPoints ||
+                !scriptData.videoPrompts
             ) {
                 throw new Error("Invalid single part script data structure");
             }
@@ -393,7 +584,9 @@ Script dioptimasi untuk:
                 !scriptData.part1.script ||
                 !scriptData.part2.script ||
                 !scriptData.part1.estimatedDuration ||
-                !scriptData.part2.estimatedDuration
+                !scriptData.part2.estimatedDuration ||
+                !scriptData.part1.videoPrompts ||
+                !scriptData.part2.videoPrompts
             ) {
                 throw new Error("Invalid multi-part script data structure");
             }

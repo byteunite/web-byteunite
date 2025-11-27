@@ -24,6 +24,7 @@ import Image from "next/image";
 import type {
     VideoScriptData,
     LegacyVideoScriptData,
+    VideoPrompt,
 } from "@/lib/gemini-video-script-generator";
 
 interface Slide {
@@ -228,6 +229,8 @@ export default function DownloadSlidesButton({
     const [copiedHashtags, setCopiedHashtags] = useState(false);
     const [copiedAll, setCopiedAll] = useState(false);
 
+    console.log("Saved Video Script prop:", savedVideoScript);
+
     // Video Script states - Support multi-part
     const [videoScript, setVideoScript] = useState<VideoScriptData | null>(
         () => {
@@ -245,6 +248,7 @@ export default function DownloadSlidesButton({
                     estimatedDuration: savedVideoScript.estimatedDuration,
                     keyPoints: [],
                     tips: savedVideoScript.tips,
+                    videoPrompts: [], // Empty array for legacy format
                 };
             }
             return null;
@@ -254,7 +258,12 @@ export default function DownloadSlidesButton({
     const [savingScript, setSavingScript] = useState(false);
     const [scriptSavedToDB, setScriptSavedToDB] = useState(!!savedVideoScript); // Track apakah sudah tersimpan di DB
     const [copiedScript, setCopiedScript] = useState(false);
+    const [copiedFullScript, setCopiedFullScript] = useState(false); // Separate state for full script
     const [copiedNarration, setCopiedNarration] = useState(false); // For prompter copy
+    const [copiedVideoPrompt, setCopiedVideoPrompt] = useState<number | null>(
+        null
+    ); // Track which video prompt is copied
+    const [showVideoPrompts, setShowVideoPrompts] = useState(false); // Toggle video prompts visibility
     const [showScriptSection, setShowScriptSection] = useState(
         !!savedVideoScript
     ); // Tampilkan jika sudah ada saved script
@@ -277,6 +286,7 @@ export default function DownloadSlidesButton({
                     estimatedDuration: savedVideoScript.estimatedDuration,
                     keyPoints: [],
                     tips: savedVideoScript.tips,
+                    videoPrompts: [], // Empty array for legacy format
                 });
             }
             setShowScriptSection(true);
@@ -524,8 +534,8 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
             }
 
             await navigator.clipboard.writeText(scriptText);
-            setCopiedScript(true);
-            setTimeout(() => setCopiedScript(false), 2000);
+            setCopiedFullScript(true);
+            setTimeout(() => setCopiedFullScript(false), 2000);
         } catch (error) {
             console.error("Failed to copy script:", error);
         }
@@ -557,6 +567,92 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
             setTimeout(() => setCopiedNarration(false), 2000);
         } catch (error) {
             console.error("Failed to copy narration:", error);
+        }
+    };
+
+    const copyVideoPrompt = async (prompt: VideoPrompt, index: number) => {
+        try {
+            const promptText = `VIDEO PROMPT - Slide ${prompt.slideNumber}
+Duration: ${prompt.duration}
+Visual Style: ${prompt.visualStyle}
+Camera Movement: ${prompt.cameraMovement}
+Mood: ${prompt.mood}
+
+PROMPT:
+${prompt.prompt}`;
+
+            await navigator.clipboard.writeText(promptText);
+            setCopiedVideoPrompt(index);
+            setTimeout(() => setCopiedVideoPrompt(null), 2000);
+        } catch (error) {
+            console.error("Failed to copy video prompt:", error);
+        }
+    };
+
+    const copyAllVideoPrompts = async () => {
+        if (!videoScript) return;
+
+        try {
+            let allPrompts = "";
+
+            if (videoScript.parts === 1) {
+                allPrompts = videoScript.videoPrompts
+                    .map(
+                        (prompt, index) =>
+                            `━━━ CLIP ${index + 1} - SLIDE ${
+                                prompt.slideNumber
+                            } ━━━
+Duration: ${prompt.duration}
+Visual Style: ${prompt.visualStyle}
+Camera Movement: ${prompt.cameraMovement}
+Mood: ${prompt.mood}
+
+PROMPT:
+${prompt.prompt}`
+                    )
+                    .join("\n\n");
+            } else {
+                const part1Prompts = videoScript.part1.videoPrompts
+                    .map(
+                        (prompt, index) =>
+                            `CLIP ${index + 1} - SLIDE ${prompt.slideNumber}
+Duration: ${prompt.duration} | Style: ${prompt.visualStyle} | Camera: ${
+                                prompt.cameraMovement
+                            } | Mood: ${prompt.mood}
+→ ${prompt.prompt}`
+                    )
+                    .join("\n\n");
+
+                const part2Prompts = videoScript.part2.videoPrompts
+                    .map(
+                        (prompt, index) =>
+                            `CLIP ${index + 1} - SLIDE ${prompt.slideNumber}
+Duration: ${prompt.duration} | Style: ${prompt.visualStyle} | Camera: ${
+                                prompt.cameraMovement
+                            } | Mood: ${prompt.mood}
+→ ${prompt.prompt}`
+                    )
+                    .join("\n\n");
+
+                allPrompts = `━━━━━━━━━━━━━━━━━━━━━━
+PART 1 VIDEO PROMPTS
+━━━━━━━━━━━━━━━━━━━━━━
+
+${part1Prompts}
+
+━━━━━━━━━━━━━━━━━━━━━━
+PART 2 VIDEO PROMPTS
+━━━━━━━━━━━━━━━━━━━━━━
+
+${part2Prompts}`;
+            }
+
+            await navigator.clipboard.writeText(allPrompts);
+            // Reuse copiedScript state for this action
+            setCopiedScript(true);
+            setTimeout(() => setCopiedScript(false), 2000);
+        } catch (error) {
+            console.error("Failed to copy all video prompts:", error);
         }
     };
 
@@ -812,27 +908,27 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
                                                 (TikTok/Reels/Shorts)
                                             </p>
                                         </div>
-                                        {!showScriptSection && (
-                                            <Button
-                                                onClick={generateVideoScript}
-                                                disabled={generatingScript}
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-8 gap-1.5"
-                                            >
-                                                {generatingScript ? (
-                                                    <>
-                                                        <Loader2 className="h-3 w-3 animate-spin" />
-                                                        Generating...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <FileText className="h-3 w-3" />
-                                                        Generate Script
-                                                    </>
-                                                )}
-                                            </Button>
-                                        )}
+                                        <Button
+                                            onClick={generateVideoScript}
+                                            disabled={generatingScript}
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-8 gap-1.5"
+                                        >
+                                            {generatingScript ? (
+                                                <>
+                                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                                    Generating...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FileText className="h-3 w-3" />
+                                                    {showScriptSection
+                                                        ? "Re-generate"
+                                                        : "Generate Script"}
+                                                </>
+                                            )}
+                                        </Button>
                                     </div>
 
                                     {showScriptSection && videoScript && (
@@ -1086,6 +1182,414 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
                                                     </div>
                                                 )}
 
+                                            {/* Video Prompts Section */}
+                                            {((videoScript.parts === 1 &&
+                                                videoScript.videoPrompts &&
+                                                videoScript.videoPrompts
+                                                    .length > 0) ||
+                                                (videoScript.parts === 2 &&
+                                                    ((videoScript.part1
+                                                        .videoPrompts &&
+                                                        videoScript.part1
+                                                            .videoPrompts
+                                                            .length > 0) ||
+                                                        (videoScript.part2
+                                                            .videoPrompts &&
+                                                            videoScript.part2
+                                                                .videoPrompts
+                                                                .length >
+                                                                0)))) && (
+                                                <div className="bg-linear-to-r from-blue-50 to-purple-50 p-3 rounded border-2 border-blue-200">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <Video className="h-4 w-4 text-blue-600" />
+                                                            <p className="text-xs font-bold text-blue-700">
+                                                                AI Video
+                                                                Generation
+                                                                Prompts
+                                                            </p>
+                                                            <span className="text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">
+                                                                Veo 3 / Sora /
+                                                                Runway
+                                                            </span>
+                                                        </div>
+                                                        <Button
+                                                            onClick={() =>
+                                                                setShowVideoPrompts(
+                                                                    !showVideoPrompts
+                                                                )
+                                                            }
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-6 text-xs"
+                                                        >
+                                                            {showVideoPrompts
+                                                                ? "Hide"
+                                                                : "Show"}{" "}
+                                                            Prompts
+                                                        </Button>
+                                                    </div>
+
+                                                    <p className="text-xs text-blue-700 mb-3">
+                                                        Prompt terstruktur per
+                                                        slide untuk AI video
+                                                        generators. Setiap clip
+                                                        dirancang{" "}
+                                                        <span className="font-semibold">
+                                                            3-5 detik
+                                                        </span>{" "}
+                                                        dengan visual yang
+                                                        koheren.
+                                                    </p>
+
+                                                    {showVideoPrompts && (
+                                                        <div className="space-y-3">
+                                                            {videoScript.parts ===
+                                                            1 ? (
+                                                                // Single Part Video Prompts
+                                                                <div className="space-y-2">
+                                                                    {videoScript.videoPrompts.map(
+                                                                        (
+                                                                            prompt,
+                                                                            index
+                                                                        ) => (
+                                                                            <div
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="bg-white p-3 rounded border border-blue-300 shadow-sm"
+                                                                            >
+                                                                                <div className="flex items-start justify-between gap-2 mb-2">
+                                                                                    <div className="flex items-center gap-2">
+                                                                                        <span className="text-xs font-bold text-white bg-blue-600 px-2 py-1 rounded">
+                                                                                            Clip{" "}
+                                                                                            {index +
+                                                                                                1}
+                                                                                        </span>
+                                                                                        <span className="text-xs font-semibold text-gray-700">
+                                                                                            Slide{" "}
+                                                                                            {
+                                                                                                prompt.slideNumber
+                                                                                            }
+                                                                                        </span>
+                                                                                        <span className="text-xs text-gray-500">
+                                                                                            •{" "}
+                                                                                            {
+                                                                                                prompt.duration
+                                                                                            }
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <Button
+                                                                                        onClick={() =>
+                                                                                            copyVideoPrompt(
+                                                                                                prompt,
+                                                                                                index
+                                                                                            )
+                                                                                        }
+                                                                                        variant="ghost"
+                                                                                        size="sm"
+                                                                                        className="h-6 px-2 text-xs"
+                                                                                    >
+                                                                                        {copiedVideoPrompt ===
+                                                                                        index ? (
+                                                                                            <Check className="h-3 w-3 text-green-600" />
+                                                                                        ) : (
+                                                                                            <Copy className="h-3 w-3" />
+                                                                                        )}
+                                                                                    </Button>
+                                                                                </div>
+
+                                                                                <div className="space-y-2">
+                                                                                    <div className="flex flex-wrap gap-2">
+                                                                                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                                                                                            📸{" "}
+                                                                                            {
+                                                                                                prompt.visualStyle
+                                                                                            }
+                                                                                        </span>
+                                                                                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
+                                                                                            🎥{" "}
+                                                                                            {
+                                                                                                prompt.cameraMovement
+                                                                                            }
+                                                                                        </span>
+                                                                                        <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded">
+                                                                                            ✨{" "}
+                                                                                            {
+                                                                                                prompt.mood
+                                                                                            }
+                                                                                        </span>
+                                                                                    </div>
+
+                                                                                    <p className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-2 rounded border border-gray-200">
+                                                                                        {
+                                                                                            prompt.prompt
+                                                                                        }
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                // Multi-Part Video Prompts
+                                                                <div className="space-y-3">
+                                                                    {/* Part 1 Prompts */}
+                                                                    {videoScript
+                                                                        .part1
+                                                                        .videoPrompts &&
+                                                                        videoScript
+                                                                            .part1
+                                                                            .videoPrompts
+                                                                            .length >
+                                                                            0 && (
+                                                                            <div className="space-y-2">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-xs font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded">
+                                                                                        PART
+                                                                                        1
+                                                                                        PROMPTS
+                                                                                    </span>
+                                                                                    <span className="text-xs text-gray-500">
+                                                                                        {
+                                                                                            videoScript
+                                                                                                .part1
+                                                                                                .videoPrompts
+                                                                                                .length
+                                                                                        }{" "}
+                                                                                        clips
+                                                                                    </span>
+                                                                                </div>
+                                                                                {videoScript.part1.videoPrompts.map(
+                                                                                    (
+                                                                                        prompt,
+                                                                                        index
+                                                                                    ) => (
+                                                                                        <div
+                                                                                            key={
+                                                                                                index
+                                                                                            }
+                                                                                            className="bg-white p-3 rounded border border-purple-300 shadow-sm"
+                                                                                        >
+                                                                                            <div className="flex items-start justify-between gap-2 mb-2">
+                                                                                                <div className="flex items-center gap-2">
+                                                                                                    <span className="text-xs font-bold text-white bg-purple-600 px-2 py-1 rounded">
+                                                                                                        Clip{" "}
+                                                                                                        {index +
+                                                                                                            1}
+                                                                                                    </span>
+                                                                                                    <span className="text-xs font-semibold text-gray-700">
+                                                                                                        Slide{" "}
+                                                                                                        {
+                                                                                                            prompt.slideNumber
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                    <span className="text-xs text-gray-500">
+                                                                                                        •{" "}
+                                                                                                        {
+                                                                                                            prompt.duration
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                                <Button
+                                                                                                    onClick={() =>
+                                                                                                        copyVideoPrompt(
+                                                                                                            prompt,
+                                                                                                            index
+                                                                                                        )
+                                                                                                    }
+                                                                                                    variant="ghost"
+                                                                                                    size="sm"
+                                                                                                    className="h-6 px-2 text-xs"
+                                                                                                >
+                                                                                                    {copiedVideoPrompt ===
+                                                                                                    index ? (
+                                                                                                        <Check className="h-3 w-3 text-green-600" />
+                                                                                                    ) : (
+                                                                                                        <Copy className="h-3 w-3" />
+                                                                                                    )}
+                                                                                                </Button>
+                                                                                            </div>
+
+                                                                                            <div className="space-y-2">
+                                                                                                <div className="flex flex-wrap gap-2">
+                                                                                                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                                                                                                        📸{" "}
+                                                                                                        {
+                                                                                                            prompt.visualStyle
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
+                                                                                                        🎥{" "}
+                                                                                                        {
+                                                                                                            prompt.cameraMovement
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                    <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded">
+                                                                                                        ✨{" "}
+                                                                                                        {
+                                                                                                            prompt.mood
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                </div>
+
+                                                                                                <p className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-2 rounded border border-gray-200">
+                                                                                                    {
+                                                                                                        prompt.prompt
+                                                                                                    }
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    )
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+
+                                                                    {/* Part 2 Prompts */}
+                                                                    {videoScript
+                                                                        .part2
+                                                                        .videoPrompts &&
+                                                                        videoScript
+                                                                            .part2
+                                                                            .videoPrompts
+                                                                            .length >
+                                                                            0 && (
+                                                                            <div className="space-y-2">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-xs font-bold text-pink-700 bg-pink-100 px-2 py-1 rounded">
+                                                                                        PART
+                                                                                        2
+                                                                                        PROMPTS
+                                                                                    </span>
+                                                                                    <span className="text-xs text-gray-500">
+                                                                                        {
+                                                                                            videoScript
+                                                                                                .part2
+                                                                                                .videoPrompts
+                                                                                                .length
+                                                                                        }{" "}
+                                                                                        clips
+                                                                                    </span>
+                                                                                </div>
+                                                                                {videoScript.part2.videoPrompts.map(
+                                                                                    (
+                                                                                        prompt,
+                                                                                        index
+                                                                                    ) => (
+                                                                                        <div
+                                                                                            key={
+                                                                                                index
+                                                                                            }
+                                                                                            className="bg-white p-3 rounded border border-pink-300 shadow-sm"
+                                                                                        >
+                                                                                            <div className="flex items-start justify-between gap-2 mb-2">
+                                                                                                <div className="flex items-center gap-2">
+                                                                                                    <span className="text-xs font-bold text-white bg-pink-600 px-2 py-1 rounded">
+                                                                                                        Clip{" "}
+                                                                                                        {index +
+                                                                                                            1}
+                                                                                                    </span>
+                                                                                                    <span className="text-xs font-semibold text-gray-700">
+                                                                                                        Slide{" "}
+                                                                                                        {
+                                                                                                            prompt.slideNumber
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                    <span className="text-xs text-gray-500">
+                                                                                                        •{" "}
+                                                                                                        {
+                                                                                                            prompt.duration
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                                <Button
+                                                                                                    onClick={() =>
+                                                                                                        copyVideoPrompt(
+                                                                                                            prompt,
+                                                                                                            index +
+                                                                                                                1000
+                                                                                                        )
+                                                                                                    }
+                                                                                                    variant="ghost"
+                                                                                                    size="sm"
+                                                                                                    className="h-6 px-2 text-xs"
+                                                                                                >
+                                                                                                    {copiedVideoPrompt ===
+                                                                                                    index +
+                                                                                                        1000 ? (
+                                                                                                        <Check className="h-3 w-3 text-green-600" />
+                                                                                                    ) : (
+                                                                                                        <Copy className="h-3 w-3" />
+                                                                                                    )}
+                                                                                                </Button>
+                                                                                            </div>
+
+                                                                                            <div className="space-y-2">
+                                                                                                <div className="flex flex-wrap gap-2">
+                                                                                                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                                                                                                        📸{" "}
+                                                                                                        {
+                                                                                                            prompt.visualStyle
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
+                                                                                                        🎥{" "}
+                                                                                                        {
+                                                                                                            prompt.cameraMovement
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                    <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded">
+                                                                                                        ✨{" "}
+                                                                                                        {
+                                                                                                            prompt.mood
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                </div>
+
+                                                                                                <p className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-2 rounded border border-gray-200">
+                                                                                                    {
+                                                                                                        prompt.prompt
+                                                                                                    }
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    )
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Copy All Video Prompts Button */}
+                                                            <Button
+                                                                onClick={
+                                                                    copyAllVideoPrompts
+                                                                }
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="w-full h-8 gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+                                                            >
+                                                                {copiedScript ? (
+                                                                    <>
+                                                                        <Check className="h-3 w-3 text-green-600" />
+                                                                        All
+                                                                        Prompts
+                                                                        Copied!
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <Copy className="h-3 w-3" />
+                                                                        Copy All
+                                                                        Video
+                                                                        Prompts
+                                                                    </>
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
                                             {/* Primary Action: Copy for Prompter */}
                                             <Button
                                                 onClick={
@@ -1117,7 +1621,7 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
                                                     size="sm"
                                                     className="flex-1 h-8 text-xs gap-1.5"
                                                 >
-                                                    {copiedScript ? (
+                                                    {copiedFullScript ? (
                                                         <>
                                                             <Check className="h-3 w-3 text-green-600" />
                                                             Copied!
@@ -1133,10 +1637,6 @@ ${videoScript.tips.map((tip, i) => `${i + 1}. ${tip}`).join("\n")}`;
                                                     <Button
                                                         onClick={
                                                             saveVideoScript
-                                                        }
-                                                        disabled={
-                                                            savingScript ||
-                                                            scriptSavedToDB
                                                         }
                                                         variant={
                                                             scriptSavedToDB

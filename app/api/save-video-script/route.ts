@@ -22,18 +22,62 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validasi videoScript structure
-        if (
-            !videoScript.script ||
-            !videoScript.estimatedDuration ||
-            !videoScript.tips
-        ) {
+        // Validasi videoScript structure (support both new and legacy formats)
+        const isLegacyFormat =
+            "script" in videoScript &&
+            "estimatedDuration" in videoScript &&
+            "tips" in videoScript &&
+            !("parts" in videoScript);
+
+        const isNewFormat = "parts" in videoScript && "tips" in videoScript;
+
+        if (!isLegacyFormat && !isNewFormat) {
             return NextResponse.json(
                 {
-                    error: "Invalid videoScript structure",
+                    error: "Invalid videoScript structure. Must be either legacy format or new format with 'parts' field",
                 },
                 { status: 400 }
             );
+        }
+
+        // Additional validation for new format
+        if (isNewFormat) {
+            if (videoScript.parts === 1) {
+                if (
+                    !videoScript.script ||
+                    !videoScript.estimatedDuration ||
+                    !videoScript.keyPoints ||
+                    !videoScript.videoPrompts
+                ) {
+                    return NextResponse.json(
+                        {
+                            error: "Invalid single-part videoScript structure",
+                        },
+                        { status: 400 }
+                    );
+                }
+            } else if (videoScript.parts === 2) {
+                if (
+                    !videoScript.part1 ||
+                    !videoScript.part2 ||
+                    !videoScript.part1.videoPrompts ||
+                    !videoScript.part2.videoPrompts
+                ) {
+                    return NextResponse.json(
+                        {
+                            error: "Invalid multi-part videoScript structure",
+                        },
+                        { status: 400 }
+                    );
+                }
+            } else {
+                return NextResponse.json(
+                    {
+                        error: "Invalid parts value. Must be 1 or 2",
+                    },
+                    { status: 400 }
+                );
+            }
         }
 
         // Pilih model berdasarkan category
@@ -61,21 +105,14 @@ export async function POST(request: NextRequest) {
         }
 
         // Update document dengan video script
-        const updatedContent = await Model.findByIdAndUpdate(
-            contentId,
-            {
-                $set: {
-                    videoScript: {
-                        script: videoScript.script,
-                        estimatedDuration: videoScript.estimatedDuration,
-                        tips: videoScript.tips,
-                    },
-                },
-            },
-            { new: true }
-        );
+        // Save entire videoScript object to preserve all fields
+        console.log("=== SAVING VIDEO SCRIPT ===");
+        console.log("Input videoScript:", JSON.stringify(videoScript, null, 2));
 
-        if (!updatedContent) {
+        // Find the document first
+        const content = await Model.findById(contentId);
+
+        if (!content) {
             return NextResponse.json(
                 {
                     error: `${category} not found`,
@@ -84,10 +121,25 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Set videoScript directly
+        content.videoScript = videoScript;
+
+        // Save without validation
+        await content.save({ validateBeforeSave: false });
+
+        // Retrieve the saved document
+        const savedContent = await Model.findById(contentId).lean();
+
+        console.log("=== SAVED VIDEO SCRIPT ===");
+        console.log(
+            "Stored in DB:",
+            JSON.stringify((savedContent as any)?.videoScript, null, 2)
+        );
+
         return NextResponse.json({
             success: true,
             message: "Video script saved successfully",
-            data: updatedContent.videoScript,
+            data: (savedContent as any)?.videoScript,
         });
     } catch (error) {
         console.error("Error in save-video-script API:", error);

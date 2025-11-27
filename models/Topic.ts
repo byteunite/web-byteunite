@@ -16,11 +16,20 @@ const CarouselDataSchema = new mongoose.Schema({
     hashtags: [{ type: String }],
 });
 
-const VideoScriptSchema = new mongoose.Schema({
-    script: { type: String, required: true },
-    estimatedDuration: { type: String, required: true },
-    tips: [{ type: String }],
-});
+const VideoScriptSchema = new mongoose.Schema(
+    {
+        parts: mongoose.Schema.Types.Mixed,
+        reason: mongoose.Schema.Types.Mixed,
+        tips: mongoose.Schema.Types.Mixed,
+        script: mongoose.Schema.Types.Mixed,
+        estimatedDuration: mongoose.Schema.Types.Mixed,
+        keyPoints: mongoose.Schema.Types.Mixed,
+        videoPrompts: mongoose.Schema.Types.Mixed,
+        part1: mongoose.Schema.Types.Mixed,
+        part2: mongoose.Schema.Types.Mixed,
+    },
+    { strict: false }
+);
 
 const TopicSchema = new mongoose.Schema(
     {

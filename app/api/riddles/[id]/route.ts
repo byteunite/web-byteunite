@@ -30,6 +30,14 @@ export async function GET(
             );
         }
 
+        // Log videoScript for debugging
+        if ((riddle as any).videoScript) {
+            console.log(
+                "Retrieved videoScript:",
+                JSON.stringify((riddle as any).videoScript, null, 2)
+            );
+        }
+
         return NextResponse.json({
             success: true,
             data: riddle,
