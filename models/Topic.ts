@@ -10,6 +10,29 @@ const SlideSchema = new mongoose.Schema({
     saved_slide_url: { type: String },
 });
 
+const VideoSlideSchema = new mongoose.Schema({
+    tipe_slide: {
+        type: String,
+        enum: [
+            "VIDEO_COVER",
+            "VIDEO_POINT",
+            "VIDEO_QUESTION",
+            "VIDEO_ANSWER",
+            "VIDEO_LIST",
+            "VIDEO_QUOTE",
+            "VIDEO_TRANSITION",
+            "VIDEO_CLOSING",
+        ],
+        required: true,
+    },
+    judul_slide: { type: String, required: true },
+    sub_judul_slide: { type: String },
+    konten_slide: { type: String },
+    list_items: [{ type: String }],
+    background_color: { type: String },
+    text_color: { type: String },
+});
+
 const CarouselDataSchema = new mongoose.Schema({
     slides: [SlideSchema],
     caption: { type: String, required: true },
@@ -58,6 +81,14 @@ const TopicSchema = new mongoose.Schema(
         videoScript: {
             type: VideoScriptSchema,
             required: false, // Optional, akan diisi ketika user generate script
+        },
+        videoSlides: {
+            type: [VideoSlideSchema],
+            required: false, // Optional, akan diisi ketika user generate video slides
+        },
+        videoSlidesUpdatedAt: {
+            type: Date,
+            required: false, // Optional, timestamp ketika video slides terakhir di-update
         },
     },
     {

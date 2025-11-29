@@ -11,6 +11,25 @@ export interface ISlide {
     saved_slide_url?: string; // URL screenshot slide lengkap yang disimpan user
 }
 
+// Interface untuk Video Slide
+export interface IVideoSlide {
+    tipe_slide:
+        | "VIDEO_COVER"
+        | "VIDEO_POINT"
+        | "VIDEO_QUESTION"
+        | "VIDEO_ANSWER"
+        | "VIDEO_LIST"
+        | "VIDEO_QUOTE"
+        | "VIDEO_TRANSITION"
+        | "VIDEO_CLOSING";
+    judul_slide: string;
+    sub_judul_slide?: string;
+    konten_slide?: string;
+    list_items?: string[];
+    background_color?: string;
+    text_color?: string;
+}
+
 // Interface untuk Carousel Data (response dari AI)
 export interface ICarouselData {
     slides: ISlide[];
@@ -81,6 +100,8 @@ export interface ISite extends Document {
     isFree: boolean;
     carouselData: ICarouselData;
     videoScript?: IVideoScript; // Optional, script untuk video TikTok/Reels/Shorts
+    videoSlides?: IVideoSlide[]; // Optional, slides untuk video format (TikTok/Reels/Shorts)
+    videoSlidesUpdatedAt?: Date; // Timestamp ketika video slides terakhir di-update
     createdAt: Date;
     updatedAt: Date;
 }
@@ -115,6 +136,51 @@ const SlideSchema = new Schema<ISlide>(
         saved_slide_url: {
             type: String,
             required: false, // Optional, URL screenshot slide lengkap yang disimpan user
+        },
+    },
+    { _id: false }
+);
+
+// Schema untuk Video Slide
+const VideoSlideSchema = new Schema<IVideoSlide>(
+    {
+        tipe_slide: {
+            type: String,
+            enum: [
+                "VIDEO_COVER",
+                "VIDEO_POINT",
+                "VIDEO_QUESTION",
+                "VIDEO_ANSWER",
+                "VIDEO_LIST",
+                "VIDEO_QUOTE",
+                "VIDEO_TRANSITION",
+                "VIDEO_CLOSING",
+            ],
+            required: true,
+        },
+        judul_slide: {
+            type: String,
+            required: true,
+        },
+        sub_judul_slide: {
+            type: String,
+            required: false,
+        },
+        konten_slide: {
+            type: String,
+            required: false,
+        },
+        list_items: {
+            type: [String],
+            required: false,
+        },
+        background_color: {
+            type: String,
+            required: false,
+        },
+        text_color: {
+            type: String,
+            required: false,
         },
     },
     { _id: false }
@@ -195,6 +261,14 @@ const SiteSchema = new Schema<ISite>(
         videoScript: {
             type: VideoScriptSchema,
             required: false, // Optional, akan diisi ketika user generate script
+        },
+        videoSlides: {
+            type: [VideoSlideSchema],
+            required: false, // Optional, akan diisi ketika user generate video slides
+        },
+        videoSlidesUpdatedAt: {
+            type: Date,
+            required: false, // Optional, timestamp ketika video slides terakhir di-update
         },
     },
     {
