@@ -21,6 +21,7 @@ export interface VideoSlide {
     list_items?: string[];
     prompt_untuk_image?: string;
     saved_image_url?: string;
+    saved_slide_url?: string; // URL untuk screenshot slide yang sudah disimpan
     background_color?: string;
     text_color?: string;
 }

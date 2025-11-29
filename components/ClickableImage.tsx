@@ -40,6 +40,7 @@ interface ClickableImageProps {
     riddleId?: string;
     saved_image_url?: string;
     category?: string;
+    slideType?: "carousel" | "video"; // Tambahan untuk membedakan tipe slide
 }
 
 export default function ClickableImage({
@@ -53,6 +54,7 @@ export default function ClickableImage({
     riddleId,
     saved_image_url,
     category = "riddles",
+    slideType = "carousel", // Default ke carousel untuk backward compatibility
 }: ClickableImageProps) {
     const initSeed = Math.ceil(Math.random() * 15);
     const [seed, setSeed] = useState<number>(initSeed);
@@ -435,6 +437,7 @@ export default function ClickableImage({
                     body: JSON.stringify({
                         slideIndex,
                         imageUrl: saveImageUrl,
+                        slideType, // Kirim slideType ke API
                     }),
                 }
             );
@@ -443,9 +446,12 @@ export default function ClickableImage({
                 throw new Error("Gagal menyimpan gambar");
             }
 
+            const slideTypeName = slideType === "video" ? "video" : "carousel";
             toast({
                 title: "Berhasil!",
-                description: `Gambar slide ${slideIndex + 1} berhasil disimpan`,
+                description: `Gambar ${slideTypeName} slide ${
+                    slideIndex + 1
+                } berhasil disimpan`,
             });
             setIsModalOpen(false);
             // Reset uploaded image URL after saving

@@ -47,7 +47,11 @@ const isVercel = !!process.env.VERCEL_ENV;
  */
 export async function POST(request: NextRequest) {
     try {
-        const { topicId, totalSlides } = await request.json();
+        const {
+            topicId,
+            totalSlides,
+            slideType = "carousel",
+        } = await request.json();
 
         if (!topicId || !totalSlides) {
             return NextResponse.json(
@@ -56,13 +60,23 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Build URL untuk screenshot
+        // Validate slideType
+        if (slideType !== "carousel" && slideType !== "video") {
+            return NextResponse.json(
+                { error: "Invalid slide type. Must be 'carousel' or 'video'" },
+                { status: 400 }
+            );
+        }
+
+        // Build URL untuk screenshot berdasarkan slideType
+        const templatePath =
+            slideType === "video" ? "template-video" : "template";
         const baseUrl =
             process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-        const url = `${baseUrl}/template/${topicId}?screenshot=true&data=topics`;
+        const url = `${baseUrl}/${templatePath}/${topicId}?screenshot=true&data=topics`;
 
         console.log(
-            `📸 Capturing full screenshot: ${url} (${totalSlides} slides)`
+            `📸 Capturing ${slideType} full screenshot: ${url} (${totalSlides} slides)`
         );
 
         // Dynamic import of puppeteer based on environment
@@ -104,13 +118,22 @@ export async function POST(request: NextRequest) {
 
         const page = await browser.newPage();
 
-        // Get slide dimensions from page
-        // scale = 2.5, width = 1080/2.5 = 432, height = 1350/2.5 = 540
-        // BEST SOLUTION: Gunakan deviceScaleFactor 2 untuk balance quality vs stability
-        // deviceScaleFactor 3 causes overlap in Vercel/Chromium environment
+        // Get slide dimensions based on slideType
+        // Carousel: 1080x1350 (4:5 ratio) scaled to 432x540
+        // Video: 1080x1920 (9:16 ratio) scaled to 432x768
         const scale = 2.5;
-        const slideWidth = Math.floor(1080 / scale);
-        const slideHeight = Math.floor(1350 / scale);
+        let slideWidth: number, slideHeight: number;
+
+        if (slideType === "video") {
+            // Video slides: 9:16 ratio (TikTok/Reels/Shorts)
+            slideWidth = Math.floor(1080 / scale); // 432px
+            slideHeight = Math.floor(1920 / scale); // 768px
+        } else {
+            // Carousel slides: 4:5 ratio (Instagram)
+            slideWidth = Math.floor(1080 / scale); // 432px
+            slideHeight = Math.floor(1350 / scale); // 540px
+        }
+
         const totalWidth = slideWidth * totalSlides;
 
         // Use deviceScaleFactor 2 for balance between quality and stability
@@ -118,7 +141,7 @@ export async function POST(request: NextRequest) {
         const dpr = isVercel ? 2 : 2.5; // 2x on Vercel (stable), 2.5x local (max quality)
 
         console.log(
-            `📐 Base dimensions: ${slideWidth}x${slideHeight} per slide`
+            `📐 Base dimensions (${slideType}): ${slideWidth}x${slideHeight} per slide`
         );
         console.log(`📊 Total layout width: ${totalWidth}px`);
         console.log(
@@ -271,6 +294,14 @@ export async function POST(request: NextRequest) {
                 )}x (${actualSlideWidth}px → 1080px)`
             );
 
+            // Set target dimensions based on slideType
+            const targetWidth = 1080;
+            const targetHeight = slideType === "video" ? 1920 : 1350;
+
+            console.log(
+                `🎯 Target dimensions: ${targetWidth}x${targetHeight} (${slideType})`
+            );
+
             // Crop menggunakan sharp dengan kualitas maksimal
             let sharpPipeline = sharp(fullScreenshot as Buffer)
                 .extract({
@@ -279,8 +310,10 @@ export async function POST(request: NextRequest) {
                     width: Math.floor(width),
                     height: Math.floor(height),
                 })
-                // Resize ke dimensi Instagram story (1080x1350)
-                .resize(1080, 1350, {
+                // Resize ke dimensi target berdasarkan slideType
+                // Carousel: 1080x1350 (Instagram)
+                // Video: 1080x1920 (TikTok/Reels/Shorts)
+                .resize(targetWidth, targetHeight, {
                     kernel: sharp.kernel.lanczos3, // Best algorithm
                     fit: "fill",
                 });
@@ -382,9 +415,10 @@ export async function POST(request: NextRequest) {
             success: true,
             totalSlides,
             slides: slideImages,
+            slideType,
             dimensions: {
-                width: 1080, // Dimensi Instagram Story standard
-                height: 1350,
+                width: 1080,
+                height: slideType === "video" ? 1920 : 1350,
             },
             metadata: {
                 totalPayloadMB,

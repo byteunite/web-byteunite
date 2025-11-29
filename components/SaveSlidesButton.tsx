@@ -8,12 +8,14 @@ interface SaveSlidesButtonProps {
     riddleId: string;
     totalSlides: number;
     category?: string;
+    slideType?: "carousel" | "video"; // Tambahan untuk membedakan tipe slide
 }
 
 export default function SaveSlidesButton({
     riddleId,
     totalSlides,
     category = "riddles",
+    slideType = "carousel", // Default ke carousel untuk backward compatibility
 }: SaveSlidesButtonProps) {
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -37,6 +39,7 @@ export default function SaveSlidesButton({
 
             let body = {
                 totalSlides,
+                slideType, // Kirim slideType ke API
             };
             if (validatedCategory === "sites") {
                 Object.assign(body, { siteId: riddleId });
@@ -107,6 +110,7 @@ export default function SaveSlidesButton({
                                 ...body,
                                 slideIndex: slide.slideIndex,
                                 dataUrl: slide.dataUrl,
+                                slideType, // Kirim slideType untuk setiap slide
                             }),
                         }
                     );

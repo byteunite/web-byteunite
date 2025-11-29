@@ -33,6 +33,7 @@ const VideoSlideSchema = new mongoose.Schema({
     text_color: { type: String },
     prompt_untuk_image: { type: String },
     saved_image_url: { type: String },
+    saved_slide_url: { type: String }, // URL untuk screenshot slide yang sudah disimpan
 });
 
 const CarouselDataSchema = new mongoose.Schema({

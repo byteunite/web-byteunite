@@ -20,7 +20,7 @@ const imagekit = new ImageKit({
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { siteId, slideIndex, dataUrl } = body;
+        const { siteId, slideIndex, dataUrl, slideType = "carousel" } = body;
 
         // Validasi input
         if (!siteId || typeof siteId !== "string") {
@@ -44,6 +44,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Validate slideType
+        if (slideType !== "carousel" && slideType !== "video") {
+            return NextResponse.json(
+                { error: "Invalid slide type. Must be 'carousel' or 'video'" },
+                { status: 400 }
+            );
+        }
+
         // Log payload size for monitoring
         const payloadSizeKB = (dataUrl.length / 1024).toFixed(2);
         console.log(
@@ -63,8 +71,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Determine which slides array to use based on slideType
+        const slidesArray =
+            slideType === "video" ? site.videoSlides : site.carouselData.slides;
+
         // Validasi slideIndex tidak melebihi jumlah slides
-        if (slideIndex >= site.carouselData.slides.length) {
+        if (slideIndex >= slidesArray.length) {
             return NextResponse.json(
                 { error: "Slide index out of bounds" },
                 { status: 400 }
@@ -79,17 +91,23 @@ export async function POST(request: NextRequest) {
             const uploadResponse = await imagekit.upload({
                 file: base64Data,
                 fileName: `site-${siteId}-slide-${slideIndex}-${Date.now()}.jpg`,
-                folder: `/sites/${siteId}`,
+                folder: `/sites/${siteId}/${slideType}-slides`,
                 useUniqueFileName: true,
             });
 
             console.log(
-                `✅ Uploaded slide ${slideIndex} to ImageKit: ${uploadResponse.url}`
+                `✅ Uploaded ${slideType} slide ${slideIndex} to ImageKit: ${uploadResponse.url}`
             );
 
             // Update saved_slide_url pada slide yang sesuai
-            site.carouselData.slides[slideIndex].saved_slide_url =
-                uploadResponse.url;
+            slidesArray[slideIndex].saved_slide_url = uploadResponse.url;
+
+            // Simpan perubahan ke database
+            await site.save();
+
+            console.log(
+                `✅ Saved ${slideType} slide ${slideIndex} URL to database`
+            );
 
             // Simpan perubahan ke database
             await site.save();

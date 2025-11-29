@@ -85,6 +85,8 @@ async function getDataByCategory(
                         fetchedData.carouselData &&
                         fetchedData.carouselData.slides
                     ),
+                    carouselData: fetchedData.carouselData || null,
+                    videoScript: fetchedData.videoScript || null,
                 };
             }
         }
@@ -140,6 +142,8 @@ async function getDataByCategory(
                     category: validatedCategory,
                     source: "ai-generated",
                     hasCarouselData: true,
+                    carouselData: fetchedData.carouselData || null,
+                    videoScript: fetchedData.videoScript || null,
                 };
             } else {
                 console.error("AI conversion failed:", conversionResult.error);
@@ -149,6 +153,8 @@ async function getDataByCategory(
                     source: "ai-failed",
                     hasCarouselData: true,
                     error: conversionResult.error,
+                    carouselData: fetchedData.carouselData || null,
+                    videoScript: fetchedData.videoScript || null,
                 };
             }
         }
@@ -159,6 +165,8 @@ async function getDataByCategory(
             category: validatedCategory,
             source: "no-video-slides",
             hasCarouselData,
+            carouselData: fetchedData.carouselData || null,
+            videoScript: fetchedData.videoScript || null,
         };
     } catch (error) {
         console.error(`Error fetching ${category}:`, error);
@@ -376,19 +384,37 @@ export default async function TemplateVideoPage({
                     riddleId={id}
                     totalSlides={postCount}
                     category={category}
+                    slideType="video"
                 />
             )}
 
-            {/* Show download button if all slides have been saved */}
+            {/* Show download button if all video slides have been saved */}
             {!isScreenshotMode && (
                 <DownloadSlidesButton
-                    slides={videoSlides as any}
+                    slides={videoSlides.map((slide) => ({
+                        tipe_slide: slide.tipe_slide,
+                        judul_slide: slide.judul_slide,
+                        sub_judul_slide: slide.sub_judul_slide || "",
+                        konten_slide: slide.konten_slide || "",
+                        prompt_untuk_image: slide.prompt_untuk_image,
+                        saved_image_url: slide.saved_image_url,
+                        saved_slide_url:
+                            slide.saved_slide_url || slide.saved_image_url, // Prioritize saved_slide_url, fallback to saved_image_url
+                    }))}
                     riddleId={id}
-                    caption={`Video slides for ${category}`}
-                    hashtags={["#ByteUnite", `#${category}`]}
+                    caption={
+                        fetchedData.carouselData?.caption ||
+                        `Video for ${categoryHashtag}`
+                    }
+                    hashtags={
+                        fetchedData.carouselData?.hashtags || [
+                            categoryHashtag,
+                            "#ByteUnite",
+                        ]
+                    }
                     category={category}
                     contentId={id}
-                    savedVideoScript={null}
+                    savedVideoScript={fetchedData.videoScript || null}
                 />
             )}
 

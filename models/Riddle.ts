@@ -30,6 +30,7 @@ export interface IVideoSlide {
     text_color?: string;
     prompt_untuk_image?: string;
     saved_image_url?: string;
+    saved_slide_url?: string; // URL untuk screenshot slide yang sudah disimpan
 }
 
 // Interface untuk Carousel Data (response dari AI)
@@ -186,6 +187,10 @@ const VideoSlideSchema = new Schema<IVideoSlide>(
             required: false,
         },
         saved_image_url: {
+            type: String,
+            required: false,
+        },
+        saved_slide_url: {
             type: String,
             required: false,
         },

@@ -42,6 +42,7 @@ export default function VideoAnswerSlide({
                     riddleId={contentId}
                     saved_image_url={post.saved_image_url}
                     category={category}
+                    slideType="video"
                 />
             )}
 

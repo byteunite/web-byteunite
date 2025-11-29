@@ -4,7 +4,7 @@ import Riddle from "@/models/Riddle";
 
 /**
  * POST /api/riddles/[id]/save-image
- * Save image URL to specific slide in riddle
+ * Save image URL to specific slide in riddle (carousel slides or video slides)
  */
 export async function POST(
     request: NextRequest,
@@ -13,7 +13,7 @@ export async function POST(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { slideIndex, imageUrl } = body;
+        const { slideIndex, imageUrl, slideType = "carousel" } = body;
 
         // Validasi input
         if (typeof slideIndex !== "number" || slideIndex < 0) {
@@ -26,6 +26,14 @@ export async function POST(
         if (!imageUrl || typeof imageUrl !== "string") {
             return NextResponse.json(
                 { error: "Invalid image URL" },
+                { status: 400 }
+            );
+        }
+
+        // Validasi slideType
+        if (!["carousel", "video"].includes(slideType)) {
+            return NextResponse.json(
+                { error: "Invalid slide type. Must be 'carousel' or 'video'" },
                 { status: 400 }
             );
         }
@@ -43,26 +51,50 @@ export async function POST(
             );
         }
 
-        // Validasi slideIndex tidak melebihi jumlah slides
-        if (slideIndex >= riddle.carouselData.slides.length) {
-            return NextResponse.json(
-                { error: "Slide index out of bounds" },
-                { status: 400 }
-            );
-        }
+        // Update berdasarkan slideType
+        if (slideType === "video") {
+            // Save to video slides
+            if (!riddle.videoSlides || riddle.videoSlides.length === 0) {
+                return NextResponse.json(
+                    { error: "No video slides found" },
+                    { status: 404 }
+                );
+            }
 
-        // Update saved_image_url pada slide yang sesuai
-        riddle.carouselData.slides[slideIndex].saved_image_url = imageUrl;
+            // Validasi slideIndex tidak melebihi jumlah video slides
+            if (slideIndex >= riddle.videoSlides.length) {
+                return NextResponse.json(
+                    { error: "Video slide index out of bounds" },
+                    { status: 400 }
+                );
+            }
+
+            // Update saved_image_url pada video slide yang sesuai
+            riddle.videoSlides[slideIndex].saved_image_url = imageUrl;
+        } else {
+            // Save to carousel slides (default behavior)
+            // Validasi slideIndex tidak melebihi jumlah slides
+            if (slideIndex >= riddle.carouselData.slides.length) {
+                return NextResponse.json(
+                    { error: "Slide index out of bounds" },
+                    { status: 400 }
+                );
+            }
+
+            // Update saved_image_url pada slide yang sesuai
+            riddle.carouselData.slides[slideIndex].saved_image_url = imageUrl;
+        }
 
         // Simpan perubahan
         await riddle.save();
 
         return NextResponse.json({
             success: true,
-            message: "Image URL saved successfully",
+            message: `Image URL saved successfully to ${slideType} slides`,
             data: {
                 slideIndex,
                 imageUrl,
+                slideType,
             },
         });
     } catch (error) {
