@@ -28,6 +28,8 @@ export interface IVideoSlide {
     list_items?: string[];
     background_color?: string;
     text_color?: string;
+    prompt_untuk_image?: string;
+    saved_image_url?: string;
 }
 
 // Interface untuk Carousel Data (response dari AI)
@@ -179,6 +181,14 @@ const VideoSlideSchema = new Schema<IVideoSlide>(
             required: false,
         },
         text_color: {
+            type: String,
+            required: false,
+        },
+        prompt_untuk_image: {
+            type: String,
+            required: false,
+        },
+        saved_image_url: {
             type: String,
             required: false,
         },

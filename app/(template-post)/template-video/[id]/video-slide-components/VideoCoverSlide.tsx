@@ -1,3 +1,4 @@
+import ClickableImage from "@/components/ClickableImage";
 import { VideoSlideComponentProps } from "./types";
 
 /**
@@ -10,18 +11,41 @@ export default function VideoCoverSlide({
     width,
     height,
     primaryColor,
+    index,
+    contentId,
+    category,
 }: VideoSlideComponentProps) {
     return (
         <div
-            className="relative flex items-center justify-center"
+            className="relative flex items-center justify-center overflow-hidden"
             style={{
                 width: `${width}px`,
                 height: `${height}px`,
                 backgroundColor: "#FAFAFA", // Solid color to match narrator area
             }}
         >
+            {/* Background Image - Subtle and minimal */}
+            {post.prompt_untuk_image && (
+                <ClickableImage
+                    prompt={post.prompt_untuk_image}
+                    width={width * 2}
+                    height={height * 2}
+                    className="absolute inset-0 object-cover"
+                    style={{
+                        opacity: 0.08,
+                        filter: "grayscale(50%) blur(1px)",
+                        mixBlendMode: "multiply",
+                    }}
+                    alt={post.judul_slide}
+                    slideIndex={index}
+                    riddleId={contentId}
+                    saved_image_url={post.saved_image_url}
+                    category={category}
+                />
+            )}
+
             {/* Main Title - Large and Bold */}
-            <div className="text-center px-8 space-y-4">
+            <div className="relative z-10 text-center px-8 space-y-4">
                 <div className="inline-block">
                     <h1
                         className="text-4xl font-bold tracking-tight leading-tight px-4 py-2"

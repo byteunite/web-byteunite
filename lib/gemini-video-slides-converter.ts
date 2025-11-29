@@ -19,6 +19,8 @@ export interface VideoSlide {
     list_items?: string[];
     background_color?: string;
     text_color?: string;
+    prompt_untuk_image?: string;
+    saved_image_url?: string;
 }
 
 // Type untuk Carousel Slide (from template/[id])
@@ -90,6 +92,33 @@ CONVERSION RULES:
 7. Add VIDEO_TRANSITION between major sections for pacing
 8. Extract main message only, remove verbose text
 9. Make each slide standalone (narrator provides context)
+10. GENERATE IMAGE PROMPTS: Create "prompt_untuk_image" for EVERY slide with consistent visual style
+
+IMAGE PROMPT GUIDELINES (WAJIB DIPATUHI):
+GAYA VISUAL WAJIB:
+- Gaya: Foto monokrom (hitam-putih) dengan efek rasterize yang kuat dan terlihat jelas
+- Komposisi: Objek utama berukuran kecil (maksimal 1/3 dari total ruang), positioned centered, dengan white space dominan
+- Objek: HARUS objek konkret dan realistis yang relevan dengan konten (DILARANG abstrak/icon/symbol)
+- Efek: HARUS memiliki efek rasterize/halftone yang jelas dengan dot pattern prominent
+- Background: WAJIB pure white background #FFFFFF (tidak ada variasi warna)
+- Format: Objek utuh, tidak terpotong (complete object, no cropping, full view)
+
+PEMILIHAN OBJEK BERDASARKAN TIPE SLIDE:
+- VIDEO_COVER: Objek yang merepresentasikan topik utama (laptop, book, smartphone)
+- VIDEO_POINT/VIDEO_ANSWER: Objek yang merepresentasikan konsep (lightbulb, key, compass)
+- VIDEO_QUESTION: Objek yang merepresentasikan pertanyaan/mystery (magnifying glass, question mark shape object)
+- VIDEO_LIST: Objek yang merepresentasikan checklist/items (clipboard, notebook, pen)
+- VIDEO_QUOTE: Objek yang merepresentasikan wisdom (book, glasses, quote marks object)
+- VIDEO_TRANSITION: Objek yang merepresentasikan perubahan (arrow, bridge, door)
+- VIDEO_CLOSING: Objek yang merepresentasikan action (rocket, trophy, target)
+
+TEMPLATE PROMPT (WAJIB):
+"A [concrete object description], complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+
+CONTOH PROMPT YANG BENAR:
+- "A modern laptop computer, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+- "A lightbulb, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+- "A red apple, complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
 
 OUTPUT FORMAT (JSON):
 {
@@ -97,24 +126,28 @@ OUTPUT FORMAT (JSON):
     {
       "tipe_slide": "VIDEO_COVER",
       "judul_slide": "Short catchy title",
-      "sub_judul_slide": "Brief subtitle (optional)"
+      "sub_judul_slide": "Brief subtitle (optional)",
+      "prompt_untuk_image": "Descriptive image prompt in English"
     },
     {
       "tipe_slide": "VIDEO_POINT",
       "judul_slide": "Main point text (2-3 words max)",
-      "konten_slide": "Supporting detail (one short sentence)"
+      "konten_slide": "Supporting detail (one short sentence)",
+      "prompt_untuk_image": "A [concrete object], complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
     },
     {
       "tipe_slide": "VIDEO_LIST",
       "judul_slide": "List title",
       "sub_judul_slide": "Context (optional)",
-      "list_items": ["Item 1", "Item 2", "Item 3"]
+      "list_items": ["Item 1", "Item 2", "Item 3"],
+      "prompt_untuk_image": "A [concrete object], complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
     },
     {
       "tipe_slide": "VIDEO_CLOSING",
       "judul_slide": "Closing message",
       "sub_judul_slide": "CTA subtitle",
-      "konten_slide": "Engagement text"
+      "konten_slide": "Engagement text",
+      "prompt_untuk_image": "A [concrete object], complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
     }
   ]
 }
@@ -125,6 +158,11 @@ IMPORTANT:
 - List items under 60 characters each
 - Use engaging, conversational Indonesian language
 - Focus on ONE main message per slide
+- ALWAYS generate "prompt_untuk_image" for ALL slides following the template above
+- Every prompt MUST end with: "Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+- Use ONLY concrete, realistic objects (NO abstract icons or symbols)
+- Objects must be small (max 1/3 of space) with dominant white space
+- Style: Black and white with strong rasterize/halftone effect
 
 Generate the optimized video slides now:`;
 }
@@ -207,6 +245,8 @@ function validateVideoSlides(slides: any[]): VideoSlide[] {
             sub_judul_slide: slide.sub_judul_slide || undefined,
             konten_slide: slide.konten_slide || undefined,
             list_items: slide.list_items || undefined,
+            prompt_untuk_image: slide.prompt_untuk_image || undefined,
+            saved_image_url: slide.saved_image_url || undefined,
         }));
 }
 
@@ -232,7 +272,8 @@ TUGAS UTAMA:
 2. Identifikasi tipe konten dan kategori
 3. Konversi ke format video slides yang simple dan clean
 4. Text disederhanakan untuk video format dengan narrator
-5. Output dalam format JSON yang valid
+5. Generate image prompts untuk setiap slide dengan gaya konsisten
+6. Output dalam format JSON yang valid
 
 PRINSIP KONVERSI:
 - Text harus SHORT dan SIMPLE (narrator akan jelaskan detail)
@@ -240,6 +281,15 @@ PRINSIP KONVERSI:
 - Visual hierarchy yang jelas
 - Tidak distract dari narrator
 - Background seamless dengan narrator area (40% bawah)
+- SETIAP slide HARUS memiliki "prompt_untuk_image" dengan gaya konsisten
+
+GAYA VISUAL UNTUK IMAGE PROMPT (WAJIB):
+1. Gaya: Foto monokrom (hitam-putih) dengan efek rasterize yang kuat dan prominent halftone dots
+2. Komposisi: Objek kecil (max 1/3 space), centered, dominant white space
+3. Objek: HARUS konkret dan realistis (laptop, book, lightbulb, apple) - DILARANG abstrak/icon
+4. Background: WAJIB "pure white background #FFFFFF" - tidak ada variasi
+5. Format objek: Complete, no cropping, full view, utuh tidak terpotong
+6. Template: "A [concrete object], complete object with no cropping, full view, centered, small size, max 1/3 of space, dominant white space. Black and white photography with strong rasterize effect, prominent halftone dots, screen printing style, high contrast. Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
 
 OUTPUT FORMAT (JSON):
 {
@@ -249,7 +299,8 @@ OUTPUT FORMAT (JSON):
       "judul_slide": "Main text (max 50 chars)",
       "sub_judul_slide": "Subtitle (optional, max 40 chars)",
       "konten_slide": "Supporting text (optional, max 100 chars)",
-      "list_items": ["item1", "item2"] // only for VIDEO_LIST
+      "list_items": ["item1", "item2"], // only for VIDEO_LIST
+      "prompt_untuk_image": "MUST follow template above with concrete object, white background, rasterize effect"
     }
   ]
 }
@@ -258,6 +309,9 @@ ATURAN WAJIB:
 - First slide MUST be VIDEO_COVER
 - Last slide MUST be VIDEO_CLOSING  
 - Keep text MINIMAL (narrator provides context)
+- ALWAYS generate "prompt_untuk_image" for ALL slides
+- Every image prompt MUST end with: "Isolated on pure white background #FFFFFF, no borders, no frames, clean isolation"
+- Use ONLY concrete realistic objects (NO abstract/icon/symbol)
 - Bahasa Indonesia casual dan engaging
 - Response MUST be valid JSON
         `;

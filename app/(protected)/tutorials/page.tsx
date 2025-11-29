@@ -55,6 +55,7 @@ import {
     XCircle,
     BookOpen,
     Clock,
+    ExternalLink,
 } from "lucide-react";
 
 interface ITutorial {
@@ -772,6 +773,20 @@ export default function TutorialsPage() {
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 asChild
+                                                                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                                            >
+                                                                <Link
+                                                                    href={`/template-video/${tutorial._id}?data=tutorials`}
+                                                                >
+                                                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                                                    Video
+                                                                </Link>
+                                                            </Button>
+
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                asChild
                                                                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                                             >
                                                                 <Link
@@ -1046,6 +1061,20 @@ export default function TutorialsPage() {
                                                             >
                                                                 <Eye className="h-4 w-4 mr-2" />
                                                                 Detail
+                                                            </Link>
+                                                        </Button>
+
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="flex-1 text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200"
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                href={`/template-video/${tutorial._id}?data=tutorials`}
+                                                            >
+                                                                <ExternalLink className="h-4 w-4 mr-2" />
+                                                                Video
                                                             </Link>
                                                         </Button>
 

@@ -70,20 +70,23 @@ async function getDataByCategory(
         const fetchedData = result.data;
 
         // Check if videoSlides already exists in database
-        if (
-            fetchedData.videoSlides &&
-            Array.isArray(fetchedData.videoSlides) &&
-            fetchedData.videoSlides.length > 0
-        ) {
-            console.log("✅ Using existing video slides from database");
-            return {
-                videoSlides: fetchedData.videoSlides,
-                category: validatedCategory,
-                source: "database",
-                hasCarouselData: !!(
-                    fetchedData.carouselData && fetchedData.carouselData.slides
-                ),
-            };
+        if (!useAI) {
+            if (
+                fetchedData.videoSlides &&
+                Array.isArray(fetchedData.videoSlides) &&
+                fetchedData.videoSlides.length > 0
+            ) {
+                console.log("✅ Using existing video slides from database");
+                return {
+                    videoSlides: fetchedData.videoSlides,
+                    category: validatedCategory,
+                    source: "database",
+                    hasCarouselData: !!(
+                        fetchedData.carouselData &&
+                        fetchedData.carouselData.slides
+                    ),
+                };
+            }
         }
 
         // Check if carousel data exists
@@ -186,6 +189,7 @@ export default async function TemplateVideoPage({
 
     // Fetch data from API based on category
     const fetchedData = await getDataByCategory(id, category, shouldUseAI);
+    console.log("Fetched Data:", fetchedData);
 
     // If data not found, show 404
     if (!fetchedData) {

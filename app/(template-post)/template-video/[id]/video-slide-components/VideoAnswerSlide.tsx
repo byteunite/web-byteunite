@@ -1,3 +1,4 @@
+import ClickableImage from "@/components/ClickableImage";
 import { VideoSlideComponentProps } from "./types";
 
 /**
@@ -10,18 +11,42 @@ export default function VideoAnswerSlide({
     width,
     height,
     primaryColor,
+    index,
+    contentId,
+    category,
 }: VideoSlideComponentProps) {
     return (
         <div
-            className="relative flex items-center justify-center"
+            className="relative flex items-center justify-center overflow-hidden"
             style={{
                 width: `${width}px`,
                 height: `${height}px`,
                 background: `linear-gradient(135deg, ${primaryColor}08 0%, #FFFFFF 50%, ${primaryColor}08 100%)`,
             }}
         >
+            {/* Background Image - Subtle corner accent */}
+            {post.prompt_untuk_image && (
+                <ClickableImage
+                    prompt={post.prompt_untuk_image}
+                    width={width * 2}
+                    height={height * 2}
+                    className="absolute -top-5 -left-5 object-cover"
+                    style={{
+                        opacity: 0.08,
+                        filter: "grayscale(60%)",
+                        width: "35%",
+                        height: "35%",
+                    }}
+                    alt={post.judul_slide}
+                    slideIndex={index}
+                    riddleId={contentId}
+                    saved_image_url={post.saved_image_url}
+                    category={category}
+                />
+            )}
+
             {/* Content */}
-            <div className="text-center px-8 space-y-6">
+            <div className="relative z-10 text-center px-8 space-y-6">
                 {/* Checkmark Icon */}
                 <div className="flex justify-center">
                     <div

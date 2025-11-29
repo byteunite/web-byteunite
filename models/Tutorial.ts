@@ -31,6 +31,8 @@ const VideoSlideSchema = new mongoose.Schema({
     list_items: [{ type: String }],
     background_color: { type: String },
     text_color: { type: String },
+    prompt_untuk_image: { type: String },
+    saved_image_url: { type: String },
 });
 
 const CarouselDataSchema = new mongoose.Schema({

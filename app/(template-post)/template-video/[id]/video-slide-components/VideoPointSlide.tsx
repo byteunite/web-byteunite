@@ -1,3 +1,4 @@
+import ClickableImage from "@/components/ClickableImage";
 import { VideoSlideComponentProps } from "./types";
 
 /**
@@ -11,6 +12,8 @@ export default function VideoPointSlide({
     height,
     primaryColor,
     index,
+    contentId,
+    category,
 }: VideoSlideComponentProps) {
     // Alternate background
     const isEven = index % 2 === 0;
@@ -18,15 +21,36 @@ export default function VideoPointSlide({
 
     return (
         <div
-            className="relative flex items-center justify-center"
+            className="relative flex items-center justify-center overflow-hidden"
             style={{
                 width: `${width}px`,
                 height: `${height}px`,
                 backgroundColor: bgColor,
             }}
         >
+            {/* Background Image - Very subtle, corner accent */}
+            {post.prompt_untuk_image && (
+                <ClickableImage
+                    prompt={post.prompt_untuk_image}
+                    width={width * 2}
+                    height={height * 2}
+                    className="absolute -bottom-10 -right-10 object-cover"
+                    style={{
+                        opacity: 0.06,
+                        filter: "grayscale(70%)",
+                        width: "40%",
+                        height: "40%",
+                    }}
+                    alt={post.judul_slide}
+                    slideIndex={index}
+                    riddleId={contentId}
+                    saved_image_url={post.saved_image_url}
+                    category={category}
+                />
+            )}
+
             {/* Content Container */}
-            <div className="text-center px-10 space-y-6">
+            <div className="relative z-10 text-center px-10 space-y-6">
                 {/* Number Badge */}
                 <div className="flex justify-center">
                     <div

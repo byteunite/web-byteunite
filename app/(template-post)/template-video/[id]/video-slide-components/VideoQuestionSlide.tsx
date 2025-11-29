@@ -1,3 +1,4 @@
+import ClickableImage from "@/components/ClickableImage";
 import { VideoSlideComponentProps } from "./types";
 
 /**
@@ -10,16 +11,38 @@ export default function VideoQuestionSlide({
     width,
     height,
     primaryColor,
+    index,
+    contentId,
+    category,
 }: VideoSlideComponentProps) {
     return (
         <div
-            className="relative flex items-center justify-center"
+            className="relative flex items-center justify-center overflow-hidden"
             style={{
                 width: `${width}px`,
                 height: `${height}px`,
                 backgroundColor: "#FFFFFF",
             }}
         >
+            {/* Background Image - Very minimal, center blur */}
+            {post.prompt_untuk_image && (
+                <ClickableImage
+                    prompt={post.prompt_untuk_image}
+                    width={width * 2}
+                    height={height * 2}
+                    className="absolute inset-0 object-cover"
+                    style={{
+                        opacity: 0.05,
+                        filter: "grayscale(80%) blur(2px)",
+                    }}
+                    alt={post.judul_slide}
+                    slideIndex={index}
+                    riddleId={contentId}
+                    saved_image_url={post.saved_image_url}
+                    category={category}
+                />
+            )}
+
             {/* Background Pattern */}
             <div
                 className="absolute inset-0 opacity-5"
@@ -30,7 +53,7 @@ export default function VideoQuestionSlide({
             />
 
             {/* Content */}
-            <div className="relative text-center px-8 space-y-6">
+            <div className="relative z-10 text-center px-8 space-y-6">
                 {/* Question Icon */}
                 <div className="flex justify-center">
                     <div
