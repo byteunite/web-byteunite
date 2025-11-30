@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -87,6 +88,8 @@ interface SitesResponse {
 }
 
 export default function SitesPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [sites, setSites] = useState<ISite[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -144,8 +147,11 @@ export default function SitesPage() {
     };
 
     useEffect(() => {
-        fetchSites(currentPage);
-    }, [currentPage]);
+        const pageFromUrl = searchParams.get("page");
+        const pageNumber = pageFromUrl ? parseInt(pageFromUrl, 10) : 1;
+        setCurrentPage(pageNumber);
+        fetchSites(pageNumber);
+    }, [searchParams]);
 
     const truncateText = (text: string, maxLength: number = 50) => {
         if (text.length <= maxLength) return text;
@@ -695,7 +701,7 @@ export default function SitesPage() {
                                                                 className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
                                                             >
                                                                 <Link
-                                                                    href={`/template-video/${site._id}?data=sites`}
+                                                                    href={`/template-video/${site._id}?data=sites&format=save`}
                                                                 >
                                                                     <ExternalLink className="h-4 w-4 mr-2" />
                                                                     Video
@@ -925,7 +931,7 @@ export default function SitesPage() {
                                                             asChild
                                                         >
                                                             <Link
-                                                                href={`/template-video/${site._id}?data=sites`}
+                                                                href={`/template-video/${site._id}?data=sites&format=save`}
                                                             >
                                                                 <ExternalLink className="h-4 w-4 mr-2" />
                                                                 Video
@@ -1031,11 +1037,15 @@ export default function SitesPage() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() =>
-                                                setCurrentPage((prev) =>
-                                                    Math.max(1, prev - 1)
-                                                )
-                                            }
+                                            onClick={() => {
+                                                const newPage = Math.max(
+                                                    1,
+                                                    currentPage - 1
+                                                );
+                                                router.push(
+                                                    `/sites?page=${newPage}`
+                                                );
+                                            }}
                                             disabled={
                                                 currentPage === 1 || loading
                                             }
@@ -1045,14 +1055,15 @@ export default function SitesPage() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() =>
-                                                setCurrentPage((prev) =>
-                                                    Math.min(
-                                                        totalPages,
-                                                        prev + 1
-                                                    )
-                                                )
-                                            }
+                                            onClick={() => {
+                                                const newPage = Math.min(
+                                                    totalPages,
+                                                    currentPage + 1
+                                                );
+                                                router.push(
+                                                    `/sites?page=${newPage}`
+                                                );
+                                            }}
                                             disabled={
                                                 currentPage === totalPages ||
                                                 loading
