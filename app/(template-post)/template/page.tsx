@@ -1,5 +1,6 @@
 import RandomShape from "@/components/RandomShape";
 import ClickableImage from "@/components/ClickableImage";
+import CoverEditor from "@/components/CoverEditor";
 import { Feather, UserPlus, Search } from "lucide-react";
 import { ImageGenerator } from "@/components/ImageGenerator";
 
@@ -786,7 +787,7 @@ export default function TemplatePage() {
                                         }}
                                         className="flex items-center justify-center overflow-hidden relative flex-col"
                                     >
-                                        <ClickableImage
+                                        <CoverEditor
                                             prompt={`${post.prompt_untuk_image}&enhance=true`}
                                             width={width * 2}
                                             height={height * 2}

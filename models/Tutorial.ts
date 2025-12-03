@@ -94,6 +94,14 @@ const TutorialSchema = new mongoose.Schema(
             type: VideoScriptSchema,
             required: false, // Optional, akan diisi ketika user generate script
         },
+        coverPrompt: {
+            type: mongoose.Schema.Types.Mixed,
+            required: false,
+        },
+        cover_image_url: {
+            type: String,
+            required: false,
+        },
         videoSlides: {
             type: [VideoSlideSchema],
             required: false, // Optional, akan diisi ketika user generate video slides

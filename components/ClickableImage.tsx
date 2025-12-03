@@ -41,6 +41,11 @@ interface ClickableImageProps {
     saved_image_url?: string;
     category?: string;
     slideType?: "carousel" | "video"; // Tambahan untuk membedakan tipe slide
+    // Optional override: called when user requests to save image to DB.
+    // If provided, ClickableImage will call this instead of the default save-image API.
+    onSave?: (imageUrl: string) => Promise<void> | void;
+    // Called immediately after a successful upload to cloud (before saving to DB)
+    onUploaded?: (imageUrl: string) => Promise<void> | void;
 }
 
 export default function ClickableImage({
@@ -55,7 +60,10 @@ export default function ClickableImage({
     saved_image_url,
     category = "riddles",
     slideType = "carousel", // Default ke carousel untuk backward compatibility
+    onSave,
+    onUploaded,
 }: ClickableImageProps) {
+    // Keep onUploaded in scope (called after a successful cloud upload)
     const initSeed = Math.ceil(Math.random() * 15);
     const [seed, setSeed] = useState<number>(initSeed);
     const [imageUrl, setImageUrl] = useState<string>("");
@@ -89,6 +97,21 @@ export default function ClickableImage({
         }
         return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=${model}&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
     };
+
+    // If parent updates saved_image_url (for example after fetching from DB),
+    // reflect it immediately in the component preview.
+    useEffect(() => {
+        if (saved_image_url) {
+            setImageUrl(saved_image_url);
+            setIsLoading(false);
+        } else {
+            // if saved_image_url removed, revert to generated image
+            const generated = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=${model}&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
+            setImageUrl(generated);
+            setIsLoading(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [saved_image_url]);
 
     useEffect(() => {
         setIsLoading(true);
@@ -208,6 +231,15 @@ export default function ClickableImage({
             setUploadedImageUrl(data.data.url);
             setImageUrl(data.data.url);
 
+            // Notify parent that upload finished (preview can be updated immediately)
+            try {
+                if (typeof onUploaded === "function") {
+                    await onUploaded(data.data.url);
+                }
+            } catch (err) {
+                console.error("onUploaded callback failed:", err);
+            }
+
             toast({
                 title: "Berhasil!",
                 description: "Gambar dari URL berhasil diupload ke Cloudinary",
@@ -229,6 +261,36 @@ export default function ClickableImage({
     };
 
     const handleSaveImage = async () => {
+        // Use onSave override if provided
+        if (typeof onSave === "function") {
+            try {
+                setIsSaving(true);
+                const saveImageUrl =
+                    uploadedImageUrl ||
+                    `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=${model}&seed=${seed}&token=${process.env.NEXT_PUBLIC_POLLINATION_TOKEN}`;
+
+                await onSave(saveImageUrl);
+
+                // Provide feedback similar to default flow
+                toast({
+                    title: "Berhasil!",
+                    description: `Gambar berhasil disimpan`,
+                });
+                setIsModalOpen(false);
+                setUploadedImageUrl("");
+            } catch (err) {
+                console.error("Error onSave override:", err);
+                toast({
+                    title: "Error",
+                    description: "Gagal menyimpan gambar ke database",
+                    variant: "destructive",
+                });
+            } finally {
+                setIsSaving(false);
+            }
+            return;
+        }
+
         await handleSaveImageToDb();
     };
 
@@ -274,11 +336,28 @@ export default function ClickableImage({
                 e.currentTarget;
             const aspectRatio = getAspectRatio();
 
+            // Compute the largest centered crop that matches the desired aspect ratio
+            // so the user sees a crop area that represents the final slide size.
+            let cropWidthPx = imgWidth;
+            let cropHeightPx = imgHeight;
+
+            if (imgWidth / imgHeight > aspectRatio) {
+                // Image is wider than target aspect -> limit by height
+                cropHeightPx = imgHeight;
+                cropWidthPx = Math.round(imgHeight * aspectRatio);
+            } else {
+                // Image is taller or narrower -> limit by width
+                cropWidthPx = imgWidth;
+                cropHeightPx = Math.round(imgWidth / aspectRatio);
+            }
+
+            const percentWidth = (cropWidthPx / imgWidth) * 100;
+
             const crop = centerCrop(
                 makeAspectCrop(
                     {
                         unit: "%",
-                        width: 90,
+                        width: percentWidth,
                     },
                     aspectRatio,
                     imgWidth,
@@ -383,6 +462,15 @@ export default function ClickableImage({
             const data = await response.json();
             setUploadedImageUrl(data.data.url);
             setImageUrl(data.data.url);
+
+            // Notify parent immediately after upload
+            try {
+                if (typeof onUploaded === "function") {
+                    await onUploaded(data.data.url);
+                }
+            } catch (err) {
+                console.error("onUploaded callback failed:", err);
+            }
 
             toast({
                 title: "Berhasil!",
@@ -506,7 +594,10 @@ export default function ClickableImage({
 
             {/* Main Options Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="sm:max-w-[425px] z-1000">
+                <DialogContent
+                    className="sm:max-w-[425px] z-1000"
+                    style={{ zIndex: 11000 }}
+                >
                     <DialogHeader>
                         <DialogTitle>Opsi Gambar</DialogTitle>
                         <DialogDescription>
@@ -612,7 +703,10 @@ export default function ClickableImage({
 
             {/* URL Input Modal */}
             <Dialog open={isUrlModalOpen} onOpenChange={setIsUrlModalOpen}>
-                <DialogContent className="sm:max-w-[500px] z-1000">
+                <DialogContent
+                    className="sm:max-w-[500px] z-1000"
+                    style={{ zIndex: 11000 }}
+                >
                     <DialogHeader>
                         <DialogTitle>Gunakan URL Gambar</DialogTitle>
                         <DialogDescription>
@@ -686,7 +780,10 @@ export default function ClickableImage({
                 open={isUploadModalOpen}
                 onOpenChange={setIsUploadModalOpen}
             >
-                <DialogContent className="sm:max-w-[800px] z-1000 max-h-[90vh] overflow-y-auto">
+                <DialogContent
+                    className="sm:max-w-[800px] z-1000 max-h-[90vh] overflow-y-auto"
+                    style={{ zIndex: 11000 }}
+                >
                     <DialogHeader>
                         <DialogTitle>Crop Gambar</DialogTitle>
                         <DialogDescription>

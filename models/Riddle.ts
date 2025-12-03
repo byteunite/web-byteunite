@@ -102,6 +102,8 @@ export interface IRiddle extends Document {
     videoScript?: IVideoScript; // Optional, script untuk video TikTok/Reels/Shorts
     videoSlides?: IVideoSlide[]; // Optional, slides untuk video format (TikTok/Reels/Shorts)
     videoSlidesUpdatedAt?: Date; // Timestamp ketika video slides terakhir di-update
+    coverPrompt?: any; // Generated cover prompt JSON
+    cover_image_url?: string; // URL gambar cover yang disimpan terpisah dari slides
     createdAt: Date;
     updatedAt: Date;
 }
@@ -319,6 +321,14 @@ const RiddleSchema = new Schema<IRiddle>(
         videoScript: {
             type: VideoScriptSchema,
             required: false, // Optional, akan diisi ketika user generate script
+        },
+        coverPrompt: {
+            type: Schema.Types.Mixed,
+            required: false,
+        },
+        cover_image_url: {
+            type: String,
+            required: false,
         },
         videoSlides: {
             type: [VideoSlideSchema],

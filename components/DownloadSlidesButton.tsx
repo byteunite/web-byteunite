@@ -21,11 +21,13 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
+import ClickableImage from "@/components/ClickableImage";
 import type {
     VideoScriptData,
     LegacyVideoScriptData,
     VideoPrompt,
 } from "@/lib/gemini-video-script-generator";
+import type { CoverPromptData } from "@/lib/gemini-cover-prompt-generator";
 
 interface Slide {
     tipe_slide: string;
@@ -266,6 +268,72 @@ export default function DownloadSlidesButton({
         !!savedVideoScript
     ); // Tampilkan jika sudah ada saved script
 
+    // Cover Prompt states
+    const [coverPromptData, setCoverPromptData] =
+        useState<CoverPromptData | null>(null);
+    const [generatingCoverPrompt, setGeneratingCoverPrompt] = useState(false);
+    const [showCoverPromptSection, setShowCoverPromptSection] = useState(false);
+    const [copiedCoverPromptJson, setCopiedCoverPromptJson] = useState(false);
+    const [savingCoverPrompt, setSavingCoverPrompt] = useState(false);
+    const [coverPromptSavedToDB, setCoverPromptSavedToDB] = useState(false);
+    const [coverImageUrl, setCoverImageUrl] = useState<string | undefined>(
+        undefined
+    );
+
+    // Load saved cover prompt when modal opens
+    useEffect(() => {
+        const fetchSaved = async () => {
+            if (!isOpen || !contentId) return;
+            try {
+                const resp = await fetch("/api/get-cover-prompt", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contentId,
+                        category: category || "riddles",
+                    }),
+                });
+
+                if (!resp.ok) return;
+
+                const json = await resp.json();
+                if (json && json.data) {
+                    setCoverPromptData(json.data);
+                    setShowCoverPromptSection(true);
+                    setCoverPromptSavedToDB(true);
+                }
+            } catch (err) {
+                console.error("Failed to fetch saved cover prompt:", err);
+            }
+        };
+
+        fetchSaved();
+    }, [isOpen, contentId, category]);
+
+    // Load existing cover_image_url when modal opens (from riddle/content)
+    useEffect(() => {
+        const fetchCover = async () => {
+            if (!isOpen) return;
+            const id = riddleId || contentId;
+            if (!id) return;
+
+            try {
+                const resp = await fetch(`/api/${category || "riddles"}/${id}`);
+                if (!resp.ok) return;
+                const json = await resp.json();
+                if (json?.data && json.data.cover_image_url) {
+                    setCoverImageUrl(json.data.cover_image_url);
+                } else {
+                    setCoverImageUrl(undefined);
+                }
+            } catch (err) {
+                console.error("Failed to fetch cover image:", err);
+            }
+        };
+
+        fetchCover();
+    }, [isOpen, riddleId, contentId, category]);
+
     // Check if all slides have saved_slide_url
     const allSlidesSaved = slides.every((slide) => slide.saved_slide_url);
 
@@ -431,6 +499,67 @@ export default function DownloadSlidesButton({
             alert("Gagal generate video script");
         } finally {
             setGeneratingScript(false);
+        }
+    };
+
+    const generateCoverPrompt = async () => {
+        setGeneratingCoverPrompt(true);
+        try {
+            const response = await fetch("/api/generate-cover-prompt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    caption,
+                    slides: slides.map((slide) => ({
+                        tipe_slide: slide.tipe_slide,
+                        judul_slide: slide.judul_slide,
+                        sub_judul_slide: slide.sub_judul_slide,
+                        konten_slide: slide.konten_slide,
+                    })),
+                    category: category || "riddles",
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to generate cover prompt");
+            }
+
+            const result = await response.json();
+            // Expect server response { data: CoverPromptData }
+            setCoverPromptData(result.data || result);
+            setShowCoverPromptSection(true);
+            // Auto-save to DB if contentId is available
+            if (contentId) {
+                setSavingCoverPrompt(true);
+                try {
+                    const saveResp = await fetch("/api/save-cover-prompt", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contentId,
+                            category: category || "riddles",
+                            coverPrompt: result.data || result,
+                        }),
+                    });
+
+                    if (!saveResp.ok) {
+                        throw new Error("Failed to save cover prompt");
+                    }
+
+                    setCoverPromptSavedToDB(true);
+                } catch (err) {
+                    console.error("Error saving cover prompt:", err);
+                } finally {
+                    setSavingCoverPrompt(false);
+                }
+            }
+        } catch (error) {
+            console.error("Error generating cover prompt:", error);
+            alert("Gagal generate cover prompt");
+        } finally {
+            setGeneratingCoverPrompt(false);
         }
     };
 
@@ -906,28 +1035,32 @@ ${part2Prompts}`;
                                                 (TikTok/Reels/Shorts)
                                             </p>
                                         </div>
-                                        <Button
-                                            onClick={generateVideoScript}
-                                            disabled={generatingScript}
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-8 gap-1.5"
-                                        >
-                                            {generatingScript ? (
-                                                <>
-                                                    <Loader2 className="h-3 w-3 animate-spin" />
-                                                    Generating...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <FileText className="h-3 w-3" />
-                                                    {showScriptSection
-                                                        ? "Re-generate"
-                                                        : "Generate Script"}
-                                                </>
-                                            )}
-                                        </Button>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                onClick={generateVideoScript}
+                                                disabled={generatingScript}
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 gap-1.5"
+                                            >
+                                                {generatingScript ? (
+                                                    <>
+                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                        Generating...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <FileText className="h-3 w-3" />
+                                                        {showScriptSection
+                                                            ? "Re-generate"
+                                                            : "Generate Script"}
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
                                     </div>
+
+                                    {/* Cover Prompt moved to its own section below */}
 
                                     {showScriptSection && videoScript && (
                                         <div className="space-y-3 bg-purple-50 p-4 rounded-lg">
@@ -1669,6 +1802,270 @@ ${part2Prompts}`;
                                             </div>
                                         </div>
                                     )}
+
+                                    {/* Cover Prompt Section (separate row) */}
+                                    <div className="pt-4 border-t space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <ImageIcon className="h-4 w-4 text-blue-600" />
+                                                <p className="text-sm font-semibold text-gray-700">
+                                                    Cover Prompt (AI Cover
+                                                    Image)
+                                                </p>
+                                                {savingCoverPrompt ? (
+                                                    <span className="text-xs text-gray-500 ml-2">
+                                                        Saving...
+                                                    </span>
+                                                ) : coverPromptSavedToDB ? (
+                                                    <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-semibold ml-2">
+                                                        Saved
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <Button
+                                                onClick={generateCoverPrompt}
+                                                disabled={generatingCoverPrompt}
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 gap-1.5"
+                                            >
+                                                {generatingCoverPrompt ? (
+                                                    <>
+                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                        Generating...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ImageIcon className="h-3 w-3" />
+                                                        {showCoverPromptSection
+                                                            ? "Re-generate Cover"
+                                                            : "Generate Cover Prompt"}
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+
+                                        {showCoverPromptSection &&
+                                            coverPromptData && (
+                                                <div className="bg-white p-3 rounded border border-blue-200">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <p className="text-xs font-semibold text-blue-700">
+                                                            Cover Prompt (JSON)
+                                                        </p>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 text-xs"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        await navigator.clipboard.writeText(
+                                                                            JSON.stringify(
+                                                                                coverPromptData,
+                                                                                null,
+                                                                                2
+                                                                            )
+                                                                        );
+                                                                        setCopiedCoverPromptJson(
+                                                                            true
+                                                                        );
+                                                                        setTimeout(
+                                                                            () =>
+                                                                                setCopiedCoverPromptJson(
+                                                                                    false
+                                                                                ),
+                                                                            2000
+                                                                        );
+                                                                    } catch (err) {
+                                                                        console.error(
+                                                                            err
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {copiedCoverPromptJson ? (
+                                                                    <>
+                                                                        <Check className="h-3 w-3 text-green-600" />
+                                                                        Copied
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <Copy className="h-3 w-3" />
+                                                                        Copy
+                                                                        JSON
+                                                                    </>
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                    <pre className="text-xs max-h-44 overflow-y-auto bg-gray-50 p-2 rounded text-gray-800">
+                                                        {JSON.stringify(
+                                                            coverPromptData,
+                                                            null,
+                                                            2
+                                                        )}
+                                                    </pre>
+                                                    {/* Cover Image Upload - reuse ClickableImage component for upload/crop/save */}
+                                                    <div className="mt-3 bg-white p-3 rounded border border-gray-200">
+                                                        <p className="text-sm font-semibold text-gray-800 mb-2">
+                                                            Upload Cover Image
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground mb-3">
+                                                            Upload cover image
+                                                            untuk disimpan ke
+                                                            database sebagai
+                                                            field cover
+                                                            (terpisah dari
+                                                            slides).
+                                                        </p>
+
+                                                        <ClickableImage
+                                                            prompt={
+                                                                // prefer prompt from coverPromptData if available
+                                                                (
+                                                                    coverPromptData as any
+                                                                )?.prompt ||
+                                                                caption ||
+                                                                "Cover image"
+                                                            }
+                                                            // Portrait cover dimensions (Instagram-style 4:5)
+                                                            width={1080}
+                                                            height={1350}
+                                                            className="w-full rounded-lg"
+                                                            alt="Cover image"
+                                                            // save to first slide (index 0)
+                                                            slideIndex={0}
+                                                            // try riddleId first, fallback to contentId
+                                                            riddleId={
+                                                                riddleId ||
+                                                                contentId ||
+                                                                undefined
+                                                            }
+                                                            // show existing cover image if available, fallback to slide screenshot
+                                                            saved_image_url={
+                                                                coverImageUrl ||
+                                                                slides?.[0]
+                                                                    ?.saved_slide_url
+                                                            }
+                                                            // category passed from props or default to riddles
+                                                            category={
+                                                                category ||
+                                                                "riddles"
+                                                            }
+                                                            // Override save behavior: save as cover field instead of slide
+                                                            onSave={async (
+                                                                imageUrl: string
+                                                            ) => {
+                                                                const id =
+                                                                    riddleId ||
+                                                                    contentId;
+                                                                if (!id) {
+                                                                    throw new Error(
+                                                                        "Missing riddle/content id"
+                                                                    );
+                                                                }
+
+                                                                const resp =
+                                                                    await fetch(
+                                                                        `/api/save-cover`,
+                                                                        {
+                                                                            method: "POST",
+                                                                            headers:
+                                                                                {
+                                                                                    "Content-Type":
+                                                                                        "application/json",
+                                                                                },
+                                                                            body: JSON.stringify(
+                                                                                {
+                                                                                    category:
+                                                                                        category ||
+                                                                                        "riddles",
+                                                                                    id,
+                                                                                    imageUrl,
+                                                                                }
+                                                                            ),
+                                                                        }
+                                                                    );
+
+                                                                if (!resp.ok) {
+                                                                    const txt =
+                                                                        await resp.text();
+                                                                    throw new Error(
+                                                                        `Failed to save cover: ${txt}`
+                                                                    );
+                                                                }
+
+                                                                // Update local UI to show saved cover immediately
+                                                                setCoverImageUrl(
+                                                                    imageUrl
+                                                                );
+                                                            }}
+                                                            // Update preview and auto-save to DB immediately after upload
+                                                            onUploaded={async (
+                                                                imageUrl: string
+                                                            ) => {
+                                                                setCoverImageUrl(
+                                                                    imageUrl
+                                                                );
+
+                                                                const id =
+                                                                    riddleId ||
+                                                                    contentId;
+                                                                if (!id) {
+                                                                    console.warn(
+                                                                        "Missing id for saving cover"
+                                                                    );
+                                                                    return;
+                                                                }
+
+                                                                try {
+                                                                    const resp =
+                                                                        await fetch(
+                                                                            `/api/save-cover`,
+                                                                            {
+                                                                                method: "POST",
+                                                                                headers:
+                                                                                    {
+                                                                                        "Content-Type":
+                                                                                            "application/json",
+                                                                                    },
+                                                                                body: JSON.stringify(
+                                                                                    {
+                                                                                        category:
+                                                                                            category ||
+                                                                                            "riddles",
+                                                                                        id,
+                                                                                        imageUrl,
+                                                                                    }
+                                                                                ),
+                                                                            }
+                                                                        );
+
+                                                                    if (
+                                                                        !resp.ok
+                                                                    ) {
+                                                                        const txt =
+                                                                            await resp.text();
+                                                                        console.error(
+                                                                            "Failed to auto-save cover:",
+                                                                            txt
+                                                                        );
+                                                                    } else {
+                                                                        // optional: mark saved state or give feedback
+                                                                        // cover will be fetched next time modal opens
+                                                                    }
+                                                                } catch (err) {
+                                                                    console.error(
+                                                                        "Error auto-saving cover:",
+                                                                        err
+                                                                    );
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
