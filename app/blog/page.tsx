@@ -137,6 +137,7 @@ export default function BlogPage() {
                                     {post.coverImage && (
                                         <img
                                             src={
+                                                post.coverImageUrl ||
                                                 post.coverImage ||
                                                 post.images[0]
                                             }

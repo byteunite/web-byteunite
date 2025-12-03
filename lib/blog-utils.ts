@@ -25,6 +25,7 @@ export interface BlogArticle {
     sourceId: string; // Original content ID
     sourceCategory: string; // riddles, sites, topics, tutorials
     slides: Slide[]; // Original slides data
+    coverImageUrl?: string; // URL gambar cover yang disimpan terpisah dari slides
 }
 
 /**
@@ -222,6 +223,7 @@ export function convertToBlogArticle(
         sourceId: data._id || data.id,
         sourceCategory: category,
         slides,
+        coverImageUrl: data.cover_image_url,
     };
 }
 
@@ -260,6 +262,7 @@ export async function fetchAllBlogArticles(options?: {
 
                     const items = result.data || [];
                     const articles: BlogArticle[] = [];
+                    // console.log(items);
 
                     items.forEach((item: any) => {
                         const article = convertToBlogArticle(item, cat);
