@@ -13,7 +13,7 @@ export interface IRecentProject {
     tech: string[];
     link: string;
     image: string;
-    duration: string;
+    duration?: string;
     role: string;
 }
 
@@ -41,6 +41,7 @@ export interface IProgrammer extends Document {
     linkedin: string;
     twitter: string;
     email: string;
+    slug: string;
     rating: number;
     projects: number;
     joinedDate: string;
@@ -52,6 +53,7 @@ export interface IProgrammer extends Document {
     skills: ISkill[];
     recentProjects: IRecentProject[];
     testimonials: ITestimonial[];
+    isPublished: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -98,7 +100,7 @@ const RecentProjectSchema = new Schema<IRecentProject>(
         },
         duration: {
             type: String,
-            required: true,
+            required: false,
         },
         role: {
             type: String,
@@ -202,6 +204,13 @@ const ProgrammerSchema = new Schema<IProgrammer>(
             type: String,
             required: false,
         },
+        slug: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+            lowercase: true,
+        },
         email: {
             type: String,
             required: [true, "Email is required"],
@@ -255,6 +264,11 @@ const ProgrammerSchema = new Schema<IProgrammer>(
         testimonials: {
             type: [TestimonialSchema],
             default: [],
+        },
+        isPublished: {
+            type: Boolean,
+            default: false,
+            required: true,
         },
     },
     {

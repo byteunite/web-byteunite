@@ -63,6 +63,7 @@ interface Programmer {
     linkedin: string;
     twitter: string;
     email: string;
+    slug: string;
     rating: number;
     projects: number;
     joinedDate: string;
@@ -78,7 +79,7 @@ interface Programmer {
 
 interface ProgrammerProfilePageProps {
     params: {
-        id: string;
+        slug: string;
     };
 }
 
@@ -93,7 +94,9 @@ export default function ProgrammerProfilePage({
         async function fetchProgrammer() {
             try {
                 setLoading(true);
-                const response = await fetch(`/api/programmers/${params.id}`);
+                const response = await fetch(
+                    `/api/programmers/${params.slug}?publicOnly=true`
+                );
                 const result = await response.json();
 
                 if (result.success) {
@@ -110,7 +113,7 @@ export default function ProgrammerProfilePage({
         }
 
         fetchProgrammer();
-    }, [params.id]);
+    }, [params.slug]);
 
     if (loading) {
         return (
@@ -556,7 +559,7 @@ export default function ProgrammerProfilePage({
                                 </Button>
                                 <Button
                                     variant="ghost"
-                                    className="w-full justify-start border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                    className="hidden w-full justify-start border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                                     asChild
                                 >
                                     <Link

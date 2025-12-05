@@ -17,20 +17,23 @@ export function Footer() {
                         </p>
                         <div className="flex space-x-4">
                             <Link
-                                href="#"
+                                href="https://github.com/byteunite"
                                 className="text-muted-foreground hover:text-primary transition-colors"
+                                target="_"
                             >
                                 <Github className="h-5 w-5" />
                             </Link>
                             <Link
-                                href="#"
+                                href="https://www.threads.com/@byteunite.dev"
                                 className="text-muted-foreground hover:text-primary transition-colors"
+                                target="_"
                             >
                                 <Twitter className="h-5 w-5" />
                             </Link>
                             <Link
-                                href="#"
+                                href="https://www.linkedin.com/company/byte-unite"
                                 className="text-muted-foreground hover:text-primary transition-colors"
+                                target="_blank"
                             >
                                 <Linkedin className="h-5 w-5" />
                             </Link>

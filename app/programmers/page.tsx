@@ -41,6 +41,7 @@ interface Programmer {
     avatar: string;
     github: string;
     portfolio: string;
+    slug: string;
     rating: number;
     projects: number;
 }
@@ -61,6 +62,7 @@ export default function ProgrammersPage() {
                     category: selectedCategory,
                     search: searchTerm,
                     sortBy,
+                    publicOnly: "true", // Only fetch published programmers
                 });
                 const response = await fetch(`/api/programmers?${params}`);
                 const result = await response.json();
@@ -295,7 +297,7 @@ export default function ProgrammersPage() {
 
                                     <Button className="w-full" asChild>
                                         <Link
-                                            href={`/programmers/${programmer._id}`}
+                                            href={`/programmers/${programmer.slug}`}
                                         >
                                             View Profile
                                         </Link>
@@ -339,7 +341,12 @@ export default function ProgrammersPage() {
                         of developers.
                     </p>
                     <Button size="lg" asChild>
-                        <Link href="/register">Join Byte Unite</Link>
+                        <Link
+                            href="https://discord.gg/PfqUrQfD"
+                            target="_blank"
+                        >
+                            Join Byte Unite
+                        </Link>
                     </Button>
                 </div>
             </section>

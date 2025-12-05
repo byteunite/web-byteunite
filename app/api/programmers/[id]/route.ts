@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Programmer from "@/models/Programmer";
+import mongoose from "mongoose";
+import { generateProgrammerSlug } from "@/lib/slug";
 
 interface RouteParams {
     params: {
@@ -8,22 +10,33 @@ interface RouteParams {
     };
 }
 
-// GET programmer by id
+// GET programmer by id or slug
 export async function GET(request: Request, { params }: RouteParams) {
     try {
         await dbConnect();
 
         const { id } = params;
+        const { searchParams } = new URL(request.url);
+        const publicOnly = searchParams.get("publicOnly") === "true";
 
         if (!id) {
             return NextResponse.json(
-                { error: "Programmer ID is required" },
+                { error: "Programmer ID or slug is required" },
                 { status: 400 }
             );
         }
 
-        // Find programmer by _id
-        const programmer = await Programmer.findById(id).lean();
+        // Build query - check if id is MongoDB ObjectId or slug
+        const isObjectId = mongoose.Types.ObjectId.isValid(id);
+        const query: any = isObjectId ? { _id: id } : { slug: id };
+
+        // For public pages, only return published programmers
+        if (publicOnly) {
+            query.isPublished = true;
+        }
+
+        // Find programmer by _id or slug
+        const programmer = await Programmer.findOne(query).lean();
 
         if (!programmer) {
             return NextResponse.json(
@@ -37,7 +50,7 @@ export async function GET(request: Request, { params }: RouteParams) {
             data: programmer,
         });
     } catch (error) {
-        console.error("GET Programmer by ID Error:", error);
+        console.error("GET Programmer by ID/Slug Error:", error);
         return NextResponse.json(
             { error: (error as Error).message || "Internal Server Error" },
             { status: 500 }
@@ -58,6 +71,38 @@ export async function PUT(request: Request, { params }: RouteParams) {
                 { error: "Programmer ID is required" },
                 { status: 400 }
             );
+        }
+
+        // Get current programmer
+        const currentProgrammer = await Programmer.findById(id);
+        if (!currentProgrammer) {
+            return NextResponse.json(
+                { error: "Programmer not found" },
+                { status: 404 }
+            );
+        }
+
+        // If name is being updated, regenerate slug
+        if (body.name && body.name !== currentProgrammer.name) {
+            let newSlug = generateProgrammerSlug(body.name);
+
+            // Check if new slug already exists (excluding current programmer)
+            let slugExists = await Programmer.findOne({
+                slug: newSlug,
+                _id: { $ne: id },
+            });
+
+            let counter = 1;
+            while (slugExists) {
+                newSlug = `${generateProgrammerSlug(body.name)}-${counter}`;
+                slugExists = await Programmer.findOne({
+                    slug: newSlug,
+                    _id: { $ne: id },
+                });
+                counter++;
+            }
+
+            body.slug = newSlug;
         }
 
         // Update programmer

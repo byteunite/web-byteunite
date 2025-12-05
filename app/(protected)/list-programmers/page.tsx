@@ -52,6 +52,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
 import {
     Select,
     SelectContent,
@@ -94,7 +95,9 @@ interface IProgrammer {
     avatar: string;
     github: string;
     portfolio: string;
+    linkedin: string;
     email: string;
+    slug: string;
     rating: number;
     projects: number;
     experience: string;
@@ -104,6 +107,7 @@ interface IProgrammer {
     certifications: string[];
     recentProjects: IRecentProject[];
     testimonials: ITestimonial[];
+    isPublished: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -165,6 +169,7 @@ export default function ProgrammersAdminPage() {
         avatar: "",
         github: "",
         portfolio: "",
+        linkedin: "",
         email: "",
         rating: "4.5",
         projects: "0",
@@ -174,6 +179,7 @@ export default function ProgrammersAdminPage() {
         hourlyRate: "",
         languages: "",
         certifications: "",
+        isPublished: false,
     });
 
     // JSON input
@@ -288,6 +294,7 @@ export default function ProgrammersAdminPage() {
             avatar: "",
             github: "",
             portfolio: "",
+            linkedin: "",
             email: "",
             rating: "4.5",
             projects: "0",
@@ -297,6 +304,7 @@ export default function ProgrammersAdminPage() {
             hourlyRate: "",
             languages: "",
             certifications: "",
+            isPublished: false,
         });
         setJsonInput("");
         setEditingProgrammer(null);
@@ -325,6 +333,7 @@ export default function ProgrammersAdminPage() {
                 avatar: programmer.avatar,
                 github: programmer.github,
                 portfolio: programmer.portfolio,
+                linkedin: programmer.linkedin || "",
                 email: programmer.email,
                 rating: programmer.rating.toString(),
                 projects: programmer.projects.toString(),
@@ -334,6 +343,7 @@ export default function ProgrammersAdminPage() {
                 hourlyRate: programmer.hourlyRate,
                 languages: "",
                 certifications: "",
+                isPublished: programmer.isPublished ?? false,
             });
 
             // Populate nested data for editing
@@ -404,6 +414,7 @@ export default function ProgrammersAdminPage() {
                     avatar: formData.avatar || "/placeholder.svg",
                     github: formData.github,
                     portfolio: formData.portfolio,
+                    linkedin: formData.linkedin,
                     email: formData.email,
                     rating: parseFloat(formData.rating) || 4.5,
                     projects: parseInt(formData.projects) || 0,
@@ -416,6 +427,7 @@ export default function ProgrammersAdminPage() {
                     skills: parsedNestedData.skills,
                     recentProjects: parsedNestedData.recentProjects,
                     testimonials: parsedNestedData.testimonials,
+                    isPublished: formData.isPublished,
                 };
             } else {
                 // Validate and parse JSON
@@ -594,6 +606,7 @@ export default function ProgrammersAdminPage() {
                     avatar: result.data.avatar || "",
                     github: result.data.github || "",
                     portfolio: result.data.portfolio || "",
+                    linkedin: result.data.linkedin || "",
                     email: result.data.email || "",
                     rating: result.data.rating?.toString() || "4.5",
                     projects: result.data.projects?.toString() || "0",
@@ -606,6 +619,7 @@ export default function ProgrammersAdminPage() {
                     languages: result.data.languages?.join(", ") || "",
                     certifications:
                         result.data.certifications?.join(", ") || "",
+                    isPublished: false, // Default to unpublished for new CV uploads
                 });
 
                 // Save nested data (skills, recentProjects, testimonials)
@@ -692,6 +706,50 @@ export default function ProgrammersAdminPage() {
             });
         } finally {
             setDeletingId(null);
+        }
+    };
+
+    const handleTogglePublished = async (
+        programmerId: string,
+        currentStatus: boolean
+    ) => {
+        try {
+            const response = await fetch(`/api/programmers/${programmerId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ isPublished: !currentStatus }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.error || "Failed to update publish status"
+                );
+            }
+
+            if (result.success) {
+                toast({
+                    title: "Success!",
+                    description: `Programmer ${
+                        !currentStatus ? "published" : "unpublished"
+                    } successfully`,
+                });
+
+                // Refresh the programmers list
+                fetchProgrammers(currentPage);
+            }
+        } catch (err) {
+            toast({
+                title: "Error",
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to update publish status",
+                variant: "destructive",
+            });
         }
     };
 
@@ -1461,6 +1519,28 @@ export default function ProgrammersAdminPage() {
                                     </Select>
                                 </div>
 
+                                <div className="flex items-center justify-between space-y-2">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="isPublished">
+                                            Publish to Public Page
+                                        </Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Make this programmer visible on
+                                            /programmers
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        id="isPublished"
+                                        checked={formData.isPublished}
+                                        onCheckedChange={(checked) =>
+                                            setFormData({
+                                                ...formData,
+                                                isPublished: checked,
+                                            })
+                                        }
+                                    />
+                                </div>
+
                                 <div className="space-y-2">
                                     <Label htmlFor="bio">
                                         Bio{" "}
@@ -1498,7 +1578,7 @@ export default function ProgrammersAdminPage() {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="github">GitHub</Label>
                                         <Input
@@ -1525,6 +1605,22 @@ export default function ProgrammersAdminPage() {
                                                 setFormData({
                                                     ...formData,
                                                     portfolio: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="linkedin">
+                                            LinkedIn
+                                        </Label>
+                                        <Input
+                                            id="linkedin"
+                                            placeholder="username"
+                                            value={formData.linkedin}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    linkedin: e.target.value,
                                                 })
                                             }
                                         />
@@ -1958,6 +2054,9 @@ export default function ProgrammersAdminPage() {
                                             <TableHead className="w-[150px]">
                                                 Stats
                                             </TableHead>
+                                            <TableHead className="w-[100px] text-center">
+                                                Status
+                                            </TableHead>
                                             <TableHead className="w-[200px] text-right">
                                                 Actions
                                             </TableHead>
@@ -2071,6 +2170,26 @@ export default function ProgrammersAdminPage() {
                                                             </div>
                                                         </div>
                                                     </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Button
+                                                            variant={
+                                                                programmer.isPublished
+                                                                    ? "default"
+                                                                    : "outline"
+                                                            }
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                handleTogglePublished(
+                                                                    programmer._id,
+                                                                    programmer.isPublished
+                                                                )
+                                                            }
+                                                        >
+                                                            {programmer.isPublished
+                                                                ? "Published"
+                                                                : "Not Published"}
+                                                        </Button>
+                                                    </TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-1 flex-wrap">
                                                             <Button
@@ -2079,7 +2198,7 @@ export default function ProgrammersAdminPage() {
                                                                 asChild
                                                             >
                                                                 <Link
-                                                                    href={`/programmers/${programmer._id}`}
+                                                                    href={`/programmers/${programmer.slug}`}
                                                                     target="_blank"
                                                                 >
                                                                     <Eye className="h-4 w-4 mr-1" />
@@ -2360,7 +2479,7 @@ export default function ProgrammersAdminPage() {
                                                         asChild
                                                     >
                                                         <Link
-                                                            href={`/programmers/${programmer._id}`}
+                                                            href={`/programmers/${programmer.slug}`}
                                                             target="_blank"
                                                         >
                                                             <Eye className="h-4 w-4 mr-2" />

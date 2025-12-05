@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Programmer from "@/models/Programmer";
+import { generateProgrammerSlug } from "@/lib/slug";
 
 // GET all programmers
 export async function GET(request: Request) {
@@ -14,11 +15,17 @@ export async function GET(request: Request) {
         const search = searchParams.get("search");
         const sortBy = searchParams.get("sortBy") || "name";
         const full = searchParams.get("full") === "true"; // Get full data including nested fields
+        const publicOnly = searchParams.get("publicOnly") === "true"; // Filter only published programmers
 
         const skip = (page - 1) * limit;
 
         // Build query
         const query: any = {};
+
+        // Filter for public pages (only published programmers)
+        if (publicOnly) {
+            query.isPublished = true;
+        }
 
         if (category && category !== "all") {
             query.category = category;
@@ -115,8 +122,23 @@ export async function POST(request: Request) {
             );
         }
 
-        // Create new programmer
-        const programmer = await Programmer.create(body);
+        // Generate slug from name
+        let slug = generateProgrammerSlug(body.name);
+
+        // Check if slug already exists and make it unique
+        let slugExists = await Programmer.findOne({ slug });
+        let counter = 1;
+        while (slugExists) {
+            slug = `${generateProgrammerSlug(body.name)}-${counter}`;
+            slugExists = await Programmer.findOne({ slug });
+            counter++;
+        }
+
+        // Create new programmer with slug
+        const programmer = await Programmer.create({
+            ...body,
+            slug,
+        });
 
         return NextResponse.json(
             {
