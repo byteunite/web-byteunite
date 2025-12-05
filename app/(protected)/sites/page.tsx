@@ -275,6 +275,35 @@ export default function SitesPage() {
         }
     };
 
+    const handleCopyJson = async () => {
+        try {
+            await navigator.clipboard.writeText(jsonInput || "");
+            toast({ title: "Copied", description: "JSON copied to clipboard" });
+        } catch (err) {
+            try {
+                const el = document.getElementById(
+                    "json-input"
+                ) as HTMLTextAreaElement | null;
+                if (el) {
+                    el.select();
+                    document.execCommand("copy");
+                    toast({
+                        title: "Copied",
+                        description: "JSON copied to clipboard",
+                    });
+                    return;
+                }
+            } catch (e) {
+                // fallthrough
+            }
+            toast({
+                title: "Error",
+                description: "Failed to copy JSON",
+                variant: "destructive",
+            });
+        }
+    };
+
     const handleDeleteSite = async (siteId: string) => {
         try {
             setDeletingId(siteId);
@@ -502,9 +531,18 @@ export default function SitesPage() {
                                 className="space-y-4 mt-4"
                             >
                                 <div className="space-y-2">
-                                    <Label htmlFor="json-input">
-                                        JSON Input
-                                    </Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="json-input">
+                                            JSON Input
+                                        </Label>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handleCopyJson}
+                                        >
+                                            Copy JSON
+                                        </Button>
+                                    </div>
                                     <Textarea
                                         id="json-input"
                                         placeholder={`{\n  "title": "Site title",\n  "description": "Site description",\n  "link": "https://example.com",\n  "category": "UI/UX Tools",\n  "isFree": true,\n  "thumbnails": ["https://example.com/image.jpg"]\n}`}

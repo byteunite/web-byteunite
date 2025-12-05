@@ -186,11 +186,13 @@ const ProgrammerSchema = new Schema<IProgrammer>(
         },
         github: {
             type: String,
-            required: true,
+            required: false,
+            default: "",
         },
         portfolio: {
             type: String,
-            required: true,
+            required: false,
+            default: "",
         },
         linkedin: {
             type: String,

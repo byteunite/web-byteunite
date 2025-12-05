@@ -244,6 +244,35 @@ export default function RiddlesPage() {
         }
     };
 
+    const handleCopyJson = async () => {
+        try {
+            await navigator.clipboard.writeText(jsonInput || "");
+            toast({ title: "Copied", description: "JSON copied to clipboard" });
+        } catch (err) {
+            try {
+                const el = document.getElementById(
+                    "json-input"
+                ) as HTMLTextAreaElement | null;
+                if (el) {
+                    el.select();
+                    document.execCommand("copy");
+                    toast({
+                        title: "Copied",
+                        description: "JSON copied to clipboard",
+                    });
+                    return;
+                }
+            } catch (e) {
+                // fallthrough
+            }
+            toast({
+                title: "Error",
+                description: "Failed to copy JSON",
+                variant: "destructive",
+            });
+        }
+    };
+
     const handleDeleteRiddle = async (riddleId: string) => {
         try {
             setDeletingId(riddleId);
@@ -403,9 +432,18 @@ export default function RiddlesPage() {
                                 className="space-y-4 mt-4"
                             >
                                 <div className="space-y-2">
-                                    <Label htmlFor="json-input">
-                                        JSON Input
-                                    </Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="json-input">
+                                            JSON Input
+                                        </Label>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handleCopyJson}
+                                        >
+                                            Copy JSON
+                                        </Button>
+                                    </div>
                                     <Textarea
                                         id="json-input"
                                         placeholder={`{\n  "title": "Your riddle title",\n  "riddle": "Your riddle question",\n  "solution": "Your solution"\n}`}

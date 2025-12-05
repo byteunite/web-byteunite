@@ -135,7 +135,23 @@ export default function ProgrammersAdminPage() {
     const { toast } = useToast();
 
     // Form mode state
-    const [inputMode, setInputMode] = useState<"form" | "json">("form");
+    const [inputMode, setInputMode] = useState<"form" | "json" | "cv">("form");
+
+    // CV Upload state
+    const [cvFile, setCvFile] = useState<File | null>(null);
+    const [isParsing, setIsParsing] = useState(false);
+    const [cvParseError, setCvParseError] = useState<string | null>(null);
+
+    // Parsed nested data from CV (skills, projects, testimonials)
+    const [parsedNestedData, setParsedNestedData] = useState<{
+        skills: ISkill[];
+        recentProjects: IRecentProject[];
+        testimonials: ITestimonial[];
+    }>({
+        skills: [],
+        recentProjects: [],
+        testimonials: [],
+    });
 
     // Form inputs
     const [formData, setFormData] = useState({
@@ -225,6 +241,7 @@ export default function ProgrammersAdminPage() {
             const params = new URLSearchParams({
                 page: page.toString(),
                 limit: "10",
+                full: "true", // Request full data including nested fields
                 ...(categoryFilter !== "all" && { category: categoryFilter }),
                 ...(searchTerm && { search: searchTerm }),
             });
@@ -283,6 +300,14 @@ export default function ProgrammersAdminPage() {
         });
         setJsonInput("");
         setEditingProgrammer(null);
+        setCvFile(null);
+        setCvParseError(null);
+        setInputMode("form");
+        setParsedNestedData({
+            skills: [],
+            recentProjects: [],
+            testimonials: [],
+        });
     };
 
     const handleOpenDialog = (programmer?: IProgrammer) => {
@@ -309,6 +334,13 @@ export default function ProgrammersAdminPage() {
                 hourlyRate: programmer.hourlyRate,
                 languages: "",
                 certifications: "",
+            });
+
+            // Populate nested data for editing
+            setParsedNestedData({
+                skills: programmer.skills || [],
+                recentProjects: programmer.recentProjects || [],
+                testimonials: programmer.testimonials || [],
             });
         } else {
             // Create mode
@@ -381,9 +413,9 @@ export default function ProgrammersAdminPage() {
                     hourlyRate: formData.hourlyRate,
                     languages: languagesArray,
                     certifications: certificationsArray,
-                    skills: [],
-                    recentProjects: [],
-                    testimonials: [],
+                    skills: parsedNestedData.skills,
+                    recentProjects: parsedNestedData.recentProjects,
+                    testimonials: parsedNestedData.testimonials,
                 };
             } else {
                 // Validate and parse JSON
@@ -458,6 +490,166 @@ export default function ProgrammersAdminPage() {
             });
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleCopyJson = async () => {
+        try {
+            await navigator.clipboard.writeText(jsonInput || "");
+            toast({ title: "Copied", description: "JSON copied to clipboard" });
+        } catch (err) {
+            try {
+                const el = document.getElementById(
+                    "json-input"
+                ) as HTMLTextAreaElement | null;
+                if (el) {
+                    el.select();
+                    document.execCommand("copy");
+                    toast({
+                        title: "Copied",
+                        description: "JSON copied to clipboard",
+                    });
+                    return;
+                }
+            } catch (e) {
+                // fallthrough
+            }
+            toast({
+                title: "Error",
+                description: "Failed to copy JSON",
+                variant: "destructive",
+            });
+        }
+    };
+
+    // Handle CV file selection
+    const handleCVFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (file.type !== "application/pdf") {
+                toast({
+                    title: "Invalid File Type",
+                    description: "Please upload a PDF file",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                toast({
+                    title: "File Too Large",
+                    description: "File size must be less than 5MB",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            setCvFile(file);
+            setCvParseError(null);
+        }
+    };
+
+    // Handle CV parsing
+    const handleParseCV = async () => {
+        if (!cvFile) {
+            toast({
+                title: "No File Selected",
+                description: "Please select a PDF file first",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            setIsParsing(true);
+            setCvParseError(null);
+
+            const formData = new FormData();
+            formData.append("file", cvFile);
+
+            const response = await fetch("/api/programmers/parse-cv", {
+                method: "POST",
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to parse CV");
+            }
+
+            if (result.success && result.data) {
+                // Populate form with parsed data
+                setFormData({
+                    name: result.data.name || "",
+                    role: result.data.role || "",
+                    location: result.data.location || "",
+                    bio: result.data.bio || "",
+                    fullBio: result.data.fullBio || "",
+                    stack: result.data.stack?.join(", ") || "",
+                    category: result.data.category || "frontend",
+                    avatar: result.data.avatar || "",
+                    github: result.data.github || "",
+                    portfolio: result.data.portfolio || "",
+                    email: result.data.email || "",
+                    rating: result.data.rating?.toString() || "4.5",
+                    projects: result.data.projects?.toString() || "0",
+                    joinedDate:
+                        result.data.joinedDate ||
+                        new Date().toISOString().split("T")[0],
+                    experience: result.data.experience || "",
+                    availability: result.data.availability || "",
+                    hourlyRate: result.data.hourlyRate || "",
+                    languages: result.data.languages?.join(", ") || "",
+                    certifications:
+                        result.data.certifications?.join(", ") || "",
+                });
+
+                // Save nested data (skills, recentProjects, testimonials)
+                setParsedNestedData({
+                    skills: result.data.skills || [],
+                    recentProjects: result.data.recentProjects || [],
+                    testimonials: result.data.testimonials || [],
+                });
+
+                // Also populate JSON input
+                setJsonInput(JSON.stringify(result.data, null, 2));
+
+                toast({
+                    title: "CV Parsed Successfully!",
+                    description:
+                        "Data has been extracted. Please review and edit if needed.",
+                });
+
+                // Switch to form view to review data
+                setInputMode("form");
+            }
+        } catch (err) {
+            const errorMessage =
+                err instanceof Error ? err.message : "Failed to parse CV";
+            setCvParseError(errorMessage);
+            toast({
+                title: "Error Parsing CV",
+                description: errorMessage,
+                variant: "destructive",
+            });
+        } finally {
+            setIsParsing(false);
+        }
+    };
+
+    // Clear CV upload
+    const handleClearCV = () => {
+        setCvFile(null);
+        setCvParseError(null);
+        const fileInput = document.getElementById(
+            "cv-upload"
+        ) as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = "";
         }
     };
 
@@ -1129,16 +1321,17 @@ export default function ProgrammersAdminPage() {
                         <Tabs
                             value={inputMode}
                             onValueChange={(value) =>
-                                setInputMode(value as "form" | "json")
+                                setInputMode(value as "form" | "json" | "cv")
                             }
                         >
-                            <TabsList className="grid w-full grid-cols-2">
+                            <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="form">
                                     Form Input
                                 </TabsTrigger>
                                 <TabsTrigger value="json">
                                     JSON Input
                                 </TabsTrigger>
+                                <TabsTrigger value="cv">Upload CV</TabsTrigger>
                             </TabsList>
 
                             <TabsContent
@@ -1441,6 +1634,67 @@ export default function ProgrammersAdminPage() {
                                         }
                                     />
                                 </div>
+
+                                {/* Parsed Nested Data Info */}
+                                {(parsedNestedData.skills.length > 0 ||
+                                    parsedNestedData.recentProjects.length >
+                                        0 ||
+                                    parsedNestedData.testimonials.length >
+                                        0) && (
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                        <h4 className="font-semibold text-sm text-green-900 mb-2">
+                                            ✅ Additional Data Extracted from
+                                            CV:
+                                        </h4>
+                                        <div className="space-y-1 text-sm text-green-800">
+                                            {parsedNestedData.skills.length >
+                                                0 && (
+                                                <div>
+                                                    •{" "}
+                                                    <strong>
+                                                        {
+                                                            parsedNestedData
+                                                                .skills.length
+                                                        }
+                                                    </strong>{" "}
+                                                    Skills
+                                                </div>
+                                            )}
+                                            {parsedNestedData.recentProjects
+                                                .length > 0 && (
+                                                <div>
+                                                    •{" "}
+                                                    <strong>
+                                                        {
+                                                            parsedNestedData
+                                                                .recentProjects
+                                                                .length
+                                                        }
+                                                    </strong>{" "}
+                                                    Recent Projects
+                                                </div>
+                                            )}
+                                            {parsedNestedData.testimonials
+                                                .length > 0 && (
+                                                <div>
+                                                    •{" "}
+                                                    <strong>
+                                                        {
+                                                            parsedNestedData
+                                                                .testimonials
+                                                                .length
+                                                        }
+                                                    </strong>{" "}
+                                                    Testimonials
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-green-700 mt-2">
+                                            These will be automatically saved
+                                            with the programmer.
+                                        </p>
+                                    </div>
+                                )}
                             </TabsContent>
 
                             <TabsContent
@@ -1448,9 +1702,18 @@ export default function ProgrammersAdminPage() {
                                 className="space-y-4 mt-4"
                             >
                                 <div className="space-y-2">
-                                    <Label htmlFor="json-input">
-                                        JSON Input
-                                    </Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="json-input">
+                                            JSON Input
+                                        </Label>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handleCopyJson}
+                                        >
+                                            Copy JSON
+                                        </Button>
+                                    </div>
                                     <Textarea
                                         id="json-input"
                                         placeholder={`{\n  "name": "John Doe",\n  "role": "Frontend Developer",\n  "email": "john@example.com",\n  "location": "New York, NY",\n  "bio": "...",\n  "fullBio": "...",\n  "stack": ["React", "TypeScript"],\n  "category": "frontend",\n  "github": "johndoe",\n  "portfolio": "johndoe.dev",\n  "rating": 4.5,\n  "projects": 10,\n  "experience": "5+ years",\n  "availability": "Available",\n  "hourlyRate": "$80-120"\n}`}
@@ -1465,6 +1728,143 @@ export default function ProgrammersAdminPage() {
                                         Enter a valid JSON object with required
                                         fields: name, role, email, location
                                     </p>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="cv" className="space-y-4 mt-4">
+                                <div className="space-y-4">
+                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                        <div className="space-y-4">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <svg
+                                                    className="w-12 h-12 text-gray-400"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                                    />
+                                                </svg>
+                                                <h3 className="font-semibold text-lg">
+                                                    Upload CV PDF
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Upload a PDF resume and let
+                                                    AI extract the information
+                                                </p>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <input
+                                                    id="cv-upload"
+                                                    type="file"
+                                                    accept="application/pdf"
+                                                    onChange={
+                                                        handleCVFileChange
+                                                    }
+                                                    className="hidden"
+                                                />
+                                                <label htmlFor="cv-upload">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        className="cursor-pointer"
+                                                        onClick={() =>
+                                                            document
+                                                                .getElementById(
+                                                                    "cv-upload"
+                                                                )
+                                                                ?.click()
+                                                        }
+                                                        disabled={isParsing}
+                                                    >
+                                                        Choose PDF File
+                                                    </Button>
+                                                </label>
+
+                                                {cvFile && (
+                                                    <div className="flex items-center justify-center gap-2 mt-2">
+                                                        <span className="text-sm text-muted-foreground">
+                                                            {cvFile.name} (
+                                                            {Math.round(
+                                                                cvFile.size /
+                                                                    1024
+                                                            )}{" "}
+                                                            KB)
+                                                        </span>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={
+                                                                handleClearCV
+                                                            }
+                                                            disabled={isParsing}
+                                                        >
+                                                            ✕
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <p className="text-xs text-muted-foreground">
+                                                Maximum file size: 5MB
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {cvFile && (
+                                        <div className="flex justify-center">
+                                            <Button
+                                                onClick={handleParseCV}
+                                                disabled={isParsing}
+                                                className="retro-button"
+                                            >
+                                                {isParsing ? (
+                                                    <>
+                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                        Parsing CV with AI...
+                                                    </>
+                                                ) : (
+                                                    <>🤖 Parse CV with AI</>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                    {cvParseError && (
+                                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                            <p className="text-sm text-red-600">
+                                                <strong>Error:</strong>{" "}
+                                                {cvParseError}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <h4 className="font-semibold text-sm text-blue-900 mb-2">
+                                            How it works:
+                                        </h4>
+                                        <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                                            <li>Upload a PDF CV/Resume</li>
+                                            <li>
+                                                AI will extract and parse the
+                                                information
+                                            </li>
+                                            <li>
+                                                Review the extracted data in the
+                                                Form tab
+                                            </li>
+                                            <li>
+                                                Edit if needed and save the
+                                                programmer
+                                            </li>
+                                        </ol>
+                                    </div>
                                 </div>
                             </TabsContent>
                         </Tabs>
@@ -2363,7 +2763,7 @@ export default function ProgrammersAdminPage() {
                                                     <div className="text-sm text-muted-foreground">
                                                         {project.description}
                                                     </div>
-                                                    <div className="flex gap-2 mt-2">
+                                                    <div className="flex gap-2 mt-2 flex-wrap">
                                                         {project.tech.map(
                                                             (tech) => (
                                                                 <Badge

@@ -13,6 +13,7 @@ export async function GET(request: Request) {
         const category = searchParams.get("category");
         const search = searchParams.get("search");
         const sortBy = searchParams.get("sortBy") || "name";
+        const full = searchParams.get("full") === "true"; // Get full data including nested fields
 
         const skip = (page - 1) * limit;
 
@@ -51,10 +52,17 @@ export async function GET(request: Request) {
         const total = await Programmer.countDocuments(query);
 
         // Get programmers with pagination
-        const programmers = await Programmer.find(query)
-            .select(
+        let programmersQuery = Programmer.find(query);
+
+        // Conditionally exclude nested data for list view (performance)
+        // For admin panel with full=true, return all data including nested fields
+        if (!full) {
+            programmersQuery = programmersQuery.select(
                 "-fullBio -skills -recentProjects -testimonials -linkedin -twitter -email"
-            )
+            );
+        }
+
+        const programmers = await programmersQuery
             .sort(sort)
             .skip(skip)
             .limit(limit)

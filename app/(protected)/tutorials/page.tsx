@@ -294,6 +294,35 @@ export default function TutorialsPage() {
         }
     };
 
+    const handleCopyJson = async () => {
+        try {
+            await navigator.clipboard.writeText(jsonInput || "");
+            toast({ title: "Copied", description: "JSON copied to clipboard" });
+        } catch (err) {
+            try {
+                const el = document.getElementById(
+                    "json-input"
+                ) as HTMLTextAreaElement | null;
+                if (el) {
+                    el.select();
+                    document.execCommand("copy");
+                    toast({
+                        title: "Copied",
+                        description: "JSON copied to clipboard",
+                    });
+                    return;
+                }
+            } catch (e) {
+                // fallthrough
+            }
+            toast({
+                title: "Error",
+                description: "Failed to copy JSON",
+                variant: "destructive",
+            });
+        }
+    };
+
     const handleDeleteTutorial = async (tutorialId: string) => {
         try {
             setDeletingId(tutorialId);
@@ -527,9 +556,18 @@ export default function TutorialsPage() {
                                 className="space-y-4 mt-4"
                             >
                                 <div className="space-y-2">
-                                    <Label htmlFor="json-input">
-                                        JSON Input
-                                    </Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="json-input">
+                                            JSON Input
+                                        </Label>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handleCopyJson}
+                                        >
+                                            Copy JSON
+                                        </Button>
+                                    </div>
                                     <Textarea
                                         id="json-input"
                                         placeholder={`{\n  "title": "Your tutorial title",\n  "description": "Detailed description",\n  "category": "Category name (optional)",\n  "difficulty": "beginner",\n  "estimatedTime": "30 minutes",\n  "keywords": ["keyword1", "keyword2"]\n}`}

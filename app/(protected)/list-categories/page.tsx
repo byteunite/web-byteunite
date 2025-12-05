@@ -323,7 +323,9 @@ export default function CategoriesAdminPage() {
             if (result.success) {
                 toast({
                     title: "Success!",
-                    description: `Category ${editingCategory ? "updated" : "created"} successfully`,
+                    description: `Category ${
+                        editingCategory ? "updated" : "created"
+                    } successfully`,
                 });
 
                 resetForm();
@@ -344,6 +346,35 @@ export default function CategoriesAdminPage() {
             });
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleCopyJson = async () => {
+        try {
+            await navigator.clipboard.writeText(jsonInput || "");
+            toast({ title: "Copied", description: "JSON copied to clipboard" });
+        } catch (err) {
+            try {
+                const el = document.getElementById(
+                    "json-input"
+                ) as HTMLTextAreaElement | null;
+                if (el) {
+                    el.select();
+                    document.execCommand("copy");
+                    toast({
+                        title: "Copied",
+                        description: "JSON copied to clipboard",
+                    });
+                    return;
+                }
+            } catch (e) {
+                // fallthrough
+            }
+            toast({
+                title: "Error",
+                description: "Failed to copy JSON",
+                variant: "destructive",
+            });
         }
     };
 
@@ -691,9 +722,18 @@ export default function CategoriesAdminPage() {
                                 className="space-y-4 mt-4"
                             >
                                 <div className="space-y-2">
-                                    <Label htmlFor="json-input">
-                                        JSON Input
-                                    </Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="json-input">
+                                            JSON Input
+                                        </Label>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handleCopyJson}
+                                        >
+                                            Copy JSON
+                                        </Button>
+                                    </div>
                                     <Textarea
                                         id="json-input"
                                         placeholder={`{\n  "id": "web-development",\n  "title": "Web Development",\n  "description": "Brief description...",\n  "longDescription": "Detailed description...",\n  "icon": "Globe",\n  "color": "from-blue-500 to-cyan-500",\n  "programmersCount": 150,\n  "projectsCount": 50,\n  "eventsCount": 10,\n  "technologies": ["React", "Node.js"],\n  "image": "https://example.com/image.jpg",\n  "programmers": [],\n  "projects": [],\n  "events": [],\n  "resources": []\n}`}
@@ -810,10 +850,7 @@ export default function CategoriesAdminPage() {
                                                                     }
                                                                 </Badge>
                                                                 {category.technologies
-                                                                    .slice(
-                                                                        0,
-                                                                        3
-                                                                    )
+                                                                    .slice(0, 3)
                                                                     .map(
                                                                         (
                                                                             tech
@@ -938,9 +975,11 @@ export default function CategoriesAdminPage() {
                                                                     <AlertDialogDescription>
                                                                         This
                                                                         action
-                                                                        cannot be
+                                                                        cannot
+                                                                        be
                                                                         undone.
-                                                                        This will
+                                                                        This
+                                                                        will
                                                                         permanently
                                                                         delete
                                                                         <span className="font-semibold">
@@ -949,7 +988,6 @@ export default function CategoriesAdminPage() {
                                                                             {
                                                                                 category.title
                                                                             }
-
                                                                             "
                                                                         </span>
                                                                         .
